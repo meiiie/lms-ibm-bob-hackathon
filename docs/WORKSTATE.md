@@ -46,7 +46,11 @@ fork; inherited production image publishing/deployment is guarded to upstream.
   --no-audit --no-fund` (806 packages, existing deprecation/install-script warnings).
 - PASS: dev and prod Compose configuration validation; new setup documentation
   links, empty evidence manifest and upstream-only production guards checked.
-- Docker daemon was not running at the first environment check on this machine.
+- Docker Desktop startup was attempted, but the local daemon remains unavailable.
+  Local Compose app startup is not verified. Upstream PR Docker smoke passed in
+  GitHub Actions; it does not establish that Docker is working on this machine.
+- Fork CI was explicitly enabled after the initial fork push registered its
+  workflows without starting a run. Manual CI dispatch is also available.
 - No Bob AI task has been run by this setup; no task screenshots are supplied.
 - Actual Bob skill/hook activation, IBMid/instance/quota and product browser flows
   are not verified by file installation. See BOB-SETUP for startup commands.
