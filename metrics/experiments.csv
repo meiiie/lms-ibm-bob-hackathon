@@ -1,0 +1,1 @@
+case_id,run_id,method,repo_commit,input_fixture,elapsed_seconds,manual_steps,passed_acceptance,errors_found,bobcoins_used,evidence_path,notes

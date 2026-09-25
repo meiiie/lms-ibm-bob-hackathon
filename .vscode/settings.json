@@ -1,0 +1,30 @@
+{
+  "files.encoding": "utf8",
+  "files.eol": "\n",
+  "editor.formatOnSave": false,
+  "[javascript][javascriptreact][typescript][typescriptreact][json][jsonc][css][html][markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "eslint.run": "onSave",
+  "terminal.integrated.env.windows": {
+    "PATH": "${workspaceFolder}\\.tools\\node-v24.21.0-win-x64;${workspaceFolder}\\tooling\\node_modules\\.bin;${env:PATH}",
+    "PLAYWRIGHT_CLI_SESSION": "lms-bob-hackathon"
+  },
+  "files.watcherExclude": {
+    "**/.tools/**": true,
+    "**/node_modules/**": true,
+    "**/target/**": true,
+    "**/.angular/**": true
+  },
+  "[java]": {
+    "editor.defaultFormatter": "redhat.java"
+  },
+  "eslint.workingDirectories": [
+    "fe"
+  ],
+  "typescript.tsdk": "fe/node_modules/typescript/lib",
+  "java.configuration.updateBuildConfiguration": "interactive"
+}

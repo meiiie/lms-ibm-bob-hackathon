@@ -1,0 +1,8 @@
+{
+  "name": "ibm-bob-hackathon-tooling",
+  "private": true,
+  "description": "Local browser QA tooling; separate from the eventual hackathon application.",
+  "dependencies": {
+    "@playwright/cli": "0.1.21"
+  }
+}

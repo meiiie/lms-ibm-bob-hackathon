@@ -1,44 +1,61 @@
 # Pre-existing material and hackathon provenance
 
-Prepared on 26 September 2026, Vietnam (UTC+7).
+Updated 26 September 2026, Vietnam (UTC+7). Neko Core is the team name; it does
+not imply a Neko Core software dependency in the LMS.
 
-The submission team is called Neko Core. This team name does not imply that the
-Neko Core software project is included in Maritime LMS.
+## Existing application
 
-## Source baseline
+- Upstream: https://github.com/linhlinhlin/LMS_hohulili
+- Pre-license baseline: `736a7661f9d365f035e7150c7c7613079479f925`.
+- Baseline time: `2026-08-16T00:25:49+07:00`.
+- Existing authors: upstream authors and contributors; retain their notices.
+- Reused material: Angular frontend, Spring backend, migrations, learning/offline
+  features, deployment configuration, documentation, and existing unit/browser tests.
 
-- Upstream: <https://github.com/linhlinhlin/LMS_hohulili>.
-- Baseline commit: `736a7661f9d365f035e7150c7c7613079479f925`.
-- Recorded baseline commit time: `2026-08-16T00:25:49+07:00`.
-- Existing authorship: upstream authors and contributors; retain their notices.
-- Existing material includes the LMS application, Angular frontend, Spring
-  backend, database migrations, deployment configuration, documentation,
-  offline-learning functionality, and existing unit/browser tests.
+These features were not created during the hackathon. A fork or new license does
+not reset their history. Upstream tests already passing is not a new Bob outcome.
 
-These existing features were not created during this hackathon. A new fork,
-branch, license notice, or repository upload does not change their provenance.
+## Owner-authorized license change
 
-## Preparation during the event
+The owner requested MIT for original LMS material. Codex prepared source commit
+`a4b7028ee966ade8176ab56b7fbbcdddd9042833`; PR
+[#541](https://github.com/linhlinhlin/LMS_hohulili/pull/541) merged as
+`34c3f0f204510e67aa0b26d3373866dde46cc131` on `2026-09-26T00:39:07+07:00` after
+all five PR CI checks passed. Earlier AGPL grants are preserved; the SDK remains
+Apache-2.0 and third-party terms remain separate. See [LICENSING.md](../LICENSING.md).
+This license preparation is not Bob work and is not an eligibility ruling by the event.
 
-| Change | Date | Tool / authorship | Status |
-| --- | --- | --- | --- |
-| Owner-authorized MIT transition, commit `a4b7028ee966ade8176ab56b7fbbcdddd9042833` | 2026-09-26, UTC+7 | Prepared with Codex at the owner's request | Local commit; not published upstream at this checkpoint |
-| `bob_sessions/README.md`, empty `manifest.csv`, and this disclosure | 2026-09-26, UTC+7 | Prepared with Codex | Evidence scaffold, not Bob usage evidence or an implemented product improvement |
+## Submission fork and reused preparation
 
-At this checkpoint, this checkout is a local Git worktree on
-`codex/ibm-bob-hackathon`; no GitHub submission fork has been created. The MIT
-transition is a separate commit from the hackathon evidence setup. The source
-baseline used AGPL-3.0-only for original material; this local revision contains
-the owner-authorized MIT transition. SDK and third-party licenses remain separate;
-see [LICENSING.md](../LICENSING.md).
+- Submission fork: https://github.com/meiiie/lms-ibm-bob-hackathon
+- Fork created after the MIT merge, from revision `34c3f0f204510e67aa0b26d3373866dde46cc131`.
+- Preparation source: https://github.com/Long97189/Hackathon-IBM-by-Neko-Core-Prepare
+- Copied source revision: `4773812f80294496769a54b213fab69802838f3f`.
+- Source commit time: `2026-09-24T17:09:42Z` = `2026-09-25T00:09:42+07:00`,
+  before the event window. Research/setup began on 24 September.
+- The source team's Bob modes, eight skill files, Node/browser installers and
+  harness were reused with attribution here; they are preparation, not new product work.
+- LMS adaptation on 26 September was prepared with Codex: Java/Angular extensions,
+  repository instructions, scripts, hooks, evidence folders and shared docs.
+- The original local evidence scaffold was commit `3ec41dcd931271603667bdb205bb97c9c71070c3`;
+  its files are carried into the fork without duplicating the upstream license commit.
+
+The fork removes an inherited machine-local Claude permission file, makes its
+production publishing/deployment workflow conditional on the original upstream
+repository, and preserves upstream application behavior. Setup does not create
+a public demo deployment or supply real Bob task summaries.
+
+Extension/tool dependencies keep their own licenses, recorded where available in
+`tooling/extensions.lock.json` and package metadata. Repository MIT does not
+relicense those third-party tools or the separate SDK.
 
 ## New hackathon contribution
 
-The exact improvement remains to be selected and verified. No application
-changes have been implemented in this checkout for the hackathon at this point.
-For each completed contribution, record the actual problem, changed behavior,
-commit, verification result, limitations, and corresponding Bob task evidence.
+Exact scope is still proposed in [PRD.md](PRD.md). No application feature has been
+implemented for the event by this preparation. For completed work, record the
+actual problem, changed behavior, commit, verification, limits and real Bob task
+evidence. Every relevant participant captures actual summaries in `bob_sessions/`.
+The current manifest has no evidence rows; templates are not proof of usage.
 
-Before submitting, update the publication status above, identify the final
-repository and commit, retain actual history, and link the screenshots through
-[bob_sessions/manifest.csv](../bob_sessions/manifest.csv).
+Before submission, record the final revision, identify precisely what changed
+during the event, and link all actual screenshots through the manifest.

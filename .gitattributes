@@ -31,3 +31,6 @@
 *.woff binary
 *.woff2 binary
 *.ttf binary
+
+*.cjs text eol=lf
+.githooks/* text eol=lf

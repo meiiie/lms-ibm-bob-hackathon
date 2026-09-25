@@ -154,3 +154,26 @@ playwright-report/
 # === Local test fixtures (ad-hoc, không cần track) ===
 /test-import-*.docx
 docs/academic/defense-2026-04-28/
+
+# IBM Bob hackathon workspace and evidence
+.tools/
+.venv/
+.playwright-cli/
+browser-auth/
+data/private/
+test-results/
+*.pem
+*.key
+*.local.md
+*.local.json
+!AGENTS.md
+!.bob/
+!.bob/**
+!.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!bob_sessions/**/*.png
+!bob_sessions/*.png
+!submission/cover.png
+!.env.video-worker.example

@@ -1,0 +1,115 @@
+[
+  {
+    "id": "esbenp.prettier-vscode",
+    "version": "12.4.0",
+    "published": "2026-03-16T19:14:43.319347Z",
+    "platform": "universal",
+    "url": "https://open-vsx.org/api/esbenp/prettier-vscode/12.4.0/file/esbenp.prettier-vscode-12.4.0.vsix",
+    "sha256": "fb730ea4306d09cdc0a3aaa9e9baae28058cc97a4fbfce8b056b377a0639a9fe",
+    "repository": "https://github.com/prettier/prettier-vscode.git",
+    "license": "MIT",
+    "dependencies": [],
+    "extensionPack": []
+  },
+  {
+    "id": "dbaeumer.vscode-eslint",
+    "version": "3.0.34",
+    "published": "2026-07-17T04:12:54.913196Z",
+    "platform": "universal",
+    "url": "https://open-vsx.org/api/dbaeumer/vscode-eslint/3.0.34/file/dbaeumer.vscode-eslint-3.0.34.vsix",
+    "sha256": "ca5334d46f6a39079e751ef4601bfc9f86bc3a46483e87291ec609239d161308",
+    "repository": "https://github.com/Microsoft/vscode-eslint.git",
+    "license": "MIT",
+    "dependencies": [],
+    "extensionPack": []
+  },
+  {
+    "id": "redhat.vscode-yaml",
+    "version": "1.24.0",
+    "published": "2026-07-07T20:37:38.315075Z",
+    "platform": "universal",
+    "url": "https://open-vsx.org/api/redhat/vscode-yaml/1.24.0/file/redhat.vscode-yaml-1.24.0.vsix",
+    "sha256": "0668758312a7fa6beda259ca5a6849d90c5d519df6415edbe246c135e06d7168",
+    "repository": "https://github.com/redhat-developer/vscode-yaml.git",
+    "license": "MIT",
+    "dependencies": [],
+    "extensionPack": []
+  },
+  {
+    "id": "EditorConfig.EditorConfig",
+    "version": "0.18.2",
+    "published": "2026-04-09T04:09:42.62987Z",
+    "platform": "universal",
+    "url": "https://open-vsx.org/api/EditorConfig/EditorConfig/0.18.2/file/EditorConfig.EditorConfig-0.18.2.vsix",
+    "sha256": "cbc0370ff204bc16d84a3ee6830536fc04355856fa0e895ab064e1a03cfcb84a",
+    "repository": "https://github.com/editorconfig/editorconfig-vscode.git",
+    "license": "MIT",
+    "dependencies": [],
+    "extensionPack": []
+  },
+  {
+    "id": "redhat.java",
+    "version": "1.56.0",
+    "published": "2026-09-03T12:28:00.242229Z",
+    "platform": "win32-x64",
+    "url": "https://open-vsx.org/api/redhat/java/win32-x64/1.56.0/file/redhat.java-1.56.0@win32-x64.vsix",
+    "sha256": "ed28f022c053f2bad1e516a81c0c7185a7e3aafa08707acd42b45e53e3a692c4",
+    "repository": "https://github.com/redhat-developer/vscode-java.git",
+    "license": "EPL-2.0",
+    "dependencies": [
+      null
+    ],
+    "extensionPack": [
+      null
+    ]
+  },
+  {
+    "id": "vscjava.vscode-java-debug",
+    "version": "0.59.0",
+    "published": "2026-04-16T04:31:29.605707Z",
+    "platform": "universal",
+    "url": "https://open-vsx.org/api/vscjava/vscode-java-debug/0.59.0/file/vscjava.vscode-java-debug-0.59.0.vsix",
+    "sha256": "87627e24dbb5b01137decc0265f043cb08adad22af3c195f1ba39898dafb1588",
+    "repository": "https://github.com/Microsoft/vscode-java-debug.git",
+    "license": "SEE LICENSE IN LICENSE.txt",
+    "dependencies": [
+      null
+    ],
+    "extensionPack": [
+      null
+    ]
+  },
+  {
+    "id": "vscjava.vscode-java-test",
+    "version": "0.46.0",
+    "published": "2026-07-31T10:53:03.101812Z",
+    "platform": "universal",
+    "url": "https://open-vsx.org/api/vscjava/vscode-java-test/0.46.0/file/vscjava.vscode-java-test-0.46.0.vsix",
+    "sha256": "56c1e14dc73a30e9574c47042106fa52893bf8325b580f47c14ace07d5eef255",
+    "repository": "https://github.com/Microsoft/vscode-java-test.git",
+    "license": null,
+    "dependencies": [
+      "redhat.java",
+      "vscjava.vscode-java-debug"
+    ],
+    "extensionPack": [
+      null
+    ]
+  },
+  {
+    "id": "Angular.ng-template",
+    "version": "20.3.0",
+    "published": "2025-10-16T03:28:47.482691Z",
+    "platform": "universal",
+    "url": "https://open-vsx.org/api/Angular/ng-template/20.3.0/file/Angular.ng-template-20.3.0.vsix",
+    "sha256": "a377b6a952b0fec7e71476c71dd46507d523131d4a2c3d4a568680b279588e66",
+    "repository": "https://github.com/angular/vscode-ng-language-service.git",
+    "license": "MIT",
+    "dependencies": [
+      null
+    ],
+    "extensionPack": [
+      null
+    ]
+  }
+]

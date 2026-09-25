@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+root=$(git rev-parse --show-toplevel)
+cd "$root"
+if [ -x .tools/node-v24.21.0-win-x64/node.exe ]; then
+  exec .tools/node-v24.21.0-win-x64/node.exe scripts/harness.cjs check-staged
+fi
+exec node scripts/harness.cjs check-staged

@@ -41,6 +41,7 @@ env:
 jobs:
   # ── Build Backend Image ──────────────────────────────────────────────
   build-backend:
+    if: github.repository == 'linhlinhlin/LMS_hohulili'
     name: Build Backend
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -74,6 +75,7 @@ jobs:
 
   # ── Build Frontend Image ─────────────────────────────────────────────
   build-frontend:
+    if: github.repository == 'linhlinhlin/LMS_hohulili'
     name: Build Frontend
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -112,7 +114,7 @@ jobs:
     # Gate: only deploy when VM is provisioned & reachable.
     # Set repo variable DEPLOY_ENABLED=true to resume auto-deploy
     # after starting the GCP VM (gcloud compute instances start lms-production).
-    if: vars.DEPLOY_ENABLED == 'true' && github.event.inputs.skip_deploy != 'true'
+    if: github.repository == 'linhlinhlin/LMS_hohulili' && vars.DEPLOY_ENABLED == 'true' && github.event.inputs.skip_deploy != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment:
