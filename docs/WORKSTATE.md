@@ -2,6 +2,10 @@
 
 Updated 26 September 2026, Vietnam (UTC+7).
 
+Final preparation checkpoint: 00:56 UTC+7. Setup is published on the fork's main
+branch, and the independent workspace plus first-task prompt were opened through
+the Bob CLI in a separate window. This does not certify account/trust or AI activation.
+
 ## Goal and decisions
 
 Prepare the Neko Core submission fork of LMS for work in IBM Bob. The owner has
@@ -51,6 +55,15 @@ fork; inherited production image publishing/deployment is guarded to upstream.
   GitHub Actions; it does not establish that Docker is working on this machine.
 - Fork CI was explicitly enabled after the initial fork push registered its
   workflows without starting a run. Manual CI dispatch is also available.
+- PASS: all six fork CI jobs at `6f3005677226c238170734cc6528c0b32b80af0e`, including
+  Bob Harness Checks and Docker build/start/backend-health/frontend-edge checks:
+  https://github.com/meiiie/lms-ibm-bob-hackathon/actions/runs/36169537090
+- PASS: `npm.cmd --prefix fe run build` in the independent clone under Node
+  24.21.0, with `SITEMAP_BASE_URL=http://127.0.0.1:9`. Bundle generation took
+  280.543 seconds; existing Angular/CommonJS warnings remain. The service-worker
+  check reported no phantom files. Log: ignored `.tools/frontend-build-setup.log`.
+- The final follow-up changes only documentation; its commit skips another full
+  CI run. Application/tooling code remains the revision verified above.
 - No Bob AI task has been run by this setup; no task screenshots are supplied.
 - Actual Bob skill/hook activation, IBMid/instance/quota and product browser flows
   are not verified by file installation. See BOB-SETUP for startup commands.

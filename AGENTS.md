@@ -59,8 +59,8 @@ Inspect status/diff and preserve other people's work. Work on `codex/<short-scop
 branches, stage intended files, and review staged changes. Keep upstream licensing
 and authorship. No force-push or shared-history rewrite. New PRs and publication
 must follow the owner's instruction; do not repeatedly request existing authorization.
-Do not use production deployment scripts as local setup. The fork's inherited
-deployment workflow is disabled; a demo deployment needs a separate target.
+Do not use production deployment scripts as local setup. The inherited production
+jobs are guarded to the upstream repository; a demo deployment needs a separate target.
 
 Every participant must capture relevant real Bob task summaries in root
 `bob_sessions/` and update its manifest. Keep credentials/private data out of Git,
