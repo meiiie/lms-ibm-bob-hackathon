@@ -18,8 +18,8 @@ work. **Offline text reload, completion persistence and real backend reconnect
 sync passed at 20:35 UTC+7.** See [actual evidence and limits](DEMO-VERIFICATION.md).
 Physical-device installation and offline video are not tested.
 
-The owner subsequently requested all four role accounts. The current account
-scope and rollout record are in [DEMO-ACCOUNTS.md](DEMO-ACCOUNTS.md). The original
+The owner subsequently requested all four role accounts, which are now enabled.
+The current account scope and rollout record are in [DEMO-ACCOUNTS.md](DEMO-ACCOUNTS.md). The original
 student-only measurements below remain historical evidence of the first deployment.
 
 The Railway part is a **time-limited credit trial**, not permanent free hosting.
@@ -103,11 +103,11 @@ run. No credential values belong in this table.
 
 | Item | Verified value |
 | --- | --- |
-| Source commit / PR | PR #4; frontend artifact built from `86ceb885`, CI run `36240432617` |
-| Backend configuration and deploy | Explicit Dockerfile `deploy/demo-backend/Dockerfile` plus `RAILWAY_DOCKERFILE_PATH`; health `/actuator/health`, timeout 300 seconds, restart `ON_FAILURE` with 3 retries, one Singapore replica. Settings verified through the official CLI's GraphQL `serviceInstanceUpdate`. Source `c9c67946` was archived from tracked files only, then `npx.cmd --offline @railway/cli up .tools/demo-upload-c9c67946 --path-as-root --no-gitignore --service lms-api --environment production --detach` deployed it to the linked isolated project. Deployment `84e5413c-3d70-4b5e-9109-b52623182084` succeeded. |
+| Source commit / PR | PR #5 enables role accounts and fixes admin title-search sorting; backend `1ea41ff5`. Frontend remains the artifact built from `86ceb885`, CI run `36240432617`. |
+| Backend configuration and deploy | Explicit Dockerfile `deploy/demo-backend/Dockerfile` plus `RAILWAY_DOCKERFILE_PATH`; health `/actuator/health`, timeout 300 seconds, restart `ON_FAILURE` with 3 retries, one Singapore replica. Source `1ea41ff5` was archived from tracked files only, then `npx.cmd --offline @railway/cli up .tools/demo-upload-1ea41ff5 --path-as-root --no-gitignore --service lms-api --environment production --detach` deployed it to the linked isolated project. Deployment `b13a57d4-425b-414e-9278-e45cfdded645` succeeded. |
 | Pages build and deploy commands | CI ran `node scripts/build-demo-pages.mjs`; downloaded its `demo-pages` artifact and verified with `node scripts/build-demo-pages.mjs --check-only`; deployed from `deploy/demo-pages` with `npx.cmd wrangler pages deploy --project-name neko-core-lms-demo --branch main` |
 | Public HTTPS demo URL | `https://neko-core-lms-demo.pages.dev` — real UI login, course download, offline reload/progress and reconnect passed; see `docs/DEMO-VERIFICATION.md` |
-| Backend health / database migration result | All 131 migrations through version 159 applied to the new Neon database; one enabled student and zero enabled privileged users. Native smoke and 72 focused tests passed. Railway also reports `UP` with startup in 15.725 seconds; observed memory 495.8 MB / 1,024 MB. Public Pages-proxy checks at 20:30 UTC+7 passed login, role verification, blocked admin/registration/encoded-password/checkout requests and disabled cloud AI. |
+| Backend health / database migration result | All 131 migrations through version 159 applied. The role update has four enabled synthetic accounts and all other seed users disabled; ownership and enrollment progress are preserved. 134 focused tests passed. Railway health UP; startup 17.105 seconds. Real role UI/API verification: `docs/DEMO-ACCOUNTS.md`. The initial student-only deployment measured 495.8 MB / 1,024 MB; that is a historical observation, not a new capacity test. |
 | Private role access instructions | The owner's ignored `.tools/team-demo-accounts.private.md` contains the role handoff. Share privately with teammates; never commit passwords. Current rollout/verification: `docs/DEMO-ACCOUNTS.md`. |
 | Remaining Railway credit and check time (UTC+7) | $4.99126 / 30 trial days on 26 September around 20:31; credit decreases while resources run |
 | Pages Functions failure policy | Production and preview `fail_open=false` verified through the official Cloudflare API; the fixed backend binding was preserved and API health rechecked. Quota exhaustion itself was not forced. |

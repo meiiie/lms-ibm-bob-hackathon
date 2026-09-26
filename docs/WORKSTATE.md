@@ -1,34 +1,45 @@
 # Current work state
 
-## Demo role access — in progress
+## Demo role access — deployed and verified
 
-26 September 2026, Vietnam (UTC+7). The owner explicitly requested enabling the
-teacher, organization manager and system administrator accounts. This supersedes
-the original student-only demo restriction. Branch: `codex/demo-roles` from merged
-PR #4. Preserve the owner's `.factorypath` edit and all Bob evidence.
+26 September 2026, **21:35 UTC+7 (Vietnam)**. The owner requested enabling
+teacher, organization-manager and system-admin access. All four roles are now
+live at https://neko-core-lms-demo.pages.dev/auth/login. This supersedes the
+original student-only policy; the older deployment record below is historical.
 
-Four role identities are being prepared with independent private passwords.
-Teacher identity reuses the SAF-101 owner ID to preserve course/class/question-bank
-relations. Other seed identities remain disabled with unusable randomized hashes.
-The demo filter delegates ordinary management routes to existing RBAC while
-retaining restrictions on integrations that are not provisioned. Three new role
-passwords were stored in the existing ignored secrets file and set on Railway
-without deploying the old image. No credential values were printed or committed.
+- Backend source `1ea41ff5`, Railway deployment
+  `b13a57d4-425b-414e-9278-e45cfdded645`: SUCCESS, health UP, startup 17.105 s.
+  Frontend artifact remains `86ceb885`; frontend application code was unchanged.
+- `python scripts/verify-demo-roles.py --output .tools/demo-roles-run4` passed
+  30 checks across four fresh Chrome contexts with real UI login and API data.
+  It verified portals, course lists, title search (Enter submits), approved/pending
+  filters, teacher learner management and role/organization access restrictions.
+  No failing UI API responses or browser runtime errors in the final run.
+- 134 focused backend tests and package passed. Exact test selection and
+  source review/acceptance limits are in `docs/DEMO-ACCOUNTS.md`. Full CI and
+  merge status are tracked by PR #5; do not infer them from local tests alone.
+- Two read-only Neon snapshots confirm four enabled identities, other users
+  disabled, unchanged SAF-101 course/class/teacher ownership and learner
+  enrollment progress. Default inherited admin login still fails. Cloud AI,
+  payments, uploads, email and media processing remain unprovisioned/restricted.
+- First browser acceptance caught an inherited admin native-SQL sort failure
+  (`c.createdAt`). The adapter now maps timestamp properties to PostgreSQL
+  column names only for native queries. Four regressions pass; live filtered
+  admin queries now return HTTP 200. The runner also corrected its assumption
+  that title search matches course codes and explicitly presses Enter, waits
+  for the actual search response and settled dashboard data before screenshots.
+  Failed baselines remain ignored; final public evidence is
+  `docs/evidence/demo-roles-2026-09-26/`.
+- Private English credential handoff: `.tools/team-demo-accounts.private.md`.
+  Four independent passwords are set in Railway and never committed. The teacher
+  keeps the original owner ID. Backend startup restores four demo identities;
+  admin edits affect this shared fixture, so preserve SAF-101 for the recording.
+- Codex continuation, not Bob work. Both Bob PNG Git blobs remain identical.
+  The owner's unrelated `backend/.factorypath` edit remains unstaged.
 
-First deployment `2d9a5ea8` / `af6cb246-5677-4c7a-9040-39354eaa6d3b` started.
-115 focused backend tests passed, and a fresh source review found no blockers.
-Read-only Neon before/after snapshots confirmed four enabled roles, unchanged
-SAF-101 ownership and unchanged learner enrollment progress. All four UI logins
-work. Student and teacher acceptance passed. The first admin acceptance exposed
-an inherited native-query sorting defect (`c.createdAt` instead of `c.created_at`)
-and a runner assumption that the title-search API also searches course codes.
-The adapter now translates timestamp sort properties only for native SQL;
-JPQL keeps entity properties. Regression tests and redeployment are in progress.
-The runner now searches the actual title token STCW and exercises review filters.
-
-Next: finish the search fix validation, redeploy, complete real four-role UI/RBAC
-checks, update private credentials/evidence, and merge PR #5 after CI. See
-`docs/DEMO-ACCOUNTS.md`.
+Next: use PR #5 for final CI/merge status and send the private credential handoff
+to teammates. Remaining video, slides, cover, Bob summaries and submission form
+are separate tasks; this account rollout does not claim they are complete.
 
 ## Free demo deployment — hosted acceptance passed
 

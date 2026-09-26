@@ -12,7 +12,7 @@ import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 from playwright.async_api import async_playwright, expect
 
@@ -113,6 +113,7 @@ async def verify_role(browser, role, secrets, output):
             selector = "app-admin-system-dashboard" if role == "admin" else "app-admin-org-dashboard"
             await expect(page.locator(selector)).to_be_visible()
             await expect(page.locator(selector + " h1")).to_be_visible()
+            await expect(page.locator(selector).get_by_text("Đang tải...", exact=True)).to_have_count(0)
             await expect(page.get_by_text("Không thể tải dữ liệu bảng điều khiển", exact=True)).to_have_count(0)
         else:
             await expect(page.locator("h1").first).to_be_visible()
@@ -146,7 +147,13 @@ async def verify_role(browser, role, secrets, output):
         assert urlparse(page.url).path == path, "Role portal redirected from intended course list"
         if role in ("org_admin", "admin"):
             search = page.get_by_placeholder(re.compile("Tìm kiếm khóa học"))
-            await search.fill("STCW")
+            async with page.expect_response(lambda response:
+                    urlparse(response.url).path == "/api/v3/admin/courses/all"
+                    and parse_qs(urlparse(response.url).query).get("search") == ["STCW"]) as filtered:
+                await search.fill("STCW")
+                await search.press("Enter")
+            assert (await filtered.value).status == 200
+            await page.wait_for_load_state("networkidle")
         await expect(page.get_by_text(course["title"], exact=True).first).to_be_visible()
         await capture(page, output, f"{role}-courses.png", role.upper() + " REAL SAF-101 COURSE")
         passed(step, route=path)

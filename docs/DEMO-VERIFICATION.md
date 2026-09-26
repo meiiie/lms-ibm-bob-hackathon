@@ -4,6 +4,10 @@ Verified **26 September 2026, 20:35 UTC+7 (Vietnam)** at
 https://neko-core-lms-demo.pages.dev. This is Codex deployment/verification work
 against the reused LMS, not a Bob session or a new productivity measurement.
 
+This report records the initial learner-only deployment. All four role accounts
+were subsequently enabled and verified; see the newer
+[role rollout and acceptance](DEMO-ACCOUNTS.md) for current backend and access.
+
 The frontend is the optimized demo artifact from `86ceb885`, built by
 [CI run 36240432617](https://github.com/meiiie/lms-ibm-bob-hackathon/actions/runs/36240432617).
 Subsequent frontend application and proxy source is unchanged. Railway runs

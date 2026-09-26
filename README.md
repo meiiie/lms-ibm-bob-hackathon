@@ -22,8 +22,8 @@ Build window: **25 September 22:00–27 September 22:00, 2026, Vietnam (UTC+7)**
 Internal target: 27 September 20:00 UTC+7. Neko Core is the team name, not an LMS
 software dependency. A separate synthetic student demo is deployed on Cloudflare
 Pages, Railway trial and Neon Free; real login, offline text learning, reload and
-reconnect sync passed [hosted acceptance](docs/DEMO-VERIFICATION.md). The owner has
-requested all four role accounts; see [rollout status and private access](docs/DEMO-ACCOUNTS.md).
+reconnect sync passed [hosted acceptance](docs/DEMO-VERIFICATION.md). All four role
+accounts are enabled; see [verified roles and private access](docs/DEMO-ACCOUNTS.md).
 Cloud AI, payments, uploads and unprovisioned external integrations remain disabled.
 
 ChatGPT requires internet. Downloaded lessons remain independent of cloud AI.
