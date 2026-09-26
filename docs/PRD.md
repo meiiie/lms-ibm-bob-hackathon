@@ -1,6 +1,63 @@
 # Hackathon scope — working proposal
 
-Status: LMS is selected; the exact new improvement is NOT yet agreed or implemented.
+Status: the owner selected the offline-safe assistant workstream, then authorized
+the optional personal ChatGPT follow-up on 26 September 2026 (Vietnam, UTC+7).
+The historical proposal below records the original preparation context.
+
+## Selected slice and observable acceptance
+
+### 26 September integration update
+
+The owner requested merging the reviewed work while preserving teammates'
+changes, improving sidebar UX, and distinguishing internet-dependent ChatGPT
+from offline learning and optional device-local inference. ChatGPT remains an
+opt-in experimental provider; its latest model's real answer is not yet verified.
+That limitation is disclosed rather than attributed to Bob or hidden by mocks.
+
+Additional acceptance:
+
+- Cloud controls clearly require internet; downloaded learning content stays
+  independent. Offline question drafting does not queue or send requests later.
+- A learner can explicitly connect to an already running Ollama or LM Studio on
+  the same device at the supported loopback ports. The LMS never installs models,
+  probes localhost automatically, attaches its login token, or falls back to cloud.
+- Local inference depends on actual server reachability and a downloaded local
+  model, not the internet status flag. PWA installation alone supplies no LLM.
+- Selected lesson text is copied only on an explicit action into a visible,
+  editable, bounded question. Nothing is sent until the learner submits it.
+- Desktop/mobile layouts, keyboard access, cancellation, errors and provider
+  switching are checked in a real browser with fixture/live evidence separated.
+
+WebMCP remains a researched follow-up, not an implemented dependency of this
+slice. See [the dated assessment](WEBMCP-RESEARCH-2026-09-26.md). It does not
+automatically connect the sidebar to a model or to application tools.
+
+The developer workflow is reproducing and fixing assistant failures around
+connectivity, then validating a bounded integration before release. The learner
+continues downloaded lessons offline; cloud AI must not block that work or leave
+spurious pending-sync items. Bob's first implementation is merged in PR #2.
+
+The follow-up adds an opt-in personal ChatGPT provider to the existing sidebar:
+
+1. Wiii remains usable when ChatGPT is disabled. ChatGPT availability does not
+   depend on a working Wiii service when the backend enables the option.
+2. An authenticated learner explicitly connects using a device code and performs
+   consent on OpenAI's page. This does not replace LMS login.
+3. Connected learners can submit one bounded question, read plain answer text,
+   and disconnect. No course/student data or prior chat is attached automatically.
+4. Tokens stay on the backend, isolated by LMS principal. Expiry, cancellation,
+   replaced attempts, rate limits and provider errors cannot leak credentials or
+   reconnect a disconnected session.
+5. Offline auth/chat operations never enter the synchronization queue or replay
+   automatically. Closing/switching the panel stops its polling.
+6. Backend/unit and real-browser fixture checks are documented separately from
+   live provider validation. Only an actual consent, token exchange and real answer
+   establish that the live ChatGPT connection works.
+
+Implementation after Bob's quota stop is Codex work at the owner's request.
+See [CHATGPT-SETUP](CHATGPT-SETUP.md) and [WORKSTATE](WORKSTATE.md) for settings,
+actual results and outstanding live checks. Public hosting and deployment remain
+the separate DevOps workstream; this prototype keeps a single in-memory backend.
 
 ## Confirmed context
 

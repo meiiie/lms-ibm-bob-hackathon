@@ -11,9 +11,11 @@
 - Interactive demo URL: [not deployed by this setup]
 - Video MP4, up to 5 minutes: [not produced]
 - Slides PDF: [not produced]
-- Cover PNG/JPG, 16:9: [not produced]
-- Real Bob evidence: `bob_sessions/` (currently empty manifest)
+- Cover PNG/JPG, recommended 16:9: [not produced]
+- Real Bob evidence: `bob_sessions/` (one intermediate checkpoint; final consumption
+  summary and full participant coverage still need verification)
 - Provenance: `docs/PREEXISTING.md`
+- Exact readiness and missing artifacts: `docs/SUBMISSION-READINESS.md`
 
 ## Suggested 4-minute-30-second demo
 

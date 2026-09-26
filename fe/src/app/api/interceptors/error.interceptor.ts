@@ -4,6 +4,7 @@ import { Observable, throwError, timer } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
 import { NetworkStatusService } from '../../core/services/network-status.service';
 import { isOfflineCompatibleHttpError } from '../../core/utils/offline-http-error';
+import { NO_AUTOMATIC_REPLAY } from './request-policy';
 
 export function shouldRetryHttpRequest(
   error: unknown,
@@ -31,7 +32,7 @@ export const errorInterceptor = (req: HttpRequest<any>, next: HttpHandlerFn): Ob
   return next(req).pipe(
     retry({
       count: 1,
-      delay: (error) => shouldRetryHttpRequest(error, req.url, networkStatus)
+      delay: (error) => !req.context.get(NO_AUTOMATIC_REPLAY) && shouldRetryHttpRequest(error, req.url, networkStatus)
         ? timer(1000)
         : throwError(() => error),
     }),

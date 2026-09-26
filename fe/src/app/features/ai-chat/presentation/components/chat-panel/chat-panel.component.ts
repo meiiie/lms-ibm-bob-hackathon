@@ -36,12 +36,17 @@ import { WiiiContextService } from '../../../infrastructure/api/wiii-context.ser
 import { AuthService } from '../../../../../core/services/auth.service';
 import { NetworkStatusService } from '../../../../../core/services/network-status.service';
 import { environment } from '../../../../../../environments/environment';
+import { AiAvailabilityService } from '../../../application/services/ai-availability.service';
+import { ChatgptPanelComponent } from '../chatgpt-panel/chatgpt-panel.component';
+import { LocalModelPanelComponent } from '../local-model-panel/local-model-panel.component';
 
 @Component({
   selector: 'app-chat-panel',
+  imports: [ChatgptPanelComponent, LocalModelPanelComponent],
   template: `
     <div
       class="chat-panel"
+      role="region" aria-label="Study assistant"
       [class.sidebar-mode]="mode() === 'sidebar'"
       [class.widget-mode]="mode() === 'widget'"
       [class.mobile]="isMobile() && mode() === 'widget'"
@@ -53,10 +58,10 @@ import { environment } from '../../../../../../environments/environment';
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="header-icon">
             <path fill-rule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813A3.75 3.75 0 007.466 7.89l.813-2.846A.75.75 0 019 4.5zM18 1.5a.75.75 0 01.728.568l.258 1.036c.236.94.97 1.674 1.91 1.91l1.036.258a.75.75 0 010 1.456l-1.036.258c-.94.236-1.674.97-1.91 1.91l-.258 1.036a.75.75 0 01-1.456 0l-.258-1.036a2.625 2.625 0 00-1.91-1.91l-1.036-.258a.75.75 0 010-1.456l1.036-.258a2.625 2.625 0 001.91-1.91l.258-1.036A.75.75 0 0118 1.5z" clip-rule="evenodd" />
           </svg>
-          <span>Wiii</span>
+          <div class="header-copy"><span>{{ provider() === 'chatgpt' ? 'ChatGPT' : provider() === 'local' ? 'Local model' : 'Wiii' }}</span><small>{{ provider() === 'local' ? 'On this device' : 'Online study assistant' }}</small></div>
         </div>
         <div class="header-actions">
-          @if (mode() === 'sidebar') {
+          @if (provider() === 'wiii' && mode() === 'sidebar') {
             <button class="new-chat-button" (click)="clearChat()" title="Cuộc trò chuyện mới">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z" />
@@ -64,11 +69,13 @@ import { environment } from '../../../../../../environments/environment';
               </svg>
             </button>
           }
+          @if (provider() === 'wiii') {
           <button class="expand-button" (click)="openFullWiii()" title="Mở toàn màn hình">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
               <path d="M13.28 7.78l3.22-3.22v2.69a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.69l-3.22 3.22a.75.75 0 001.06 1.06zM2 17.25v-4.5a.75.75 0 011.5 0v2.69l3.22-3.22a.75.75 0 011.06 1.06L4.56 16.5h2.69a.75.75 0 010 1.5h-4.5a.75.75 0 01-.75-.75z" />
             </svg>
           </button>
+          }
           <button class="close-button" (click)="onClose()" title="Đóng" aria-label="Đóng trợ lý AI">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
               <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
@@ -77,8 +84,25 @@ import { environment } from '../../../../../../environments/environment';
         </div>
       </div>
 
-      <!-- Offline state — shown when device has no connectivity -->
-      @if (isOffline()) {
+      @if (availability.chatgptEnabled() || availability.localSupported()) {
+        <div class="provider-picker">
+          <label for="ai-provider">AI provider</label>
+          <select id="ai-provider" aria-label="AI provider" [value]="provider()" (change)="changeProvider($event)">
+            <option value="wiii" [disabled]="!availability.wiiiAvailable()">{{ availability.wiiiAvailable() ? 'Wiii · cloud' : 'Wiii · unavailable' }}</option>
+            @if (availability.chatgptEnabled() || provider() === 'chatgpt') { <option value="chatgpt" [disabled]="!availability.chatgptEnabled()">{{ availability.chatgptEnabled() ? 'ChatGPT · cloud (experimental)' : 'ChatGPT · unavailable' }}</option> }
+            @if (availability.localSupported()) { <option value="local">Local model · this device</option> }
+          </select>
+        </div>
+      }
+
+      <div class="provider-content" (pointerdown)="markProviderChosen()" (keydown)="markProviderChosen()"
+        (click)="markProviderChosen()" (input)="markProviderChosen()" (change)="markProviderChosen()">
+      <!-- Local reachability is independent of cloud connectivity. -->
+      @if (provider() === 'local') {
+        <app-local-model-panel />
+      } @else if (provider() === 'chatgpt') {
+        <app-chatgpt-panel />
+      } @else if (isOffline()) {
         <div class="offline-state" role="status" aria-live="polite">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="offline-icon" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 3l18 18M8.111 8.111A5.97 5.97 0 006 12c0 1.657.672 3.157 1.757 4.243M10.586 10.586A2 2 0 0112 10a2 2 0 012 2 2 2 0 01-.586 1.414M16.243 16.243A5.97 5.97 0 0018 12a5.97 5.97 0 00-1.757-4.243M12 20.5V21" />
@@ -95,6 +119,8 @@ import { environment } from '../../../../../../environments/environment';
         A single deliberate retry is offered; the button is outside the offline
         block so it stays visible once isOffline() flips back to false.
       -->
+      } @else if (!availability.wiiiAvailable()) {
+        <div class="error-state" role="status"><p>Wiii is unavailable right now.</p><p>Your lessons remain available. Choose another provider if one is available above.</p></div>
       } @else if (offlineReconnectReady()) {
         <div class="offline-state" role="status" aria-live="polite">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="offline-icon" aria-hidden="true">
@@ -138,6 +164,7 @@ import { environment } from '../../../../../../environments/environment';
           <span>Đang kết nối AI...</span>
         </div>
       }
+      </div>
     </div>
   `,
   styles: [`
@@ -157,9 +184,17 @@ import { environment } from '../../../../../../environments/environment';
       flex-direction: column;
       flex: 1;
       min-height: 0;
-      background: white;
+      background: var(--c-surface, #fff);
+      color: var(--c-text, #0a2a43);
       overflow: hidden;
     }
+    .provider-content { display:flex; flex-direction:column; flex:1; min-height:0; min-width:0; overflow:hidden; }
+    .provider-picker { padding:.75rem 1.125rem; border-bottom:1px solid var(--c-border,#ebebeb); }
+    .provider-picker label { display:block; margin-bottom:.375rem; font-size:.75rem; color:var(--c-muted,#4b5565); font-weight:500; }
+    .provider-picker select { width:100%; min-height:2.75rem; padding:.625rem; border:1px solid #a9b6c3; border-radius:.5rem; background:var(--c-surface,#fff); color:var(--c-text,#0a2a43); font:inherit; font-size:.8125rem; }
+    .provider-picker select:focus-visible, button:focus-visible { outline:2px solid var(--c-text,#0a2a43); outline-offset:2px; }
+    .header-copy { display:flex; flex-direction:column; gap:.125rem; }
+    .header-copy small { font-size:.6875rem; font-weight:400; letter-spacing:0; color:var(--c-muted,#4b5565); }
 
     /* =========================================================
        SIDEBAR MODE — fills parent container, no fixed positioning
@@ -181,14 +216,14 @@ import { environment } from '../../../../../../environments/environment';
 
     /* Sidebar header — clean minimal (Claude.ai style) */
     .chat-panel.sidebar-mode .panel-header {
-      background: #ffffff;
-      color: #1a1a2e;
-      border-bottom: 1px solid #ebebeb;
+      background: var(--c-surface,#fff);
+      color: var(--c-text,#0a2a43);
+      border-bottom: 1px solid var(--c-border,#ebebeb);
       padding: 13px 14px;
     }
 
     .chat-panel.sidebar-mode .header-icon {
-      color: #0056D2;
+      color: var(--c-primary,#1c5c86);
     }
 
     .chat-panel.sidebar-mode .header-title {
@@ -203,8 +238,8 @@ import { environment } from '../../../../../../environments/environment';
       background: transparent;
       color: #9ca3af;
       border-radius: 6px;
-      width: 28px;
-      height: 28px;
+      width: 2.75rem;
+      height: 2.75rem;
     }
 
     .chat-panel.sidebar-mode .new-chat-button:hover,
@@ -253,8 +288,8 @@ import { environment } from '../../../../../../environments/environment';
       right: 0;
       bottom: 0;
       width: 100%;
-      height: 100%;
-      max-height: 100%;
+      height: 100dvh;
+      max-height: 100dvh;
       border-radius: 0;
     }
 
@@ -274,8 +309,9 @@ import { environment } from '../../../../../../environments/environment';
       align-items: center;
       justify-content: space-between;
       padding: 12px 16px;
-      background: linear-gradient(135deg, #0056D2 0%, #004BB5 100%);
-      color: white;
+      background: var(--c-surface,#fff);
+      color: var(--c-text,#0a2a43);
+      border-bottom: 1px solid var(--c-border,#ebebeb);
       flex-shrink: 0;
     }
 
@@ -300,13 +336,13 @@ import { environment } from '../../../../../../environments/environment';
     .new-chat-button,
     .expand-button,
     .close-button {
-      width: 30px;
-      height: 30px;
+      width: 2.75rem;
+      height: 2.75rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.15);
-      color: white;
+      background: transparent;
+      color: var(--c-muted,#4b5565);
       border: none;
       border-radius: 8px;
       cursor: pointer;
@@ -316,7 +352,7 @@ import { environment } from '../../../../../../environments/environment';
     .new-chat-button:hover,
     .expand-button:hover,
     .close-button:hover {
-      background: rgba(255, 255, 255, 0.25);
+      background: var(--c-bg,#f8fafc);
     }
 
     .new-chat-button svg,
@@ -401,8 +437,9 @@ import { environment } from '../../../../../../environments/environment';
 
     .error-state button,
     .retry-button {
+      min-height: 2.75rem;
       padding: 8px 16px;
-      background: #0056D2;
+      background: var(--c-primary,#1c5c86);
       color: white;
       border: none;
       border-radius: 8px;
@@ -428,6 +465,10 @@ import { environment } from '../../../../../../environments/environment';
         display: none;
       }
     }
+    @media (prefers-reduced-motion: reduce) {
+      .chat-panel.widget-mode, button { transition:none; }
+      .loading-spinner { animation:none; }
+    }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -438,6 +479,9 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly networkStatus = inject(NetworkStatusService);
+  readonly availability = inject(AiAvailabilityService);
+  readonly provider = signal<'wiii' | 'chatgpt' | 'local'>('wiii');
+  private providerChosen = false;
 
   // Inputs
   mode = input<'sidebar' | 'widget'>('sidebar');
@@ -496,6 +540,18 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   private refreshPending = false;
 
   constructor() {
+    effect(() => {
+      const chatgpt = this.availability.chatgptEnabled();
+      const wiii = this.availability.wiiiAvailable();
+      const local = this.availability.localSupported();
+      untracked(() => {
+        if (this.providerChosen) return;
+        const preferred = wiii ? 'wiii' : chatgpt ? 'chatgpt' : local ? 'local' : 'wiii';
+        if (preferred !== this.provider()) this.selectProvider(preferred, false);
+        else if (wiii && !this.embedUrl() && !this.loadError()
+          && !this.offlineReconnectReady()) this.initEmbed();
+      });
+    });
     // Sprint 221: Connect iframe to WiiiContextService for page-aware AI.
     // When the iframe viewChild becomes available (after embedUrl is set),
     // attach a load listener so we connect after the Wiii embed app initializes.
@@ -538,7 +594,7 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.checkMobile();
-    if (!this.networkStatus.isEffectivelyOffline()) {
+    if (!this.networkStatus.isEffectivelyOffline() && this.availability.wiiiAvailable()) {
       this.initEmbed();
     }
     // If offline on open, offlineReconnectReady stays false until online signal fires.
@@ -575,7 +631,7 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
    */
   async initEmbed(): Promise<void> {
     // Do not start a cloud request while offline.
-    if (this.networkStatus.isEffectivelyOffline()) {
+    if (this.provider() !== 'wiii' || this.destroyed || this.networkStatus.isEffectivelyOffline()) {
       return;
     }
     // Do not issue a second request if one is already in-flight (double-click guard).
@@ -622,13 +678,8 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
         this.loadError.set(true);
       }
     } finally {
-      // Always clear the in-flight guard when this call completes — whether it
-      // was superseded by a newer initGeneration or not. initInFlight only
-      // prevents a second concurrent call; it must not stay locked after the
-      // promise settles. Because initInFlight is a signal, clearing it here
-      // will re-trigger the restore effect if connectivity already returned,
-      // surfacing the retry button without a second online-event.
-      this.initInFlight.set(false);
+      // A superseded request must not release the lock owned by its replacement.
+      if (generation === this.initGeneration) this.initInFlight.set(false);
     }
   }
 
@@ -636,6 +687,26 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   retryInit(): void {
     this.offlineReconnectReady.set(false);
     this.initEmbed();
+  }
+
+  changeProvider(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    if (value === 'wiii' || value === 'chatgpt' || value === 'local') this.selectProvider(value);
+  }
+
+  markProviderChosen(): void { this.providerChosen = true; }
+
+  selectProvider(provider: 'wiii' | 'chatgpt' | 'local', userInitiated = true): void {
+    if (provider === 'chatgpt' && !this.availability.chatgptEnabled()) return;
+    if (provider === 'local' && !this.availability.localSupported()) return;
+    if (userInitiated) this.providerChosen = true;
+    this.initGeneration++;
+    this.initInFlight.set(false);
+    this.embedUrl.set(null);
+    this.loadError.set(false);
+    this.offlineReconnectReady.set(false);
+    this.provider.set(provider);
+    if (provider === 'wiii') this.initEmbed();
   }
 
   onClose(): void {

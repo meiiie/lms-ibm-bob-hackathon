@@ -1,5 +1,201 @@
 # Current work state
 
+## Current integration — local provider, UX and authorized merge
+
+26 September 2026, Vietnam (UTC+7). The owner subsequently authorized merging
+PR #3 while clearly documenting ChatGPT's online-only experimental status, asked
+for professional sidebar UX, optional local models, a WebMCP assessment and
+careful preservation of teammates' work. This decision supersedes the earlier
+requirement below to hold the entire PR solely for a new ChatGPT consent.
+
+- The existing `gemma3:4b` model answered a harmless lifeboat question through
+  Ollama at `127.0.0.1:11434` in 18.34 seconds. This is a real local-provider shell
+  check, not browser or installed-PWA proof. No model or runtime was installed;
+  the request released the model with `keep_alive:0` afterwards.
+- Added explicit same-device Ollama and LM Studio connections through isolated
+  browser fetch, fixed loopback endpoints, no LMS JWT/cookies, no automatic probe,
+  no queued/replayed requests, no cloud fallback and bounded cancellable responses.
+  Known Ollama cloud/remote models are excluded. LM Studio is not installed here
+  and its actual runtime remains unverified.
+- Sidebar polish preserves the existing design system, offers clear cloud/local
+  states and offline drafting, and copies selected text into a reviewed question
+  only on explicit action. New local setup remains reachable without cloud health.
+- PASS: all 101 targeted Angular tests in ChromeHeadless, exit 0; local log
+  `.tools/assistant-integration-fixed-tests.log`. The earlier 96-test run passed
+  before the final integration regressions were added.
+- Fresh integration review identified rapid-reconnect discovery and click-only
+  accessibility races. Three regression tests first failed against the old code
+  (14 passed, exit 1), then passed in the combined suite after the fixes. The
+  final suite also verifies deduplicated recovery and listener cleanup. Log:
+  `.tools/assistant-integration-before-fix.log`. Independent review found no
+  remaining blocker in these changes.
+- Real Chrome also exposed an inherited offline notice masking the lower part
+  of Send. The notice now moves outside the desktop sidebar, and the mobile panel
+  sits above it. The final browser run verified top/center/bottom pointer hits
+  across the whole 44px Send button on desktop and mobile.
+- PASS: `python scripts/verify-ai-sidebar.py --real-local --output
+  .tools/assistant-polish-browser-verified`, 14 acceptance groups, exit 0, real
+  Chrome 153.0.8010.53. The LMS identity and cloud/LM Studio responses were
+  synthetic. Exactly one real Ollama `gemma3:4b` request returned the nautical
+  mile answer through the sidebar while cloud routes were blocked by the fixture.
+  Local requests carried no LMS JWT/cookies/referrer and created no sync entries.
+  Desktop/mobile layouts, selected-passage privacy, offline drafts, explicit
+  recovery, cancellation and switching passed. Mobile means viewport/touch
+  emulation, not a physical phone. See the ignored output directory for labeled
+  captures, `summary.local.json` and `real-ollama-answer.local.json`.
+- Not verified by that browser run: real ChatGPT inference with the updated
+  model, full logged-in LMS/backend transport, installed-PWA service-worker
+  behavior, or production HTTPS local-network permission. Host networking stayed
+  enabled; this was a simulated cloud outage, not a physically disconnected host.
+- PASS: `node scripts/harness.cjs check`, all four harness regression tests,
+  development/production Compose validation and Caddy configuration validation
+  (`caddy adapt --validate` in the existing `caddy:2-alpine` image with network
+  disabled). Caddy reported its existing formatting warning. These checks do not
+  start the LMS stack or prove installed-PWA behavior.
+- The final PR checks are the gate for the production frontend build, complete
+  backend suite and Docker application smoke. See the checks and merge state on
+  [PR #3](https://github.com/meiiie/lms-ibm-bob-hackathon/pull/3) for the published
+  revision; the owner authorized merging only this PR after those checks pass.
+- WebMCP remains experimental and does not connect the Java ChatGPT adapter.
+  Defer a dependent workflow; see `docs/WEBMCP-RESEARCH-2026-09-26.md` and
+  `docs/LOCAL-AI-SETUP.md` for current capabilities, topology and prerequisites.
+- Remote main was `c94f9f9f` when inspected. Faiz's PR #1 adds only its own image,
+  with no changed-path overlap with PR #3. Preserve PR #1 and the owner's unrelated
+  `.factorypath` edit. Recheck remote main and the final PR head before merging.
+- Bob evidence: the original meiiie intermediate PNG is already on main and is
+  preserved byte-for-byte. Faiz's open PR image appears to show the wrong window,
+  not a Bob consumption summary; it also lacks a manifest entry. No teammate
+  evidence was changed or merged, and the private recovered transcript stays
+  ignored. Final consumption summaries and submission assets remain outstanding.
+
+## Earlier continuation — personal ChatGPT sidebar
+
+26 September 2026, Vietnam (UTC+7). After Bob's quota stop, the owner explicitly
+asked Codex to continue implementation and verify the connection. Work is on
+`codex/chatgpt-study-assistant`, based on `c94f9f9f`. This section supersedes
+historical next-step statements below; the new work is attributed to Codex.
+
+- Implemented optional backend device login, per-principal in-memory credentials,
+  bounded single-question responses and disconnect; disabled by default through
+  `CHATGPT_CONNECTION_ENABLED=false`. Added independent ChatGPT choice in the
+  existing sidebar, keeping Wiii and offline learning separate.
+- Fixed the inherited Wiii stale-finally lock race. ChatGPT HTTP requests now opt
+  out of automatic 5xx retry and LMS-token refresh/replay. Provider authorization
+  errors use safe HTTP 409 responses so they do not expire the LMS session.
+- PASS: 65 targeted Angular tests in ChromeHeadless, exit 0. Includes Wiii/widget,
+  ChatGPT device/poll/ask/disconnect, cancellation/offline recovery, and real HTTP
+  interceptor composition with synthetic provider responses. Log (local/ignored):
+  `.tools/chatgpt-frontend-final-test.log`.
+  The later model-error change passed all 15 focused panel tests at 09:30:31;
+  log: `.tools/chatgpt-model-error-test.log`. It preserves the connected state
+  and question, gives administrator guidance, and does not retry or reconnect.
+- PASS: 27 backend regression tests (9 adapter, 11 session, 3 controller,
+  4 manual-probe diagnostic tests), exit 0 at 09:27:53 UTC+7, using the isolated
+  output described below. Log: `.tools/chatgpt-model-tests-final.log`. A strengthened
+  65,536-byte provider-error regression then passed in the 9-test adapter rerun
+  at 09:29:29; log: `.tools/chatgpt-model-bound-tests-final.log`.
+  Independent review found no blocking issue after the corrections below.
+- PASS: `python scripts/verify-ai-sidebar.py`, 9 acceptance groups in real Chrome
+  153.0.8010.53, with visibly labeled synthetic LMS/provider fixtures. Covers both
+  providers, disabled/unavailable cases, device/poll/ask/disconnect, plain text,
+  rate-limit recovery, offline no replay and iframe message isolation. It does not
+  verify live provider authentication, a real backend or service-worker behavior.
+- PASS: working-tree harness configuration; `git diff --check`; production Angular
+  build with `SITEMAP_BASE_URL=http://127.0.0.1:9` (documented offline sitemap
+  fallback and existing CommonJS warnings). Local build log is ignored at
+  `.tools/chatgpt-frontend-build.log`.
+- PASS: all six CI jobs on final application commit
+  `55979f4edb5f13a227ac9ec69d72a2e4f1da06eb`, including
+  1,310 backend tests, 66 targeted frontend tests, frontend build, worker tests,
+  harness, Compose validation and Docker application smoke:
+  https://github.com/meiiie/lms-ibm-bob-hackathon/actions/runs/36212103389.
+  The subsequent handoff commit only records these results and the expired live
+  probe; it changes no application code. PR #3 remains draft because a real answer
+  using the updated model still requires verification.
+  PR #3 contains the implementation and follow-up fixes; consult its current
+  checks and merge status for the final revision:
+  https://github.com/meiiie/lms-ibm-bob-hackathon/pull/3.
+- Live probe used the actual Java adapter/session service with a synthetic LMS
+  owner, not the full application. OpenAI returned a device code and polling
+  remained pending. The 180-second consent window ended without connection or a
+  live answer, and the probe discarded its in-memory state. In a second probe the
+  owner completed consent: the actual adapter reached `connected`, proving device
+  polling and token exchange. Its answer request then failed with safe error
+  `unavailable` (exit 1). Inference is being diagnosed; do not claim working live
+  chat or full LMS end-to-end login. The second connection was also discarded.
+  A third diagnostic probe ended pending after its 600-second consent window;
+  no new consent or answer was obtained, and its in-memory state was discarded.
+  A fourth probe, using the corrected stream reader, authenticated successfully
+  and received HTTP 400 within 1,055 ms: the fixed diagnostic classification was
+  `model is not supported`. OpenAI rejected `gpt-5.4-mini`; this was a model error,
+  not an authentication failure. The probe was stopped and its state discarded.
+  Configuration now defaults to `gpt-6-luna` from the pinned official Codex
+  0.157.1 catalog. Unsupported models return safe `model_not_supported` / HTTP 409
+  and preserve the connection; the sidebar gives administrator guidance without
+  automatically retrying. The new probe ended pending at about 09:40 UTC+7 after
+  its 600-second consent window and discarded its in-memory state. No live answer
+  was obtained with the updated model. Do not reuse an expired probe code.
+  At that checkpoint the next step was a fresh opt-in consent and real-answer
+  probe. The later owner-authorized merge decision at the top of this document
+  supersedes that PR-readiness hold; live ChatGPT inference remains unverified.
+  The revised test-only runner permits at most two explicit allowlisted model
+  retries within the same connected session, without storing credentials.
+- Read-only backend review found no confirmed remaining blocker. A targeted test
+  exposed a successful-response overflow path attempting to drain the upstream
+  body again; direct Flux cancellation now passes the bounded-stream regression.
+  A second reproduced regression showed a completed answer followed by an open
+  HTTP stream timing out. Incremental SSE frame handling now ends and cancels on
+  completion, with bytewise UTF-8/CRLF, truncated, failed and incomplete response
+  coverage. This is a proven fixture failure; the later live probe separately
+  identified an unsupported model. Test-only diagnostics were also corrected to observe one
+  body subscription and keep their manual retry input deadline bounded.
+- The first Maven attempt also encountered missing existing class files in the
+  IDE-shared `backend/target` output, plus a corrected new test generic type error.
+  Rerunning with identical project dependencies/compiler settings and isolated
+  `.tools/chatgpt-maven-target` avoids the output collision. No unrelated domain
+  sources or the owner's `.factorypath` change were modified.
+- The submission audit is in `docs/SUBMISSION-READINESS.md`. The final expanded
+  Bob summary, team task coverage and demo/video/slides/cover remain outstanding.
+  The user stopped the UI capture attempt with Escape; no new summary was captured.
+  The existing manifest now records the verified Bob task ID and labels the
+  08:18 screenshot as intermediate; its unverified completion timestamp is blank.
+- Docker recovered at 08:58:49 UTC+7: Linux engine 29.7.2 responded to `docker version`,
+  `docker info` and `docker ps`. Stale `dockerInference` and secrets-engine runtime
+  sockets were preserved by renaming their parent runtime directories; no settings,
+  images, volumes or container data were reset. The three backups are under
+  `%LOCALAPPDATA%` with suffixes `run.before-recovery-20260926`,
+  `run.before-recovery2-20260926`, and `docker-secrets-engine.before-recovery-20260926`.
+  An existing unrelated container resumed under its restart policy. No LMS stack
+  was launched. With about 2 GB free RAM, run heavy builds sequentially.
+
+See `docs/CHATGPT-SETUP.md` for configuration, consent steps and prototype limits.
+Do not publish the local recovered transcript or private probe state.
+
+## Latest verified checkpoint — Bob quota stop
+
+Verified by Codex on 26 September 2026 at 08:34 Vietnam (UTC+7). This checkpoint
+supersedes older statements below about PR status and missing Bob evidence.
+
+- Bob task `b3f61aaa13f3e3d94298655249da2d8c` stopped with `BudgetExceededError`
+  at 08:24:34 UTC+7; recorded task consumption is 38.658728 Bobcoins.
+- Its offline-safe sidebar PR #2 is merged as `3432af2aa65b47027eae5aaddaa06fdad5e20618`.
+  All six CI jobs passed on the final PR head. Bob's latest targeted Angular run
+  recorded 35 passing tests; live ChatGPT integration and full user flows are not
+  established by those tests.
+- Bob then inspected backend code for the ChatGPT follow-up. No implementation
+  writes are recorded after the 08:23 continuation request. That feature remains
+  unfinished.
+- A real 08:18 Bob IDE screenshot and manifest are already on remote main. Their
+  28.50 Bobcoin figure is an intermediate checkpoint, not the final session total.
+- Codex recovered 303 stored messages read-only. The transcript and handoff are
+  local, Git-ignored files: `bob_sessions/meiiie_b3f61aaa13f3e3d94298655249da2d8c_history.local.md`
+  and `docs/BOB-SESSION-HANDOFF.local.md`. Review privacy before sharing them.
+- No product code changed or tests reran during this recovery audit. Preserve
+  the unrelated `.factorypath` edit and existing research documents. Next: review
+  the follow-up integration and capture the actual final Bob summary evidence.
+
+## Earlier checkpoint (historical)
+
 Updated 26 September 2026, ~08:45 UTC+7 (Vietnam).
 
 ## Goal and decisions

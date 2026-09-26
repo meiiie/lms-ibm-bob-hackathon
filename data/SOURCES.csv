@@ -1,1 +1,3 @@
 asset_id,description,source_url_or_self_created,license_or_permission,commercial_use_basis,retrieved_at,used_for,contains_personal_data,reviewed_by
+assistant-qa-fixtures,Synthetic LMS identity and provider responses in assistant tests,self_created,Repository MIT,Team-created test fixtures,2026-09-26T08:56:00+07:00,Unit and browser verification,false,Codex
+local-ai-probe,Harmless team-authored maritime study questions and local model responses,self_created,Questions authored for testing; output from existing local gemma3:4b runtime,No external learner data or model weights redistributed,2026-09-26,Local provider integration verification,false,Codex

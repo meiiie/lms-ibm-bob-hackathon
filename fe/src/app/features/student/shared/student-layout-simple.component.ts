@@ -132,13 +132,13 @@ import { AiAvailabilityService } from '../../ai-chat/application/services/ai-ava
                 @if (enableAssistant()) {
                   <button
                     (click)="toggleMobilePanel()"
-                    aria-label="Trợ lý Wiii AI"
+                    aria-label="Mở trợ lý AI"
                     class="tab-item"
                     [class.tab-active]="isMobilePanelOpen()">
                     <svg class="w-5 h-5 mb-0.5" fill="currentColor" viewBox="0 0 24 24">
                       <path fill-rule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813A3.75 3.75 0 007.466 7.89l.813-2.846A.75.75 0 019 4.5z" clip-rule="evenodd"/>
                     </svg>
-                    <span class="tab-label">Wiii AI</span>
+                    <span class="tab-label">Trợ lý AI</span>
                   </button>
                 }
                 <a routerLink="/student/browse"
@@ -395,6 +395,7 @@ import { AiAvailabilityService } from '../../ai-chat/application/services/ai-ava
     }
     .mobile-ai-overlay.open {
       pointer-events: auto;
+      z-index: 960;
     }
 
     .mobile-ai-backdrop {
@@ -465,7 +466,7 @@ import { AiAvailabilityService } from '../../ai-chat/application/services/ai-ava
 export class StudentLayoutSimpleComponent implements OnInit, OnDestroy {
   protected authService = inject(AuthService);
   private aiAvailability = inject(AiAvailabilityService);
-  protected readonly enableAssistant = this.aiAvailability.isAvailable;
+  protected readonly enableAssistant = this.aiAvailability.canOpenAssistant;
   private router = inject(Router);
   private notificationService = inject(NotificationService);
   private messagingService = inject(MessagingService);

@@ -1,3 +1,5 @@
+import { signal } from '@angular/core';
+import { AiAvailabilityService } from '../../../application/services/ai-availability.service';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 
@@ -33,6 +35,7 @@ describe('ChatWidgetComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ChatWidgetComponent],
       providers: [
+        { provide: AiAvailabilityService, useValue: { chatgptEnabled: signal(false), wiiiAvailable: signal(true), localSupported: signal(true) } },
         {
           provide: AuthService,
           useValue: {
