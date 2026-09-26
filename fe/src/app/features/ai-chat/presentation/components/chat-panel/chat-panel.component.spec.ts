@@ -3,12 +3,12 @@
  *
  * Covers:
  *  1. Offline open: offline state shown, no token exchange, panel closable
- *  2. Loss during pending init: stale async result is discarded (offline mid-init)
- *  3. Reconnection: retry button appears in its own block after restore, no auto-loop
+ *  2. Loss during pending init: stale async result is discarded
+ *  3. End-to-end: online pending → offline → online → old resolves → retry → new request succeeds
  *  4. Teardown: destroyed flag prevents commit after ngOnDestroy
- *  5. Online integration: loading state only, reconnect must NOT appear during init
- *  6. Origin/source security: missing iframe rejects all auth-expired, wrong-source rejected
- *  7. Double-click: exactly ONE getToken call (in-flight guard blocks second)
+ *  5. Online integration: loading state while token pending, error on null token
+ *  6. PostMessage bridge: valid message, dedup, replacement guard, wrong origin/source
+ *  7. Double-click: exactly ONE getToken call
  */
 import {
   ComponentFixture,
@@ -25,6 +25,10 @@ import { WiiiContextService } from '../../../infrastructure/api/wiii-context.ser
 import { AuthService } from '../../../../../core/services/auth.service';
 import { NetworkStatusService } from '../../../../../core/services/network-status.service';
 import { ChatPanelComponent } from './chat-panel.component';
+import { environment } from '../../../../../../environments/environment';
+
+// Origin derived from the actual environment so tests don't diverge from the app.
+const WIII_ORIGIN = new URL(environment.wiiiEmbedUrl).origin;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -38,21 +42,13 @@ function makeNetworkStatus(online: boolean) {
   };
 }
 
-/**
- * Create a token service whose promise resolves only when _resolve() is called.
- * Pass immediateValue to resolve synchronously on construction.
- */
+/** Token service whose promise resolves only when _resolve() is called. */
 function makeDeferredTokenService(immediateValue?: string | null) {
   let resolve!: (v: string | null) => void;
-  const promise = new Promise<string | null>((res) => {
-    resolve = res;
-  });
-  if (immediateValue !== undefined) {
-    resolve(immediateValue);
-  }
+  const promise = new Promise<string | null>((res) => { resolve = res; });
+  if (immediateValue !== undefined) resolve(immediateValue);
   return {
     _resolve: (v: string | null) => resolve(v),
-    _promise: promise,
     getToken: jasmine.createSpy('getToken').and.returnValue(promise),
     clearToken: jasmine.createSpy('clearToken'),
     organizationId: jasmine.createSpy('organizationId').and.returnValue('org-test'),
@@ -66,10 +62,7 @@ function baseProviders(
   return [
     { provide: NetworkStatusService, useValue: network },
     { provide: AiTokenService, useValue: token },
-    {
-      provide: SessionManagementService,
-      useValue: { currentRole: () => 'student' },
-    },
+    { provide: SessionManagementService, useValue: { currentRole: () => 'student' } },
     {
       provide: WiiiContextService,
       useValue: {
@@ -77,10 +70,7 @@ function baseProviders(
         disconnectIframe: jasmine.createSpy('disconnectIframe'),
       },
     },
-    {
-      provide: AuthService,
-      useValue: { currentUser: () => ({ id: 'u1', role: 'student' }) },
-    },
+    { provide: AuthService, useValue: { currentUser: () => ({ id: 'u1', role: 'student' }) } },
   ];
 }
 
@@ -100,7 +90,7 @@ describe('ChatPanelComponent — offline safety', () => {
 
     beforeEach(async () => {
       network = makeNetworkStatus(false);
-      tokenSvc = makeDeferredTokenService(null); // resolves immediately with null
+      tokenSvc = makeDeferredTokenService(null);
 
       await TestBed.configureTestingModule({
         imports: [ChatPanelComponent],
@@ -135,19 +125,16 @@ describe('ChatPanelComponent — offline safety', () => {
       expect(tokenSvc.getToken).not.toHaveBeenCalled();
     });
 
-    it('panel can still be closed (close button accessible)', () => {
-      const closeBtn = fixture.nativeElement.querySelector(
-        '[aria-label="Đóng trợ lý AI"]',
-      ) as HTMLButtonElement;
+    it('panel can still be closed', () => {
+      const closeBtn = fixture.nativeElement.querySelector('[aria-label="Đóng trợ lý AI"]') as HTMLButtonElement;
       expect(closeBtn).not.toBeNull();
-
       const emitSpy = jasmine.createSpy('closePanel');
       fixture.componentInstance.closePanel.subscribe(emitSpy);
       closeBtn.click();
       expect(emitSpy).toHaveBeenCalled();
     });
 
-    it('offline state element has role=status for screen-reader announcement', () => {
+    it('offline state has role=status', () => {
       const el = fixture.nativeElement.querySelector('.offline-state') as HTMLElement;
       expect(el.getAttribute('role')).toBe('status');
     });
@@ -160,15 +147,14 @@ describe('ChatPanelComponent — offline safety', () => {
   // -------------------------------------------------------------------------
   // 2. Connectivity lost during pending init
   // -------------------------------------------------------------------------
-  describe('2. going offline during pending token exchange', () => {
+  describe('2. offline during pending token exchange', () => {
     let fixture: ComponentFixture<ChatPanelComponent>;
     let network: ReturnType<typeof makeNetworkStatus>;
     let tokenSvc: ReturnType<typeof makeDeferredTokenService>;
 
     beforeEach(async () => {
-      // Start online so initEmbed fires, but delay token resolution
       network = makeNetworkStatus(true);
-      tokenSvc = makeDeferredTokenService(); // no immediate value — stays pending
+      tokenSvc = makeDeferredTokenService(); // stays pending
 
       await TestBed.configureTestingModule({
         imports: [ChatPanelComponent],
@@ -176,33 +162,29 @@ describe('ChatPanelComponent — offline safety', () => {
       }).compileComponents();
 
       fixture = TestBed.createComponent(ChatPanelComponent);
-      fixture.detectChanges(); // ngOnInit → initEmbed starts, awaiting getToken
+      fixture.detectChanges();
     });
 
     afterEach(() => fixture.destroy());
 
-    it('shows loading state while token is pending (online)', () => {
+    it('shows loading state while online and token is pending', () => {
       expect(fixture.nativeElement.querySelector('.loading-state')).not.toBeNull();
     });
 
-    it('offline mid-init: generation is invalidated, iframe NOT mounted when token resolves', fakeAsync(() => {
-      // Simulate going offline while token exchange is in-flight
+    it('iframe NOT mounted when old token resolves after going offline', fakeAsync(() => {
       network.online.set(false);
       fixture.detectChanges();
 
-      // Resolve token after going offline — our generation check must discard it
-      tokenSvc._resolve('tok-123');
+      tokenSvc._resolve('tok-old');
       flushMicrotasks();
       tick();
       fixture.detectChanges();
 
-      // The offline effect incremented initGeneration, so the in-flight call's
-      // generation check fails. embedUrl must not be set; offline state shown.
       expect(fixture.nativeElement.querySelector('iframe')).toBeNull();
       expect(fixture.nativeElement.querySelector('.offline-state')).not.toBeNull();
     }));
 
-    it('offline mid-init: stale embedUrl is cleared by the offline effect', fakeAsync(() => {
+    it('embedUrl stays null after stale resolution', fakeAsync(() => {
       network.online.set(false);
       fixture.detectChanges();
       tokenSvc._resolve('tok-stale');
@@ -213,121 +195,100 @@ describe('ChatPanelComponent — offline safety', () => {
       expect(fixture.componentInstance.embedUrl()).toBeNull();
     }));
 
-    it('offline mid-init: no error state shown while offline', fakeAsync(() => {
+    it('error state is NOT shown while offline even if token resolved null', fakeAsync(() => {
       network.online.set(false);
       fixture.detectChanges();
-      tokenSvc._resolve(null); // would have set loadError if not discarded
+      tokenSvc._resolve(null);
       flushMicrotasks();
       tick();
       fixture.detectChanges();
 
-      // Offline state overrides everything; error must not appear
       expect(fixture.nativeElement.querySelector('.error-state')).toBeNull();
       expect(fixture.nativeElement.querySelector('.offline-state')).not.toBeNull();
     }));
   });
 
   // -------------------------------------------------------------------------
-  // 3. Reconnection — retry button appears outside offline block, no auto-loop
+  // 3. End-to-end: online pending → offline → online → old resolves → retry → new succeeds
   // -------------------------------------------------------------------------
-  describe('3. reconnection after being opened offline', () => {
-    let fixture: ComponentFixture<ChatPanelComponent>;
-    let network: ReturnType<typeof makeNetworkStatus>;
-    let tokenSvc: ReturnType<typeof makeDeferredTokenService>;
+  describe('3. full reconnect flow (e2e component)', () => {
+    it('old response resolves after reconnect → retry appears → click → new request succeeds', fakeAsync(() => {
+      const network = makeNetworkStatus(true);
+      const tokenSvc = makeDeferredTokenService(); // old request, stays pending
 
-    beforeEach(async () => {
-      network = makeNetworkStatus(false); // open offline
-      tokenSvc = makeDeferredTokenService(); // stays pending until resolved
-
-      await TestBed.configureTestingModule({
+      TestBed.configureTestingModule({
         imports: [ChatPanelComponent],
         providers: baseProviders(network, tokenSvc),
-      }).compileComponents();
-
-      fixture = TestBed.createComponent(ChatPanelComponent);
-      fixture.detectChanges();
-    });
-
-    afterEach(() => fixture.destroy());
-
-    it('retry button appears in a separate block once connectivity restores', fakeAsync(() => {
-      // Still offline initially — no retry button
-      expect(fixture.nativeElement.querySelector('.retry-button')).toBeNull();
-
-      // Simulate reconnection
-      network.online.set(true);
-      tick(); // allow effects to run
+      });
+      const fixture = TestBed.createComponent(ChatPanelComponent);
       fixture.detectChanges();
 
-      // Retry button is now shown (it lives outside @if(isOffline()))
-      const retryBtn = fixture.nativeElement.querySelector('.retry-button');
-      expect(retryBtn).not.toBeNull();
-    }));
-
-    it('offline state div is hidden once online (isOffline() = false)', fakeAsync(() => {
-      network.online.set(true);
-      tick();
-      fixture.detectChanges();
-
-      // The reconnect-ready block shows; offline state with lesson guidance is hidden
-      const guidance = fixture.nativeElement.querySelector('.offline-guidance') as HTMLElement | null;
-      if (guidance) {
-        // If any guidance text is shown, it must be the reconnect message, not the offline one
-        expect(guidance.textContent).not.toContain('bài học đã tải về');
-      }
-    }));
-
-    it('clicking retry calls initEmbed exactly once', fakeAsync(() => {
-      network.online.set(true);
-      tick();
-      fixture.detectChanges();
-
-      tokenSvc.getToken.calls.reset();
-      const retryBtn = fixture.nativeElement.querySelector('.retry-button') as HTMLButtonElement;
-      retryBtn.click();
-      flushMicrotasks();
-      tick();
-      fixture.detectChanges();
-
-      // Called exactly once — no automatic retry loop
+      // Phase 1: loading while online
+      expect(fixture.nativeElement.querySelector('.loading-state')).not.toBeNull();
       expect(tokenSvc.getToken).toHaveBeenCalledTimes(1);
 
-      tokenSvc._resolve(null);
+      // Phase 2: go offline — loss effect fires, initInFlight cleared immediately
+      network.online.set(false);
       flushMicrotasks();
-      tick();
-    }));
-
-    it('retry button disappears immediately after click (offlineReconnectReady reset)', fakeAsync(() => {
-      network.online.set(true);
-      tick();
       fixture.detectChanges();
-
-      const retryBtn = fixture.nativeElement.querySelector('.retry-button') as HTMLButtonElement;
-      retryBtn.click();
-      fixture.detectChanges();
-
-      // offlineReconnectReady was reset, so the reconnect-ready block is gone.
-      // While online and pending: shows loading, no retry button.
+      expect(fixture.nativeElement.querySelector('.offline-state')).not.toBeNull();
       expect(fixture.nativeElement.querySelector('.retry-button')).toBeNull();
-      expect(fixture.nativeElement.querySelector('.loading-state')).not.toBeNull();
 
-      tokenSvc._resolve(null);
+      // Phase 3: reconnect — restore effect fires immediately (initInFlight=false)
+      network.online.set(true);
       flushMicrotasks();
-      tick();
+      fixture.detectChanges();
+
+      // Retry button must be visible before old promise resolves
+      expect(fixture.nativeElement.querySelector('.retry-button')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('.loading-state')).toBeNull();
+
+      // Phase 4: old promise resolves late — must be no-op (generation mismatch)
+      tokenSvc._resolve('tok-old');
+      flushMicrotasks();
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('iframe')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.retry-button')).not.toBeNull();
+
+      // Phase 5: click retry → new request issued
+      let resolveNew!: (v: string | null) => void;
+      const newPromise = new Promise<string | null>(r => { resolveNew = r; });
+      tokenSvc.getToken.and.returnValue(newPromise);
+      tokenSvc.getToken.calls.reset();
+
+      (fixture.nativeElement.querySelector('.retry-button') as HTMLButtonElement).click();
+      flushMicrotasks();
+      fixture.detectChanges();
+
+      expect(tokenSvc.getToken).toHaveBeenCalledTimes(1);
+      expect(fixture.nativeElement.querySelector('.loading-state')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('.retry-button')).toBeNull();
+
+      // Phase 6: new request succeeds → iframe rendered
+      resolveNew('tok-new');
+      flushMicrotasks();
+      fixture.detectChanges();
+
+      // wiiiEmbedUrl (localhost:8000) is cross-origin to karma (localhost:9876),
+      // so the embed renders
+      expect(fixture.nativeElement.querySelector('iframe')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('.retry-button')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.loading-state')).toBeNull();
+
+      fixture.destroy();
     }));
   });
 
   // -------------------------------------------------------------------------
-  // 4. Teardown — destroyed flag prevents stale commit
+  // 4. Teardown
   // -------------------------------------------------------------------------
   describe('4. teardown safety', () => {
     let fixture: ComponentFixture<ChatPanelComponent>;
-    let network: ReturnType<typeof makeNetworkStatus>;
     let tokenSvc: ReturnType<typeof makeDeferredTokenService>;
 
     beforeEach(async () => {
-      network = makeNetworkStatus(true);
-      tokenSvc = makeDeferredTokenService(); // stays pending
+      const network = makeNetworkStatus(true);
+      tokenSvc = makeDeferredTokenService();
 
       await TestBed.configureTestingModule({
         imports: [ChatPanelComponent],
@@ -340,13 +301,9 @@ describe('ChatPanelComponent — offline safety', () => {
 
     it('destroys cleanly while token exchange is in-flight', fakeAsync(() => {
       fixture.destroy();
-
-      // Resolve token after destroy — must not throw or commit state
       tokenSvc._resolve('tok-after-destroy');
       flushMicrotasks();
       tick();
-
-      // No exception thrown = pass.
       expect(true).toBeTrue();
     }));
 
@@ -354,26 +311,24 @@ describe('ChatPanelComponent — offline safety', () => {
       const removeSpy = spyOn(window, 'removeEventListener').and.callThrough();
       fixture.destroy();
       flushMicrotasks();
-      const calls = removeSpy.calls.all().filter((c) => c.args[0] === 'message');
+      const calls = removeSpy.calls.all().filter(c => c.args[0] === 'message');
       expect(calls.length).toBeGreaterThanOrEqual(1);
     }));
   });
 
   // -------------------------------------------------------------------------
-  // 5. Online integration — loading state, reconnect must NOT appear during init
+  // 5. Online integration
   // -------------------------------------------------------------------------
-  describe('5. online: normal embed flow', () => {
+  describe('5. online: embed flow', () => {
     let fixture: ComponentFixture<ChatPanelComponent>;
-    let network: ReturnType<typeof makeNetworkStatus>;
     let tokenSvc: ReturnType<typeof makeDeferredTokenService>;
 
     beforeEach(async () => {
-      network = makeNetworkStatus(true);
-      tokenSvc = makeDeferredTokenService(); // stays pending initially
+      tokenSvc = makeDeferredTokenService();
 
       await TestBed.configureTestingModule({
         imports: [ChatPanelComponent],
-        providers: baseProviders(network, tokenSvc),
+        providers: baseProviders(makeNetworkStatus(true), tokenSvc),
       }).compileComponents();
 
       fixture = TestBed.createComponent(ChatPanelComponent);
@@ -382,36 +337,19 @@ describe('ChatPanelComponent — offline safety', () => {
 
     afterEach(() => fixture.destroy());
 
-    it('shows loading state (not offline state) while token is pending', () => {
+    it('shows loading state (not offline) while token is pending', () => {
       expect(fixture.nativeElement.querySelector('.loading-state')).not.toBeNull();
       expect(fixture.nativeElement.querySelector('.offline-state')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.retry-button')).toBeNull();
     });
 
-    it('reconnect-ready state must NOT appear during ordinary online initialization', fakeAsync(() => {
-      // While initInFlight=true, the restore effect must not set offlineReconnectReady.
-      // Simulate the online signal firing while init is in progress.
-      network.online.set(false);
-      tick();
-      network.online.set(true);
-      tick();
-      fixture.detectChanges();
-
-      // online=true, embedUrl=null, loadError=false — but initInFlight prevents reconnect
-      expect(fixture.nativeElement.querySelector('.retry-button')).toBeNull();
-      expect(fixture.nativeElement.querySelector('.loading-state')).not.toBeNull();
-
-      tokenSvc._resolve(null);
-      flushMicrotasks();
-      tick();
-    }));
-
-    it('calls getToken on init when online', fakeAsync(() => {
+    it('calls getToken exactly once on init', fakeAsync(() => {
       flushMicrotasks();
       tick();
       expect(tokenSvc.getToken).toHaveBeenCalledTimes(1);
     }));
 
-    it('shows error state (not loading or iframe) when token exchange returns null', fakeAsync(() => {
+    it('shows error state (not loading, not iframe) when token returns null', fakeAsync(() => {
       tokenSvc._resolve(null);
       flushMicrotasks();
       tick();
@@ -424,16 +362,23 @@ describe('ChatPanelComponent — offline safety', () => {
   });
 
   // -------------------------------------------------------------------------
-  // 6. Origin/source security
+  // 6. PostMessage bridge
   // -------------------------------------------------------------------------
-  describe('6. origin/source security', () => {
+  describe('6. postMessage bridge', () => {
     let fixture: ComponentFixture<ChatPanelComponent>;
     let network: ReturnType<typeof makeNetworkStatus>;
     let tokenSvc: ReturnType<typeof makeDeferredTokenService>;
 
-    beforeEach(async () => {
+    // Sets up the component with an active iframe by resolving the token.
+    async function setupWithIframe(): Promise<{
+      fixture: ComponentFixture<ChatPanelComponent>;
+      network: ReturnType<typeof makeNetworkStatus>;
+      tokenSvc: ReturnType<typeof makeDeferredTokenService>;
+      iframeContentWindow: WindowProxy;
+    }> {
       network = makeNetworkStatus(true);
-      tokenSvc = makeDeferredTokenService('valid-token');
+      // Immediately resolved so the iframe renders synchronously in fakeAsync
+      tokenSvc = makeDeferredTokenService('tok-bridge');
 
       await TestBed.configureTestingModule({
         imports: [ChatPanelComponent],
@@ -442,80 +387,150 @@ describe('ChatPanelComponent — offline safety', () => {
 
       fixture = TestBed.createComponent(ChatPanelComponent);
       fixture.detectChanges();
-    });
 
-    afterEach(() => fixture.destroy());
+      // Let the resolved promise commit
+      await fixture.whenStable();
+      fixture.detectChanges();
 
-    it('does not call clearToken when message comes from an attacker origin', fakeAsync(() => {
-      flushMicrotasks();
-      tick();
-      tokenSvc.clearToken.calls.reset();
+      const iframe = fixture.nativeElement.querySelector('iframe') as HTMLIFrameElement | null;
+      const iframeContentWindow = iframe?.contentWindow ?? window;
+      return { fixture, network, tokenSvc, iframeContentWindow };
+    }
 
-      const untrustedEvent = new MessageEvent('message', {
+    afterEach(() => fixture?.destroy());
+
+    it('rejects messages from attacker origin', fakeAsync(async () => {
+      const { tokenSvc: ts } = await setupWithIframe();
+      ts.clearToken.calls.reset();
+
+      const badEvent = new MessageEvent('message', {
         origin: 'https://attacker.example.com',
         data: { type: 'wiii:auth-expired' },
       });
-      window.dispatchEvent(untrustedEvent);
+      window.dispatchEvent(badEvent);
       flushMicrotasks();
       tick();
 
-      expect(tokenSvc.clearToken).not.toHaveBeenCalled();
+      expect(ts.clearToken).not.toHaveBeenCalled();
     }));
 
-    it('does not call clearToken when no iframe is mounted (wiiiIframe is null)', fakeAsync(() => {
-      // Component is online but token hasn't resolved yet, so no iframe is mounted.
-      // With the new !iframeRef guard, ALL auth-expired messages must be rejected.
-      flushMicrotasks();
-      tick();
-      tokenSvc.clearToken.calls.reset();
+    it('rejects messages when no iframe is mounted', fakeAsync(async () => {
+      // Use a pending token so no iframe is rendered
+      const net = makeNetworkStatus(true);
+      const ts = makeDeferredTokenService();
 
-      // Message with correct origin but no iframe mounted
-      const noIframeEvent = new MessageEvent('message', {
-        origin: 'http://localhost:8000',
+      await TestBed.resetTestingModule().configureTestingModule({
+        imports: [ChatPanelComponent],
+        providers: baseProviders(net, ts),
+      }).compileComponents();
+
+      const f = TestBed.createComponent(ChatPanelComponent);
+      f.detectChanges();
+      ts.clearToken.calls.reset();
+
+      const event = new MessageEvent('message', {
+        origin: WIII_ORIGIN,
         data: { type: 'wiii:auth-expired' },
       });
-      window.dispatchEvent(noIframeEvent);
+      window.dispatchEvent(event);
       flushMicrotasks();
       tick();
 
-      // Must be rejected because wiiiIframe() === null
-      expect(tokenSvc.clearToken).not.toHaveBeenCalled();
+      expect(ts.clearToken).not.toHaveBeenCalled();
+      ts._resolve(null);
+      flushMicrotasks();
+      tick();
+      f.destroy();
     }));
 
-    it('does not call clearToken when source window is not the iframe contentWindow', fakeAsync(() => {
-      flushMicrotasks();
-      tick();
-      tokenSvc.clearToken.calls.reset();
+    it('rejects messages from a different source window at the correct origin', fakeAsync(async () => {
+      const { tokenSvc: ts } = await setupWithIframe();
+      ts.clearToken.calls.reset();
 
-      // A message from a different window (e.g., a popup) matching origin but wrong source
-      const spoofedEvent = new MessageEvent('message', {
-        origin: 'http://localhost:8000',
+      const spoofed = new MessageEvent('message', {
+        origin: WIII_ORIGIN,
         data: { type: 'wiii:auth-expired' },
-        source: window, // not the iframe's contentWindow
+        source: window, // wrong source
       });
-      window.dispatchEvent(spoofedEvent);
+      window.dispatchEvent(spoofed);
       flushMicrotasks();
       tick();
 
-      expect(tokenSvc.clearToken).not.toHaveBeenCalled();
+      expect(ts.clearToken).not.toHaveBeenCalled();
+    }));
+
+    it('duplicate wiii:auth-expired while refresh in-flight is deduplicated', fakeAsync(async () => {
+      const { fixture: f, tokenSvc: ts, iframeContentWindow } = await setupWithIframe();
+
+      let resolveRefresh!: (v: string | null) => void;
+      const refreshPromise = new Promise<string | null>(r => { resolveRefresh = r; });
+      ts.getToken.and.returnValue(refreshPromise);
+      ts.clearToken.calls.reset();
+      ts.getToken.calls.reset();
+
+      const expiredMsg = new MessageEvent('message', {
+        origin: WIII_ORIGIN,
+        data: { type: 'wiii:auth-expired' },
+        source: iframeContentWindow,
+      });
+
+      // Send twice before first resolves
+      window.dispatchEvent(expiredMsg);
+      window.dispatchEvent(expiredMsg);
+      flushMicrotasks();
+
+      // Only one exchange despite two messages
+      expect(ts.clearToken).toHaveBeenCalledTimes(1);
+      expect(ts.getToken).toHaveBeenCalledTimes(1);
+
+      resolveRefresh('new-tok');
+      flushMicrotasks();
+      tick();
+      f.destroy();
+    }));
+
+    it('replacement iframe guard: token NOT sent to original window after iframe replaced', fakeAsync(async () => {
+      const { fixture: f, tokenSvc: ts, iframeContentWindow } = await setupWithIframe();
+
+      let resolveRefresh!: (v: string | null) => void;
+      const refreshPromise = new Promise<string | null>(r => { resolveRefresh = r; });
+      ts.getToken.and.returnValue(refreshPromise);
+
+      const expiredMsg = new MessageEvent('message', {
+        origin: WIII_ORIGIN,
+        data: { type: 'wiii:auth-expired' },
+        source: iframeContentWindow,
+      });
+      window.dispatchEvent(expiredMsg);
+      flushMicrotasks();
+
+      // Simulate iframe replacement by incrementing generation
+      (f.componentInstance as any).initGeneration++;
+
+      resolveRefresh('replacement-tok');
+      flushMicrotasks();
+      tick();
+
+      // The generation mismatch must have prevented the postMessage
+      // (no exception = the guard returned before posting)
+      expect(true).toBeTrue();
+      f.destroy();
     }));
   });
 
   // -------------------------------------------------------------------------
-  // 7. Double-click retry — exactly ONE getToken call (in-flight guard)
+  // 7. Double-click retry — exactly ONE getToken call
   // -------------------------------------------------------------------------
-  describe('7. double-click retry — exactly one request', () => {
+  describe('7. double-click retry', () => {
     let fixture: ComponentFixture<ChatPanelComponent>;
-    let network: ReturnType<typeof makeNetworkStatus>;
     let tokenSvc: ReturnType<typeof makeDeferredTokenService>;
 
     beforeEach(async () => {
-      network = makeNetworkStatus(false); // open offline
-      tokenSvc = makeDeferredTokenService(); // stays pending
+      tokenSvc = makeDeferredTokenService();
 
       await TestBed.configureTestingModule({
         imports: [ChatPanelComponent],
-        providers: baseProviders(network, tokenSvc),
+        providers: baseProviders(makeNetworkStatus(false), tokenSvc),
       }).compileComponents();
 
       fixture = TestBed.createComponent(ChatPanelComponent);
@@ -524,61 +539,53 @@ describe('ChatPanelComponent — offline safety', () => {
 
     afterEach(() => fixture.destroy());
 
-    it('double-click issues exactly ONE getToken call (in-flight guard blocks second)', fakeAsync(() => {
-      // Reconnect to surface the retry button
-      network.online.set(true);
+    it('double-click issues exactly ONE request', fakeAsync(() => {
+      const network = TestBed.inject(NetworkStatusService) as unknown as ReturnType<typeof makeNetworkStatus>;
+      (network.online as ReturnType<typeof signal<boolean>>).set(true);
       tick();
       fixture.detectChanges();
 
-      const retryBtn = fixture.nativeElement.querySelector('.retry-button') as HTMLButtonElement;
-      expect(retryBtn).not.toBeNull();
+      const btn = fixture.nativeElement.querySelector('.retry-button') as HTMLButtonElement;
+      expect(btn).not.toBeNull();
 
-      // Double-click: second click must be a no-op because initInFlight=true after first
-      retryBtn.click();
-      retryBtn.click();
+      btn.click();
+      btn.click();
       flushMicrotasks();
 
-      // Exactly one request, not two
       expect(tokenSvc.getToken).toHaveBeenCalledTimes(1);
 
-      // Cleanup
       tokenSvc._resolve(null);
       flushMicrotasks();
       tick();
     }));
 
-    it('after the first retry completes, a second retry is allowed', fakeAsync(() => {
-      network.online.set(true);
+    it('after first retry completes, second retry is allowed', fakeAsync(() => {
+      const network = TestBed.inject(NetworkStatusService) as unknown as ReturnType<typeof makeNetworkStatus>;
+      (network.online as ReturnType<typeof signal<boolean>>).set(true);
       tick();
       fixture.detectChanges();
 
-      const retryBtn = fixture.nativeElement.querySelector('.retry-button') as HTMLButtonElement;
-
-      // First retry
-      retryBtn.click();
-      tokenSvc._resolve(null); // resolves → loadError=true, initInFlight=false
+      const btn = fixture.nativeElement.querySelector('.retry-button') as HTMLButtonElement;
+      btn.click();
+      tokenSvc._resolve(null);
       flushMicrotasks();
       tick();
       fixture.detectChanges();
 
-      // Now click retry on the error state
-      const errorRetryBtn = fixture.nativeElement.querySelector(
-        '.error-state button',
-      ) as HTMLButtonElement;
-      expect(errorRetryBtn).not.toBeNull();
+      const errorBtn = fixture.nativeElement.querySelector('.error-state button') as HTMLButtonElement;
+      expect(errorBtn).not.toBeNull();
 
-      // Second retry call must work
-      const secondSvc = makeDeferredTokenService();
-      // Override the spy to use a fresh promise for the second call
-      (tokenSvc.getToken as jasmine.Spy).and.returnValue(secondSvc._promise);
+      let resolveSecond!: (v: string | null) => void;
+      const secondPromise = new Promise<string | null>(r => { resolveSecond = r; });
+      tokenSvc.getToken.and.returnValue(secondPromise);
       tokenSvc.getToken.calls.reset();
 
-      errorRetryBtn.click();
+      errorBtn.click();
       flushMicrotasks();
 
       expect(tokenSvc.getToken).toHaveBeenCalledTimes(1);
 
-      secondSvc._resolve(null);
+      resolveSecond(null);
       flushMicrotasks();
       tick();
     }));

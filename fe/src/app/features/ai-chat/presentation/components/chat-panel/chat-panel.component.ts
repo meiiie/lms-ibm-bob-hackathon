@@ -11,12 +11,6 @@
  * Architecture:
  *   Browser → iframe(Wiii Embed) → Wiii AI directly
  *   Latency: ~1-3s (single hop, direct SSE) vs ~3-7s (double hop via LMS proxy)
- *
- * Offline safety (Sprint 221b):
- *   - Opening while offline shows an accessible offline state; no token exchange or iframe.
- *   - Losing connectivity during a pending init aborts that init (destroyed flag).
- *   - Reconnection shows a single manual retry — no automatic retry loop.
- *   - Teardown prevents stale async results from committing after destroy.
  */
 import {
   Component,
@@ -518,23 +512,21 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Connectivity-loss effect: invalidate any in-flight init and clear a
-    // stale embedUrl so a reconnecting promise cannot resurrect an old iframe.
-    // Only acts on the offline transition (online → false).
+    // When connectivity is lost: invalidate the in-flight init so its result is
+    // discarded, clear any stale embed, and release the in-flight lock so that
+    // when connectivity returns the restore effect fires immediately.
     effect(() => {
       const online = this.networkStatus.online();
       if (!online) {
-        this.initGeneration++;       // abort current in-flight initEmbed
-        this.embedUrl.set(null);     // discard any previously-rendered iframe
-        this.loadError.set(false);   // suppress error state while offline
+        this.initGeneration++;
+        this.initInFlight.set(false);  // release lock; stale promise will no-op on generation check
+        this.embedUrl.set(null);
+        this.loadError.set(false);
         this.offlineReconnectReady.set(false);
       }
     });
 
-    // Connectivity-restore effect: surface the single deliberate retry button.
-    // Reactive on both online() and initInFlight() so that if connectivity
-    // returned while the old promise was still pending, the button appears as
-    // soon as the promise settles and clears initInFlight.
+    // When connectivity returns and nothing is running or loaded, offer retry.
     effect(() => {
       const online = this.networkStatus.online();
       const inFlight = this.initInFlight();
@@ -713,12 +705,14 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
         const senderWindow = iframeRef.nativeElement.contentWindow;
         const refreshGeneration = this.initGeneration;
         try {
-          // Re-exchange token via LMS backend
           this.tokenService.clearToken();
           const token = await this.tokenService.getToken();
-          // Do not send a stale token after destroy or if the iframe was replaced.
           if (this.destroyed) return;
+          // Reject if the iframe was replaced while the refresh was in-flight.
+          // Check both generation (a new init ran) and the live contentWindow
+          // (same generation but iframe was remounted).
           if (this.initGeneration !== refreshGeneration) return;
+          if (this.wiiiIframe()?.nativeElement.contentWindow !== senderWindow) return;
           if (token && senderWindow) {
             // Do NOT print or log the token.
             senderWindow.postMessage(
