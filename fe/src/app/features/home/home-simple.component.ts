@@ -6,6 +6,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ApiClient } from '../../api/client/api-client';
 import { SeoService } from '../../core/services/seo.service';
+import { environment } from '../../../environments/environment';
 
 interface FeaturedCourse {
   id: string;
@@ -74,11 +75,13 @@ interface FeaturedCourse {
               Khám phá khóa học
               <svg class="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </a>
-            <a href="https://wiii.holilihu.online" target="_blank" rel="noopener noreferrer"
+            @if (wiiiAppUrl) {
+            <a [href]="wiiiAppUrl" target="_blank" rel="noopener noreferrer"
                class="inline-flex items-center justify-center rounded-lg border border-white/20 px-7 py-3.5 text-[15px] font-medium text-white/90 backdrop-blur-sm transition-all hover:border-white/40 hover:bg-white/5">
               Dùng thử Wiii AI
               <svg class="ml-2 h-4 w-4 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
             </a>
+            }
           </div>
         </div>
       </div>
@@ -262,11 +265,15 @@ interface FeaturedCourse {
               }
             </ul>
             <div class="mt-10">
-              <a href="https://wiii.holilihu.online" target="_blank" rel="noopener noreferrer"
+              @if (wiiiAppUrl) {
+              <a [href]="wiiiAppUrl" target="_blank" rel="noopener noreferrer"
                  class="inline-flex items-center rounded-lg bg-[#0056D2] px-6 py-3 text-[15px] font-semibold text-white shadow-lg shadow-[#0056D2]/20 transition-all hover:bg-[#004BB5] hover:shadow-xl">
                 Trò chuyện với Wiii
                 <svg class="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
               </a>
+              } @else {
+                <p class="text-sm leading-relaxed text-blue-100/70">Wiii is not connected in this demo. Sign in to explore the study assistant.</p>
+              }
             </div>
           </div>
           <!-- Chat mockup with real Wiii mascot -->
@@ -453,6 +460,7 @@ export class HomeSimpleComponent implements OnInit, AfterViewInit {
   private api = inject(ApiClient);
   private platformId = inject(PLATFORM_ID);
   private seo = inject(SeoService);
+  readonly wiiiAppUrl = environment.wiiiAppUrl;
 
   courses = signal<FeaturedCourse[]>([]);
   coursesLoading = signal(true);
@@ -470,7 +478,7 @@ export class HomeSimpleComponent implements OnInit, AfterViewInit {
       desc: 'Trợ lý AI hiểu chuyên sâu về hàng hải \u2014 giải đáp thắc mắc, gợi ý lộ trình, hỗ trợ ôn thi bằng tiếng Việt ngay trong lúc học.',
       iconBg: 'bg-[#0056D2]/10', iconColor: 'text-[#0056D2]',
       tag: '', tagColor: '',
-      link: 'https://wiii.holilihu.online', linkText: 'Trải nghiệm Wiii AI', linkColor: 'text-[#0056D2] hover:text-[#004BB5]'
+      link: this.wiiiAppUrl || null, linkText: 'Trải nghiệm Wiii AI', linkColor: 'text-[#0056D2] hover:text-[#004BB5]'
     },
     {
       svgId: 'shield-check', title: 'Chứng chỉ STCW / IMO',
@@ -534,7 +542,7 @@ export class HomeSimpleComponent implements OnInit, AfterViewInit {
       url: 'https://holilihu.online',
       logo: 'https://holilihu.online/icons/logo-master.png',
       description: 'Nền tảng đào tạo hàng hải trực tuyến cho thuyền viên Việt Nam, tích hợp AI trợ giảng và học ngoại tuyến.',
-      sameAs: ['https://wiii.holilihu.online'],
+      sameAs: this.wiiiAppUrl ? [this.wiiiAppUrl] : [],
       parentOrganization: {
         '@type': 'Organization',
         name: 'The Wiii Lab'

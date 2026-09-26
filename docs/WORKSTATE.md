@@ -1,5 +1,40 @@
 # Current work state
 
+## Free demo deployment — in progress
+
+26 September 2026, Vietnam (UTC+7). The owner authorized choosing and deploying
+a free hackathon demo. Codex is preparing `codex/free-demo`; this work is not Bob
+session evidence. Preserve the owner's unrelated `backend/.factorypath` edit
+and teammate PR #1.
+
+- Selected Cloudflare Pages, Railway's credit trial and Neon Free. The owner
+  completed signup and official CLI authorization. No card or paid upgrade was
+  added. Railway reported 5 USD credit, 30 trial days and zero usage when checked.
+- Created separate `neko-core-lms-demo` resources: Pages project, Railway project
+  with one `lms-api` service in Singapore, and a new Neon PostgreSQL 16 database
+  in Singapore. No production resource or database is reused.
+- Nine backend runtime settings were set through stdin and compared without
+  printing values. Random secrets remain only in ignored local files and the
+  backend service's environment; none belong in frontend assets or Git.
+- The dedicated `prod,demo` profile disables inherited accounts and exposes only
+  a synthetic student after its startup transaction commits. Payment, uploads,
+  cloud AI, outbound email and media conversion are restricted for this demo.
+  A fresh PostgreSQL startup and login still need verification.
+- Pages proxy and packaging checks passed 13 Node tests. Actual optimized demo
+  build and hosted service-worker/offline reload remain pending. Independent
+  review found hardcoded homepage Wiii links; those now use environment settings.
+- A real MVC regression reproduced an encoded-path bypass of the demo password
+  guard (expected 403, received 200). A demo-only path restriction is being
+  verified before public exposure. Final coherent package passed all 68 focused
+  backend tests, exit 0 (`.tools/demo-path-fixed-package.log`); the failed baseline
+  remains in `.tools/demo-encoded-path-before-fix.log`. Native Java startup against
+  the new Neon database is in progress; no runtime acceptance is claimed yet.
+- No working public demo URL is claimed yet. See `docs/FREE-DEMO-DEPLOYMENT.md`.
+
+Next: complete the fixed backend startup smoke, build/deploy both components,
+verify real login, text-lesson download, offline reload/progress and reconnect
+sync, then record the URL, revision, limits and exact results for the team.
+
 ## Current integration — local provider, UX and authorized merge
 
 26 September 2026, Vietnam (UTC+7). The owner subsequently authorized merging

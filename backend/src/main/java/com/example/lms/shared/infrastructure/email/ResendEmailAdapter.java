@@ -17,7 +17,7 @@ import java.math.BigDecimal;
  */
 @Slf4j
 @Component
-@Profile("prod")
+@Profile("prod & !demo")
 public class ResendEmailAdapter implements EmailServicePort {
 
     private final Resend resend;

@@ -1,0 +1,18 @@
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+  X-Robots-Tag: noindex, nofollow
+
+/ngsw.json
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/ngsw-worker.js
+  Cache-Control: no-cache, must-revalidate
+  Service-Worker-Allowed: /
+
+/index.html
+  Cache-Control: no-cache, must-revalidate
+
+/index.csr.html
+  Cache-Control: no-cache, must-revalidate
