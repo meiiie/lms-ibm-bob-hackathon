@@ -30,9 +30,16 @@ sitemap fetch is not executed. Pages and the HTML send noindex for this demo.
 `--package-only` repeats packaging from the existing **demo** build without
 compiling Angular. It replaces only the fixed ignored `.tools/demo-pages` output.
 Do not point a production deployment at this output.
-The deployment configuration is `deploy/demo-pages/wrangler.jsonc`. An authorized
-operator can deploy the prepared output with `wrangler pages deploy --config
-deploy/demo-pages/wrangler.jsonc`; this script never deploys or authenticates.
+The deployment configuration is `deploy/demo-pages/wrangler.jsonc`. Wrangler
+Pages requires running from that directory instead of passing a custom config
+path. An authorized operator can deploy the prepared output as follows; the build
+script itself never deploys or authenticates.
+
+```powershell
+Push-Location deploy/demo-pages
+try { npx.cmd wrangler pages deploy --project-name neko-core-lms-demo --branch main }
+finally { Pop-Location }
+```
 
 ## Runtime configuration
 

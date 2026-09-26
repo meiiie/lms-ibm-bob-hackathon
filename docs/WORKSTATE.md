@@ -29,7 +29,23 @@ and teammate PR #1.
   backend tests, exit 0 (`.tools/demo-path-fixed-package.log`); the failed baseline
   remains in `.tools/demo-encoded-path-before-fix.log`. Native Java startup against
   the new Neon database is in progress; no runtime acceptance is claimed yet.
-- No working public demo URL is claimed yet. See `docs/FREE-DEMO-DEPLOYMENT.md`.
+- The first CI run passed all six required jobs, including Docker smoke:
+  https://github.com/meiiie/lms-ibm-bob-hackathon/actions/runs/36240432617.
+  Its Pages artifact (source `86ceb885`) has 374 packaged files; the largest is
+  1,232,303 bytes. After download, every service-worker hash passed validation.
+- The frontend has been deployed at `https://neko-core-lms-demo.pages.dev`.
+  Homepage, auth deep link, service-worker manifest and wrapper return HTTP 200.
+  The API is not deployed/verified yet; this is not a completed working demo.
+- Fresh Neon startup applied 131 migrations through version 159. A read-only
+  audit found 42 users, one enabled synthetic student and zero enabled privileged
+  users. The inherited video-pipeline health indicator reported DOWN because
+  this demo intentionally omits transcoding. It is now excluded only under the
+  demo profile; normal production retains it. Both regression baselines are
+  preserved. The corrected package passed 72 focused tests, exit 0, in
+  `.tools/demo-health-fixed-package.log`. A second runtime smoke is in progress.
+- Browser runner `scripts/verify-demo-pwa.py` is prepared but not run. Private
+  student access instructions are in ignored `.tools/demo-access.local.md`.
+  See `docs/FREE-DEMO-DEPLOYMENT.md` for cost and capability limits.
 
 Next: complete the fixed backend startup smoke, build/deploy both components,
 verify real login, text-lesson download, offline reload/progress and reconnect

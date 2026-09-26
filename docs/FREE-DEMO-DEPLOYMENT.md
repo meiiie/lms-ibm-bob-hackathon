@@ -9,10 +9,10 @@ hackathon demo. Pages serves the Angular PWA; a Pages Worker proxies approved AP
 requests to one fixed Railway backend; Neon stores the demo's PostgreSQL data.
 This retains the existing Angular / Java 21 / Spring Boot application.
 
-Cloudflare account authorization is complete. Railway and Neon account setup is
-in progress. **No public URL, successful deployment, or demo login is claimed by
-this document.** The deployment commands and acceptance results below must be
-filled in after verification.
+Account setup and official CLI authorization are complete. The frontend is
+published at `https://neko-core-lms-demo.pages.dev`; the backend and actual student
+flow are still being verified. **A working end-to-end demo is not yet claimed.**
+The acceptance results below must be filled in after verification.
 
 The Railway part is a **time-limited credit trial**, not permanent free hosting.
 Do not add a payment method, upgrade a plan, enable paid add-ons, or assume that
@@ -87,13 +87,13 @@ run. No credential values belong in this table.
 
 | Item | Verified value |
 | --- | --- |
-| Source commit / PR | PENDING |
+| Source commit / PR | PR #4; frontend artifact built from `86ceb885`, CI run `36240432617` |
 | Backend build and deploy commands | PENDING — use the dedicated demo artifacts above |
-| Pages build and deploy commands | PENDING — use `scripts/build-demo-pages.mjs` and the reviewed Pages configuration |
-| Public HTTPS demo URL | PENDING |
-| Backend health / database migration result | PENDING |
+| Pages build and deploy commands | CI ran `node scripts/build-demo-pages.mjs`; downloaded its `demo-pages` artifact and verified with `node scripts/build-demo-pages.mjs --check-only`; deployed from `deploy/demo-pages` with `npx.cmd wrangler pages deploy --project-name neko-core-lms-demo --branch main` |
+| Public HTTPS demo URL | `https://neko-core-lms-demo.pages.dev` — frontend HTTP checks passed; full application acceptance pending |
+| Backend health / database migration result | 131 migrations through version159 applied to the new database. First startup exposed an inherited video healthcheck mismatch; demo-only fix and 72 focused tests passed. Runtime recheck pending. |
 | Public synthetic student access instructions | PENDING — never substitute administrator credentials |
-| Remaining Railway credit and check time (UTC+7) | PENDING |
+| Remaining Railway credit and check time (UTC+7) | $5 credit / 30 trial days before deployment, 26 September around18:50; usage must be rechecked after deploy |
 
 ## Acceptance and handoff
 

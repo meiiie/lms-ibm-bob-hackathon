@@ -1,5 +1,6 @@
 package com.example.lms.config.demo;
 
+import com.example.lms.learning_delivery.infrastructure.service.VideoPipelineHealthIndicator;
 import com.example.lms.shared.application.port.EmailServicePort;
 import com.example.lms.shared.infrastructure.email.DemoEmailAdapter;
 import com.example.lms.shared.infrastructure.email.ResendEmailAdapter;
@@ -17,6 +18,26 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class DemoSafetyConfigurationTest {
+    @Test
+    void intentionallyDisabledVideoPipelineDoesNotMakeDemoHealthDown() {
+        try (var context = new AnnotationConfigApplicationContext()) {
+            context.setEnvironment(validEnvironment());
+            context.register(DemoSafetyConfiguration.class, VideoPipelineHealthIndicator.class);
+            context.refresh();
+            assertThat(context.getBeansOfType(VideoPipelineHealthIndicator.class)).isEmpty();
+        }
+    }
+
+    @Test
+    void normalProductionRetainsVideoHealthChecks() {
+        try (var context = new AnnotationConfigApplicationContext()) {
+            context.getEnvironment().setActiveProfiles("prod");
+            context.register(VideoPipelineHealthIndicator.class);
+            context.refresh();
+            assertThat(context.getBeansOfType(VideoPipelineHealthIndicator.class)).hasSize(1);
+        }
+    }
+
     @Test
     void requiresAcknowledgementBeforeCreatingApplicationBeans() {
         var environment = validEnvironment();
