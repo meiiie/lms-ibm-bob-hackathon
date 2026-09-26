@@ -1,5 +1,58 @@
 # Current work state
 
+## Free demo deployment — hosted acceptance passed
+
+26 September 2026, Vietnam (UTC+7). The owner authorized choosing and deploying
+this isolated demo, publishing and merging its changes. This is Codex continuation
+work, not Bob session evidence. Preserve `backend/.factorypath` and team evidence.
+
+- Live demo: https://neko-core-lms-demo.pages.dev. Cloudflare Pages serves Angular,
+  a fixed-origin Worker proxies the API, Railway runs one backend in Singapore,
+  and a separate Neon Free PostgreSQL 16 project stores synthetic demo data.
+  No card, paid upgrade or production resource was used.
+- The `prod,demo` profile prepares one enabled synthetic student and disables all
+  inherited users before accepting traffic. Privileged actions, account changes,
+  payments, uploads, email, cloud AI and media conversion are restricted. All 131
+  migrations through version 159 succeeded; 72 focused backend tests passed.
+- The public proxy guard smoke passed at 20:30 UTC+7: learner login works;
+  inherited admin login, admin route, registration, raw encoded password route and
+  checkout fail. ChatGPT is disabled, Wiii unconfigured, API responses no-store.
+- Frontend artifact `86ceb885`, CI run `36240432617`: 374 package entries and all
+  service-worker hashes verified. Backend `c9c67946` deployment
+  `84e5413c-3d70-4b5e-9109-b52623182084` succeeded; health UP, startup 15.725 seconds,
+  observed Railway memory 495.8 MB / 1,024 MB. Local Java processes are stopped.
+- Real Chrome acceptance passed all seven stages at 20:35 UTC+7 with no mocked
+  API, login or storage. It cached 259 prefetch assets, downloaded 31 lessons,
+  cleared ordinary HTTP cache, reloaded offline from the service worker with
+  navigator.onLine=false and identical prose, completed a text lesson, reloaded
+  again, and reconnected. The server confirms COMPLETED and pending progress zero.
+  Command: `python scripts/verify-demo-pwa.py --output .tools/demo-pwa-run4` (exit 0).
+  Public evidence and limits: `docs/DEMO-VERIFICATION.md`.
+- Failed runner baselines are retained locally. They exposed a hidden video option
+  in a text-only fixture, premature PWA readiness, and CDP offline-state interference.
+  The final runner waits for actual cache population and detaches its cache-clearing
+  session before network emulation. No application fix was needed for these issues.
+- Railway needed explicit Dockerfile/healthcheck settings and only one region.
+  Its new legacy-config attachment was rejected, so unused `railway.json` was
+  removed. Provider settings are documented in `docs/FREE-DEMO-DEPLOYMENT.md`.
+  Cloudflare production/preview fail_open=false was applied and verified.
+- Railway credit checked around 20:31 UTC+7: 4.99126 USD / 30 trial days. This is
+  temporary credit-funded hosting. Native peak RSS was 552.3 MB, so a strict
+  512 MB fallback remains unverified. No capacity/load test was performed.
+- All six CI jobs passed at `c9c67946` in run `36241307317`; independent source
+  review found no blockers. The owner's PR #1 merge added only an evidence PNG
+  at `ada302bb`; preserve it during integration. PR #4 is the delivery record for
+  final documentation/runner changes and integration; check its current GitHub
+  state for the final merge revision. Mobile viewport checks also passed.
+- Credentials remain in ignored `.tools/demo-access.local.md` and backend secrets.
+  ChatGPT is online-only and disabled on this public demo; local models require
+  the visitor's own runtime. Offline video, physical mobile/PWA installation and
+  first-ever offline access are not proven by this desktop test.
+
+Next: hand off the verified demo URL/private learner access and recheck trial
+credit before recording. Submission still needs final Bob summaries, video,
+slides, cover and form. See PR #4 for delivery/CI status.
+
 ## Current integration — local provider, UX and authorized merge
 
 26 September 2026, Vietnam (UTC+7). The owner subsequently authorized merging

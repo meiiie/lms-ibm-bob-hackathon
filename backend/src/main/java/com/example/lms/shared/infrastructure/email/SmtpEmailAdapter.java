@@ -19,7 +19,7 @@ import java.math.BigDecimal;
  */
 @Slf4j
 @Component
-@Profile("dev")
+@Profile("dev & !demo")
 @RequiredArgsConstructor
 public class SmtpEmailAdapter implements EmailServicePort {
 

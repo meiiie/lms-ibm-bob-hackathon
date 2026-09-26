@@ -4,6 +4,23 @@ Recorded 26 September 2026, 08:51 Vietnam (UTC+7). **The repository has real Bob
 evidence, but the submission package is not complete.** This is an artifact audit,
 not a new application test run or an eligibility ruling.
 
+### Hosted demo update — 26 September, 20:35 UTC+7
+
+The separate [student demo](https://neko-core-lms-demo.pages.dev) is now deployed
+on Cloudflare Pages, Railway trial and Neon Free. Genuine public login, course
+download and server-side restrictions passed. Offline text reload/completion,
+persistence across a second reload and real backend sync passed in Chrome. See
+[actual acceptance evidence](DEMO-VERIFICATION.md) and
+[deployment and limitations](FREE-DEMO-DEPLOYMENT.md) for actual revision/results
+and the private learner handoff location. Hosting is Codex continuation work,
+not additional Bob evidence. Video, slides, cover and final Bob summaries remain
+outstanding; publishing the site does not submit the event form.
+
+The owner independently merged Faiz's PR #1 at 18:58 UTC+7 as `ada302bb`.
+Its one PNG is preserved by this deployment work. The earlier image-quality and
+missing-manifest observations below remain observations about that same file;
+a merge alone does not verify it as the required task summary.
+
 ### Later team-evidence check on 26 September
 
 Main still contained the original `meiiie` checkpoint when rechecked for the

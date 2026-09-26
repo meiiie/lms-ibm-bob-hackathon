@@ -98,6 +98,19 @@ jobs:
       - name: Build frontend
         run: npm run build
 
+      - name: Build and validate the isolated Pages demo
+        working-directory: .
+        run: node scripts/build-demo-pages.mjs
+
+      - name: Preserve the verified Pages deployment files
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: demo-pages
+          path: .tools/demo-pages/
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 7
+
   worker:
     name: Cloudflare Worker Tests
     runs-on: ubuntu-latest
@@ -115,6 +128,9 @@ jobs:
 
       - name: Run media edge Worker tests
         run: node --test cloudflare/workers/media-edge-auth-worker.test.mjs
+
+      - name: Test demo proxy and PWA packaging
+        run: node --test deploy/demo-pages/*.test.mjs
 
   compose:
     name: Compose Validation

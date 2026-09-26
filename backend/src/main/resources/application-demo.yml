@@ -1,0 +1,77 @@
+# Activate with prod,demo against a NEW, isolated PostgreSQL database only.
+# The guard refuses startup without the explicit acknowledgement and demo password.
+server:
+  port: ${PORT:8080}
+  tomcat:
+    max-connections: 50
+    accept-count: 25
+
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 3
+      minimum-idle: 0
+  jpa:
+    hibernate:
+      ddl-auto: none
+  flyway:
+    baseline-on-migrate: false
+  servlet:
+    multipart:
+      max-file-size: 1MB
+      max-request-size: 1MB
+  kafka:
+    enabled: false
+
+app:
+  demo:
+    database-ack: ${DEMO_DATABASE_ACK:}
+    student-password: ${DEMO_STUDENT_PASSWORD:}
+  cors:
+    allowed-origins: ${APP_BASE_URL}
+  storage:
+    local:
+      base-url: ${APP_BASE_URL}/uploads
+  auth:
+    google:
+      enabled: false
+      redirect-flow-enabled: false
+      web-client-id: ""
+      client-secret: ""
+  video:
+    ingest:
+      enabled: false
+  resend:
+    api-key: ""
+  vnpay:
+    tmn-code: ""
+    hash-secret: ""
+    pay-url: ""
+  sepay:
+    enabled: false
+    bank-code: ""
+    account-number: ""
+    webhook-api-key: ""
+
+chatgpt:
+  enabled: false
+wiii:
+  webhook:
+    enabled: false
+    secret: ""
+    url: ""
+  token-exchange:
+    url: ""
+  service-token: ""
+cloudflare:
+  r2:
+    enabled: false
+  stream:
+    enabled: false
+gotenberg:
+  url: ""
+
+management:
+  endpoint:
+    health:
+      show-details: never
