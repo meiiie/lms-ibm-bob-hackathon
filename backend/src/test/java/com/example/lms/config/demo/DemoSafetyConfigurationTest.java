@@ -87,16 +87,21 @@ class DemoSafetyConfigurationTest {
         assertThatThrownBy(() -> DemoSafetyConfiguration.validate(environment)).hasMessageContaining("prod,demo");
     }
 
-    @Test
-    void passwordValidationDoesNotExposePasswordAndAcceptsBoundedRandomValue() {
+    @ParameterizedTest
+    @ValueSource(strings = {"student", "teacher", "org-admin", "admin"})
+    void passwordValidationDoesNotExposePasswordAndAcceptsBoundedRandomValue(String role) {
         var environment = validEnvironment();
         assertThatCode(() -> DemoSafetyConfiguration.validate(environment)).doesNotThrowAnyException();
-        environment.setProperty("app.demo.student-password", "too-short-private");
+        String property = "app.demo." + role + "-password";
+        environment.setProperty(property, "too-short-private");
         assertThatThrownBy(() -> DemoSafetyConfiguration.validate(environment))
-                .hasMessageContaining("DEMO_STUDENT_PASSWORD").hasMessageNotContaining("too-short-private");
-        environment.setProperty("app.demo.student-password", "é".repeat(37));
+                .hasMessageContaining("PASSWORD").hasMessageNotContaining("too-short-private");
+        environment.setProperty(property, "é".repeat(37));
         assertThatThrownBy(() -> DemoSafetyConfiguration.validate(environment))
                 .hasMessageContaining("72 UTF-8 bytes");
+        environment.setProperty(property, "");
+        assertThatThrownBy(() -> DemoSafetyConfiguration.validate(environment))
+                .hasMessageContaining("PASSWORD");
     }
 
     @ParameterizedTest
@@ -119,7 +124,10 @@ class DemoSafetyConfigurationTest {
     private MockEnvironment validEnvironment() {
         var environment = new MockEnvironment()
                 .withProperty("app.demo.database-ack", "isolated-demo-only")
-                .withProperty("app.demo.student-password", "synthetic-test-password-24chars");
+                .withProperty("app.demo.student-password", "synthetic-student-password-24chars")
+                .withProperty("app.demo.teacher-password", "synthetic-teacher-password-24chars")
+                .withProperty("app.demo.org-admin-password", "synthetic-orgadmin-password-24chars")
+                .withProperty("app.demo.admin-password", "synthetic-admin-password-24chars");
         environment.setActiveProfiles("prod", "demo");
         return environment;
     }

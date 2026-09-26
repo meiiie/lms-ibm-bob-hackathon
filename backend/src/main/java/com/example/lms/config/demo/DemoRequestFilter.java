@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-/** Additional restrictions for the intentionally shared, student-only public demo. */
+/** Infrastructure restrictions for the shared public demo; normal role access uses Spring Security. */
 @Component
 @Profile("demo")
 @Order(Ordered.HIGHEST_PRECEDENCE + 10)
@@ -24,8 +24,11 @@ public class DemoRequestFilter extends OncePerRequestFilter {
             "/api/v3/auth/refresh", "/api/v3/auth/logout");
     private static final Set<String> AUTH_GETS = Set.of("/api/v3/auth/me", "/api/v3/auth/google/config");
     private static final Set<String> AI_GETS = Set.of("/api/v3/ai/health", "/api/v3/ai/chatgpt/status");
-    private static final List<String> BLOCKED_TREES = List.of("/api/v3/admin", "/api/v3/teacher",
-            "/api/v3/integration", "/api/v3/invites", "/api/v3/files", "/api/v3/document-previews");
+    private static final List<String> BLOCKED_TREES = List.of("/api/v3/integration", "/api/v3/invites",
+            "/api/v3/files", "/api/v3/document-previews");
+    private static final List<String> EXTERNAL_WRITE_TREES = List.of("/api/v3/admin/settings",
+            "/api/v3/admin/revenue", "/api/v3/admin/storage", "/api/v3/teacher/payout",
+            "/api/v3/teacher/bank-accounts", "/api/v3/video-assets");
 
     private final DemoReadiness readiness;
 
@@ -69,7 +72,10 @@ public class DemoRequestFilter extends OncePerRequestFilter {
                     || path.equals("/api/v3/payments/my-payments")));
         }
         boolean writes = !"GET".equals(method) && !"HEAD".equals(method);
-        return writes && (within(path, "/api/v3/users") || within(path, "/api/v3/organizations"));
+        // Settings can enable gateways; these other mutations require payments, mail or media services.
+        // Keep course, class, user and organization management available under their existing RBAC.
+        return writes && (EXTERNAL_WRITE_TREES.stream().anyMatch(root -> within(path, root))
+                || path.matches("/api/v3/organizations/[^/]+/(payment-config|invites/email)(/.*)?"));
     }
 
     private static boolean within(String path, String root) {

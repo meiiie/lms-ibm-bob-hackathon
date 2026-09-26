@@ -59,14 +59,20 @@ class DemoRequestFilterTest {
     @ParameterizedTest
     @CsvSource({"POST,/api/v3/auth/register", "PUT,/api/v3/auth/profile", "PUT,/api/v3/auth/password",
             "POST,/api/v3/auth/forgot-password", "POST,/api/v3/auth/reset-password",
-            "GET,/api/v3/auth/google/authorize", "GET,/api/v3/admin/settings",
-            "POST,/api/v3/teacher/courses", "POST,/api/v3/integration/courses/generate",
+            "GET,/api/v3/auth/google/authorize", "PUT,/api/v3/admin/settings",
+            "POST,/api/v3/integration/courses/generate",
             "POST,/api/v3/invites/accept", "POST,/api/v3/files/upload", "DELETE,/api/v3/files",
             "POST,/api/v3/document-previews", "POST,/api/v3/ai/token", "POST,/api/v3/ai/chat/stream",
             "POST,/api/v3/ai/chatgpt/device", "POST,/api/v3/ai/chatgpt/ask",
             "POST,/api/v3/payments/checkout", "GET,/api/v3/payments/vnpay-ipn",
             "GET,/api/v3/payments/vnpay-return", "POST,/api/v3/payments/sepay/webhook",
-            "PUT,/api/v3/users/demo-user", "POST,/api/v3/organizations/org/members"})
+            "POST,/api/v3/admin/revenue/payouts/payout/approve",
+            "POST,/api/v3/admin/revenue/payouts/payout/complete",
+            "POST,/api/v3/teacher/payout/request", "DELETE,/api/v3/teacher/payout/payout",
+            "POST,/api/v3/teacher/bank-accounts", "PUT,/api/v3/teacher/bank-accounts/bank/set-default",
+            "POST,/api/v3/admin/storage/orphans/file/release", "POST,/api/v3/video-assets/from-upload",
+            "POST,/api/v3/video-assets/asset/retry", "POST,/api/v3/video-assets/storage/orphan-cleanup",
+            "PUT,/api/v3/organizations/org/payment-config", "POST,/api/v3/organizations/org/invites/email"})
     void preventsSharedAccountChangesAndExternalSideEffects(String method, String path) throws Exception {
         var response = new MockHttpServletResponse();
         var chain = new MockFilterChain();
@@ -87,6 +93,28 @@ class DemoRequestFilterTest {
             "POST,/api/v3/quizzes/quiz/attempts/start", "PUT,/api/v3/quizzes/attempts/attempt/save",
             "POST,/api/v3/quizzes/attempts/attempt/submit", "OPTIONS,/api/v3/auth/register"})
     void keepsAuthenticationLearningQuizAndOfflineSyncRoutes(String method, String path) throws Exception {
+        var request = new MockHttpServletRequest(method, path);
+        var chain = new MockFilterChain();
+        readyFilter().doFilter(request, new MockHttpServletResponse(), chain);
+        assertThat(chain.getRequest()).isSameAs(request);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"GET,/api/v3/admin/courses/all", "GET,/api/v3/admin/settings",
+            "PATCH,/api/v3/admin/courses/course/approve", "GET,/api/v3/admin/storage/health",
+            "GET,/api/v3/admin/revenue/payouts", "GET,/api/v3/teacher/courses/my-courses",
+            "POST,/api/v3/teacher/courses", "GET,/api/v3/teacher/revenue/summary",
+            "GET,/api/v3/teacher/bank-accounts", "POST,/api/v3/teacher/invitations/invitation/accept",
+            "GET,/api/v3/users/list/all", "POST,/api/v3/users", "PUT,/api/v3/users/user",
+            "PATCH,/api/v3/users/user/toggle-status", "PATCH,/api/v3/users/user/status",
+            "DELETE,/api/v3/users/user", "GET,/api/v3/organizations", "POST,/api/v3/organizations",
+            "PUT,/api/v3/organizations/org", "POST,/api/v3/organizations/org/members",
+            "DELETE,/api/v3/organizations/org/members/user", "POST,/api/v3/organizations/org/admins/user",
+            "PUT,/api/v3/organizations/org/members/user/token-config",
+            "PUT,/api/v3/organizations/org/capabilities/course_authoring",
+            "GET,/api/v3/organizations/org/payment-config", "GET,/api/v3/organizations/org/invites",
+            "POST,/api/v3/organizations/org/invites/code"})
+    void passesRoleManagementRoutesToExistingSpringAuthorization(String method, String path) throws Exception {
         var request = new MockHttpServletRequest(method, path);
         var chain = new MockFilterChain();
         readyFilter().doFilter(request, new MockHttpServletResponse(), chain);

@@ -1,5 +1,46 @@
 # Current work state
 
+## Demo role access — deployed and verified
+
+26 September 2026, **21:35 UTC+7 (Vietnam)**. The owner requested enabling
+teacher, organization-manager and system-admin access. All four roles are now
+live at https://neko-core-lms-demo.pages.dev/auth/login. This supersedes the
+original student-only policy; the older deployment record below is historical.
+
+- Backend source `1ea41ff5`, Railway deployment
+  `b13a57d4-425b-414e-9278-e45cfdded645`: SUCCESS, health UP, startup 17.105 s.
+  Frontend artifact remains `86ceb885`; frontend application code was unchanged.
+- `python scripts/verify-demo-roles.py --output .tools/demo-roles-run4` passed
+  30 checks across four fresh Chrome contexts with real UI login and API data.
+  It verified portals, course lists, title search (Enter submits), approved/pending
+  filters, teacher learner management and role/organization access restrictions.
+  No failing UI API responses or browser runtime errors in the final run.
+- 134 focused backend tests and package passed. Exact test selection and
+  source review/acceptance limits are in `docs/DEMO-ACCOUNTS.md`. Full CI and
+  merge status are tracked by PR #5; do not infer them from local tests alone.
+- Two read-only Neon snapshots confirm four enabled identities, other users
+  disabled, unchanged SAF-101 course/class/teacher ownership and learner
+  enrollment progress. Default inherited admin login still fails. Cloud AI,
+  payments, uploads, email and media processing remain unprovisioned/restricted.
+- First browser acceptance caught an inherited admin native-SQL sort failure
+  (`c.createdAt`). The adapter now maps timestamp properties to PostgreSQL
+  column names only for native queries. Four regressions pass; live filtered
+  admin queries now return HTTP 200. The runner also corrected its assumption
+  that title search matches course codes and explicitly presses Enter, waits
+  for the actual search response and settled dashboard data before screenshots.
+  Failed baselines remain ignored; final public evidence is
+  `docs/evidence/demo-roles-2026-09-26/`.
+- Private English credential handoff: `.tools/team-demo-accounts.private.md`.
+  Four independent passwords are set in Railway and never committed. The teacher
+  keeps the original owner ID. Backend startup restores four demo identities;
+  admin edits affect this shared fixture, so preserve SAF-101 for the recording.
+- Codex continuation, not Bob work. Both Bob PNG Git blobs remain identical.
+  The owner's unrelated `backend/.factorypath` edit remains unstaged.
+
+Next: use PR #5 for final CI/merge status and send the private credential handoff
+to teammates. Remaining video, slides, cover, Bob summaries and submission form
+are separate tasks; this account rollout does not claim they are complete.
+
 ## Free demo deployment — hosted acceptance passed
 
 26 September 2026, Vietnam (UTC+7). The owner authorized choosing and deploying
