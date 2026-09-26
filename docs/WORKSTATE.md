@@ -36,10 +36,14 @@ historical next-step statements below; the new work is attributed to Codex.
   build with `SITEMAP_BASE_URL=http://127.0.0.1:9` (documented offline sitemap
   fallback and existing CommonJS warnings). Local build log is ignored at
   `.tools/chatgpt-frontend-build.log`.
-- PASS: all six CI jobs on `5afc450a66b6093deb25eed86c4da9cd210d9da1`, including
-  1,304 backend tests, 65 targeted frontend tests, frontend build, worker tests,
+- PASS: all six CI jobs on final application commit
+  `55979f4edb5f13a227ac9ec69d72a2e4f1da06eb`, including
+  1,310 backend tests, 66 targeted frontend tests, frontend build, worker tests,
   harness, Compose validation and Docker application smoke:
-  https://github.com/meiiie/lms-ibm-bob-hackathon/actions/runs/36210385752.
+  https://github.com/meiiie/lms-ibm-bob-hackathon/actions/runs/36212103389.
+  The subsequent handoff commit only records these results and the expired live
+  probe; it changes no application code. PR #3 remains draft because a real answer
+  using the updated model still requires verification.
   PR #3 contains the implementation and follow-up fixes; consult its current
   checks and merge status for the final revision:
   https://github.com/meiiie/lms-ibm-bob-hackathon/pull/3.
@@ -60,7 +64,13 @@ historical next-step statements below; the new work is attributed to Codex.
   Configuration now defaults to `gpt-6-luna` from the pinned official Codex
   0.157.1 catalog. Unsupported models return safe `model_not_supported` / HTTP 409
   and preserve the connection; the sidebar gives administrator guidance without
-  automatically retrying. A new live check is pending.
+  automatically retrying. The new probe ended pending at about 09:40 UTC+7 after
+  its 600-second consent window and discarded its in-memory state. No live answer
+  was obtained with the updated model. Do not reuse an expired probe code.
+  Next required step: start one new opt-in probe while the owner is available to
+  complete device consent, then verify a real answer before making PR #3 ready.
+  The revised test-only runner permits at most two explicit allowlisted model
+  retries within the same connected session, without storing credentials.
 - Read-only backend review found no confirmed remaining blocker. A targeted test
   exposed a successful-response overflow path attempting to drain the upstream
   body again; direct Flux cancellation now passes the bounded-stream regression.
