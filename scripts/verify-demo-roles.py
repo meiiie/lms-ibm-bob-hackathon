@@ -126,10 +126,14 @@ async def verify_role(browser, role, secrets, output):
         elif role == "teacher":
             course_list = items(await api(page, "/api/v3/teacher/courses/my-courses?page=0&size=100"))
         else:
-            course_list = items(await api(page, "/api/v3/admin/courses/all?search=SAF-101&page=0&size=100"))
+            course_list = items(await api(page, "/api/v3/admin/courses/all?search=STCW&page=0&size=100"))
             analytics = await api(page, "/api/v3/admin/courses/analytics")
             assert analytics["totalCourses"] >= 1
             passed("real dashboard analytics", totalCourses=analytics["totalCourses"])
+            approved = items(await api(page, "/api/v3/admin/courses/all?status=APPROVED&search=STCW&page=0&size=100"))
+            assert any(c["id"] == COURSE_ID for c in approved)
+            await api(page, "/api/v3/admin/courses/all?status=PENDING&page=0&size=100")
+            passed("title search, approved search and pending review filters")
         course = next((c for c in course_list if c["id"] == COURSE_ID), None)
         assert course, "Expected real SAF-101 course is absent from scoped list"
         passed(step, courseId=course["id"], courseTitle=course["title"])
@@ -142,7 +146,7 @@ async def verify_role(browser, role, secrets, output):
         assert urlparse(page.url).path == path, "Role portal redirected from intended course list"
         if role in ("org_admin", "admin"):
             search = page.get_by_placeholder(re.compile("Tìm kiếm khóa học"))
-            await search.fill("SAF-101")
+            await search.fill("STCW")
         await expect(page.get_by_text(course["title"], exact=True).first).to_be_visible()
         await capture(page, output, f"{role}-courses.png", role.upper() + " REAL SAF-101 COURSE")
         passed(step, route=path)
@@ -216,7 +220,9 @@ async def main(args):
     report["result"] = "PASS" if all(r["result"] == "PASS" for r in report["roles"]) else "FAIL"
     report["finishedAt"] = datetime.now(timezone.utc).isoformat()
     serialized = json.dumps(report, ensure_ascii=False, indent=2)
-    for value in secrets.values():
+    for key, value in secrets.items():
+        if key == "APP_BASE_URL":
+            continue
         if isinstance(value, str) and len(value) >= 20:
             serialized = serialized.replace(value, "[REDACTED]")
     (output / "summary.local.json").write_text(serialized, encoding="utf-8")

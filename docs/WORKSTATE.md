@@ -15,9 +15,20 @@ retaining restrictions on integrations that are not provisioned. Three new role
 passwords were stored in the existing ignored secrets file and set on Railway
 without deploying the old image. No credential values were printed or committed.
 
-Next: run the combined backend checks, deploy the new backend, verify real role
-logins/dashboard/data and negative access checks, update the private team handoff,
-then publish and merge the scoped changes. See `docs/DEMO-ACCOUNTS.md`.
+First deployment `2d9a5ea8` / `af6cb246-5677-4c7a-9040-39354eaa6d3b` started.
+115 focused backend tests passed, and a fresh source review found no blockers.
+Read-only Neon before/after snapshots confirmed four enabled roles, unchanged
+SAF-101 ownership and unchanged learner enrollment progress. All four UI logins
+work. Student and teacher acceptance passed. The first admin acceptance exposed
+an inherited native-query sorting defect (`c.createdAt` instead of `c.created_at`)
+and a runner assumption that the title-search API also searches course codes.
+The adapter now translates timestamp sort properties only for native SQL;
+JPQL keeps entity properties. Regression tests and redeployment are in progress.
+The runner now searches the actual title token STCW and exercises review filters.
+
+Next: finish the search fix validation, redeploy, complete real four-role UI/RBAC
+checks, update private credentials/evidence, and merge PR #5 after CI. See
+`docs/DEMO-ACCOUNTS.md`.
 
 ## Free demo deployment — hosted acceptance passed
 

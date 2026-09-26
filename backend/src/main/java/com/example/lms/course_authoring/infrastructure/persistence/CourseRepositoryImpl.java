@@ -9,7 +9,9 @@ import com.example.lms.identity.infrastructure.persistence.repository.UserJpaRep
 import com.example.lms.shared.domain.valueobject.CourseCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -169,7 +171,7 @@ public class CourseRepositoryImpl implements CourseRepository {
     @Override
     public Page<Course> findApprovedByTitleContaining(String search, Pageable pageable) {
         return jpaRepository.findByStatusAndTitleContaining(
-                CourseJpaEntity.CourseStatus.APPROVED.name(), search, pageable)
+                CourseJpaEntity.CourseStatus.APPROVED.name(), search, nativePageable(pageable))
                 .map(mapper::toDomain);
     }
 
@@ -181,7 +183,7 @@ public class CourseRepositoryImpl implements CourseRepository {
 
     @Override
     public Page<Course> findReviewQueue(Pageable pageable) {
-        return jpaRepository.findReviewQueue(pageable).map(mapper::toDomain);
+        return jpaRepository.findReviewQueue(nativePageable(pageable)).map(mapper::toDomain);
     }
 
     @Override
@@ -189,7 +191,7 @@ public class CourseRepositoryImpl implements CourseRepository {
         if (teacherIds == null || teacherIds.isEmpty()) {
             return Page.empty(pageable);
         }
-        return jpaRepository.findReviewQueueByTeacherIdIn(teacherIds, pageable)
+        return jpaRepository.findReviewQueueByTeacherIdIn(teacherIds, nativePageable(pageable))
                 .map(mapper::toDomain);
     }
 
@@ -198,7 +200,7 @@ public class CourseRepositoryImpl implements CourseRepository {
         if (organizationId == null) {
             return Page.empty(pageable);
         }
-        return jpaRepository.findReviewQueueByOrganizationId(organizationId, pageable)
+        return jpaRepository.findReviewQueueByOrganizationId(organizationId, nativePageable(pageable))
                 .map(mapper::toDomain);
     }
 
@@ -273,7 +275,7 @@ public class CourseRepositoryImpl implements CourseRepository {
                         categoryFilter,
                         entityDeliveryMode,
                         normalizedSearch,
-                        pageable)
+                        nativePageable(pageable))
                 .map(mapper::toDomain);
     }
 
@@ -305,13 +307,13 @@ public class CourseRepositoryImpl implements CourseRepository {
     @Override
     public Page<Course> findByStatusAndTitleContaining(Course.CourseStatus status, String search, Pageable pageable) {
         String entityStatus = mapStatusToEntity(status).name();
-        return jpaRepository.findByStatusAndTitleContaining(entityStatus, search, pageable)
+        return jpaRepository.findByStatusAndTitleContaining(entityStatus, search, nativePageable(pageable))
                 .map(mapper::toDomain);
     }
 
     @Override
     public Page<Course> findByTitleContaining(String search, Pageable pageable) {
-        return jpaRepository.findByTitleContaining(search, pageable)
+        return jpaRepository.findByTitleContaining(search, nativePageable(pageable))
                 .map(mapper::toDomain);
     }
 
@@ -324,8 +326,20 @@ public class CourseRepositoryImpl implements CourseRepository {
     @Override
     public Page<Course> findByStatusAndCategoryIdAndTitleContaining(Course.CourseStatus status, UUID categoryId, String search, Pageable pageable) {
         String entityStatus = mapStatusToEntity(status).name();
-        return jpaRepository.findByStatusAndCategoryIdAndTitleContaining(entityStatus, categoryId, search, pageable)
+        return jpaRepository.findByStatusAndCategoryIdAndTitleContaining(entityStatus, categoryId, search, nativePageable(pageable))
                 .map(mapper::toDomain);
+    }
+
+    private Pageable nativePageable(Pageable pageable) {
+        if (pageable.isUnpaged()) return pageable;
+        // Native SQL receives column names; JPQL queries still use entity properties.
+        Sort sort = Sort.by(pageable.getSort().stream().map(order -> order.withProperty(
+                switch (order.getProperty()) {
+                    case "createdAt" -> "created_at";
+                    case "updatedAt" -> "updated_at";
+                    default -> order.getProperty();
+                })).toList());
+        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
     }
 
     @Override
