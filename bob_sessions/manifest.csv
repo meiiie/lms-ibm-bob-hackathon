@@ -1,1 +1,2 @@
 member_handle,task_id,task_description,completed_at_vietnam,summary_png,history_markdown_optional,bobcoins_used_if_shown,related_commit,notes
+meiiie,dark-offline-sidebar-01,Implement offline-safe AI assistant sidebar: ChatPanelComponent offline state + reconnect guard + AI interceptor bypass,2026-09-26T08:16:45+07:00,,,,3432af2aa65b47027eae5aaddaa06fdad5e20618,PR #2 merged to meiiie/lms-ibm-bob-hackathon main. Work by Codex coordinating Bob per docs/DARK-BOB-TASK.md. Bob IDE screenshot required from owner — see bob_sessions/README.md for capture instructions.
