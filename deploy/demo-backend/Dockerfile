@@ -4,9 +4,9 @@ FROM maven:3.9.14-eclipse-temurin-21 AS build
 WORKDIR /build
 ENV MAVEN_OPTS="-Xmx512m"
 COPY backend/pom.xml ./pom.xml
-RUN --mount=type=cache,target=/root/.m2/repository mvn dependency:go-offline -B -ntp
+RUN mvn dependency:go-offline -B -ntp
 COPY backend/src ./src
-RUN --mount=type=cache,target=/root/.m2/repository mvn package -DskipTests -B -ntp
+RUN mvn package -DskipTests -B -ntp
 
 FROM eclipse-temurin:21-jre-alpine
 RUN addgroup -S lms && adduser -S -G lms -u 1001 lms

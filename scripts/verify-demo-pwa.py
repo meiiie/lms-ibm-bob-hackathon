@@ -7,6 +7,7 @@ Run --help before use. Deployment and the ignored secrets file must already exis
 
 import argparse
 import asyncio
+import hashlib
 import json
 import re
 import sys
@@ -43,7 +44,7 @@ async def api_get(page, path):
         url.searchParams.set('ngsw-bypass', 'true');
         const response = await fetch(url, {
             headers: {Authorization: `Bearer ${token}`, 'ngsw-bypass': 'true'},
-            cache: 'no-store'
+            cache: 'no-store', signal: AbortSignal.timeout(30000)
         });
         return {status: response.status,
                 data: response.ok ? (await response.json()).data : null};
@@ -213,6 +214,10 @@ async def main(args):
                 lesson_url = f"{ORIGIN}/student/learn/course/{fixture['courseId']}/lesson/{fixture['lessonId']}"
                 await page.goto(lesson_url, wait_until="networkidle")
                 await expect(page.locator("app-lesson-content")).to_be_visible()
+                prose = page.locator("app-lesson-content .lesson-prose").first
+                await expect(prose).to_be_visible()
+                online_text = " ".join((await prose.inner_text()).split())
+                assert len(online_text) >= 80, "Online text lesson is empty or too short for this acceptance"
                 await page.wait_for_function("navigator.serviceWorker.controller?.state === 'activated'", timeout=180000)
                 worker = await page.evaluate("""async () => {
                     const registration = await navigator.serviceWorker.ready;
@@ -223,7 +228,8 @@ async def main(args):
                 assert worker["controller"].endswith("/sw-wrapper.js"), "Expected the deployed PWA wrapper"
                 assert worker["active"] == "activated"
                 assert any(name.startswith("ngsw:") for name in worker["caches"]), "Angular SW caches missing"
-                passed(step, serviceWorker=worker)
+                passed(step, serviceWorker=worker,
+                       onlineTextSha256=hashlib.sha256(online_text.encode("utf-8")).hexdigest())
 
                 step = "offline reload served by service worker"
                 cdp = await context.new_cdp_session(page)
@@ -233,13 +239,15 @@ async def main(args):
                 response = await page.reload(wait_until="domcontentloaded")
                 assert response and response.ok and response.from_service_worker, "Offline document did not come from the service worker"
                 await expect(page.locator("app-lesson-content")).to_be_visible(timeout=60000)
-                await expect(page.get_by_text(fixture["lessonTitle"], exact=True).first).to_be_visible()
+                await expect(page.locator("#lesson-heading")).to_have_text(fixture["lessonTitle"])
                 assert not await page.get_by_text("Lỗi tải bài học", exact=True).count()
                 assert not await page.evaluate("navigator.onLine")
-                lesson_text = (await page.locator("app-lesson-content").inner_text()).strip()
-                assert len(lesson_text) >= 80, "Offline lesson body is empty or only a placeholder"
+                await expect(prose).to_be_visible()
+                lesson_text = " ".join((await prose.inner_text()).split())
+                assert lesson_text == online_text, "Offline prose does not match the actual online lesson text"
                 await capture(page, output, "02-offline-reloaded-lesson.png", "OFFLINE RELOAD / REAL SW CACHE")
-                passed(step, fromServiceWorker=True, bodyCharacters=len(lesson_text), httpCacheDisabled=True)
+                passed(step, fromServiceWorker=True, bodyCharacters=len(lesson_text), httpCacheDisabled=True,
+                       offlineTextSha256=hashlib.sha256(lesson_text.encode("utf-8")).hexdigest())
 
                 step = "complete text lesson offline"
                 for index in range(len(fixture["sectionIds"])):
