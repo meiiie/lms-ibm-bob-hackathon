@@ -100,19 +100,17 @@ Authorized by owner per docs/DARK-BOB-TASK.md.
 ### Tests
 
 **`fe/src/app/features/ai-chat/presentation/components/chat-panel/chat-panel.component.spec.ts`**
-  37 cases covering: offline open, offline mid-init (generation invalidation), reconnect
-  button in own block, teardown, online loading-only state, reconnect NOT during init,
-  missing iframe rejects all auth-expired, exact double-click = 1 request.
+  35 cases: offline open, offline mid-init, e2e reconnect (online pending → offline → online
+  → old resolves (no-op) → retry → new request → iframe), teardown, online flow, postMessage
+  bridge (valid, dedup, replacement guard, wrong origin/source), double-click = 1 request.
 
 **`fe/src/app/features/ai-chat/presentation/components/chat-panel/chat-panel.recovery.spec.ts`**
-  Coordinator regression: stale init must not strand recovery (offline→online before
-  old promise resolves → button appears when promise settles → retry completes).
+  Coordinator regression: stale init must not strand recovery.
 
 **`fe/src/app/api/interceptors/offline.interceptor.spec.ts`**
-  Added regression: `/api/v3/ai/token`, `/api/v3/ai/chat`, `/api/v3/ai/sessions`
-  must all return `true` from `shouldBypassOfflineInterception`.
+  Regression: `/api/v3/ai/` paths bypass offline interception.
 
-### Verification
+### Verification (round 2, commit da4fbcb4)
 
 ```
 npm.cmd --prefix fe run test -- \
@@ -121,7 +119,7 @@ npm.cmd --prefix fe run test -- \
   --include="**/offline.interceptor.spec.ts" \
   --browsers=ChromeHeadless --no-watch --no-progress
 ```
-Result: **37/37 SUCCESS**, Chrome Headless 153.0.0.0 (Windows 10)
+Result: **35/35 SUCCESS, exit 0** — Chrome Headless 153.0.0.0 (Windows 10)
 
 ```
 SITEMAP_BASE_URL=http://127.0.0.1:9 npm.cmd --prefix fe run build
@@ -133,8 +131,8 @@ no TypeScript or Angular compile errors).
 
 Coordinator reproduced the original compiled app in real Chrome (port 4311,
 offline open): 1 token request fired despite being offline; new sync item appeared.
-docs/DARK-QA-BASELINE.md records the original defect. All four review findings
-and the interceptor bypass are fixed in this commit.
+docs/DARK-QA-BASELINE.md records the original defect. All findings fixed across two
+commits (5d47ddf1 and da4fbcb4).
 
 ## Next step
 
