@@ -3,8 +3,8 @@
 Fork of [Maritime LMS](https://github.com/linhlinhlin/LMS_hohulili), created after
 the owner-authorized [MIT transition](https://github.com/linhlinhlin/LMS_hohulili/pull/541).
 The existing LMS is reused. The hackathon work improves debugging and verification
-of its assistant around offline/reconnect failures, with an optional personal
-ChatGPT follow-up. Bob's first sidebar fix is merged in PR #2; Codex continues
+of its assistant around offline/reconnect failures, with optional online ChatGPT
+and same-device Ollama / LM Studio providers. Bob's first sidebar fix is merged in PR #2; Codex continues
 the follow-up after Bob's quota stop. See the verification limits below before
 treating this repository as a completed submission.
 
@@ -12,11 +12,18 @@ treating this repository as a completed submission.
 - **Current scope/status:** [PRD](docs/PRD.md) · [WORKSTATE](docs/WORKSTATE.md)
 - **Provenance/evidence:** [PREEXISTING](docs/PREEXISTING.md) · [Bob sessions](bob_sessions/README.md)
 - **Optional ChatGPT connection:** [Setup and limits](docs/CHATGPT-SETUP.md)
+- **Local AI and offline boundaries:** [Ollama / LM Studio setup](docs/LOCAL-AI-SETUP.md)
+- **WebMCP decision:** [Research as of 26 September 2026](docs/WEBMCP-RESEARCH-2026-09-26.md)
 - **Submission:** [Readiness audit](docs/SUBMISSION-READINESS.md) · [Checklist](docs/SUBMISSION-CHECKLIST.md) · [Draft](submission/TEMPLATE.md)
 
 Build window: **25 September 22:00–27 September 22:00, 2026, Vietnam (UTC+7)**.
 Internal target: 27 September 20:00 UTC+7. Neko Core is the team name, not an LMS
 software dependency. No hackathon demo URL has been deployed by this setup.
+
+ChatGPT requires internet. Downloaded lessons remain independent of cloud AI.
+Local AI requires a running server and a downloaded chat model on the learner's
+own device; installing the PWA alone does not install an AI model. WebMCP is a
+researched follow-up, not an implemented dependency or a provider connection.
 
 The upstream README below describes the existing application; its historical
 production links, deployment commands and accomplishments are not this fork's

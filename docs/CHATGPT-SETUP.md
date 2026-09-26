@@ -61,6 +61,17 @@ Cloud AI requires internet access. Offline learning remains available independen
 Requests are not queued or automatically replayed after reconnecting. Answers are
 plain text, with no model tools or code execution.
 
+The sidebar labels ChatGPT as cloud/online-only. A learner can prepare a question
+offline, but it stays only in the current panel and is cleared when that panel
+closes; it is never added to the LMS synchronization queue. The selected-passage
+action copies only text the learner deliberately selected outside the assistant
+into the editable question, within its 2,000-character limit. Review it before
+sending; this is not automatic page access or WebMCP tool execution.
+
+For a separately running model on the learner's own device, see
+[Local AI setup](LOCAL-AI-SETUP.md). Ollama/LM Studio inference is a separate
+provider; the LMS does not make ChatGPT available offline.
+
 ## Prototype limits
 
 Connections live only in bounded backend memory, scoped to the authenticated LMS

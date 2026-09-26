@@ -61,7 +61,7 @@ function baseProviders(
   token: ReturnType<typeof makeDeferredTokenService>,
 ) {
   return [
-    { provide: AiAvailabilityService, useValue: { chatgptEnabled: signal(false), wiiiAvailable: signal(true) } },
+    { provide: AiAvailabilityService, useValue: { chatgptEnabled: signal(false), wiiiAvailable: signal(true), localSupported: signal(true) } },
     { provide: NetworkStatusService, useValue: network },
     { provide: AiTokenService, useValue: token },
     { provide: SessionManagementService, useValue: { currentRole: () => 'student' } },

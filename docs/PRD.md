@@ -6,6 +6,32 @@ The historical proposal below records the original preparation context.
 
 ## Selected slice and observable acceptance
 
+### 26 September integration update
+
+The owner requested merging the reviewed work while preserving teammates'
+changes, improving sidebar UX, and distinguishing internet-dependent ChatGPT
+from offline learning and optional device-local inference. ChatGPT remains an
+opt-in experimental provider; its latest model's real answer is not yet verified.
+That limitation is disclosed rather than attributed to Bob or hidden by mocks.
+
+Additional acceptance:
+
+- Cloud controls clearly require internet; downloaded learning content stays
+  independent. Offline question drafting does not queue or send requests later.
+- A learner can explicitly connect to an already running Ollama or LM Studio on
+  the same device at the supported loopback ports. The LMS never installs models,
+  probes localhost automatically, attaches its login token, or falls back to cloud.
+- Local inference depends on actual server reachability and a downloaded local
+  model, not the internet status flag. PWA installation alone supplies no LLM.
+- Selected lesson text is copied only on an explicit action into a visible,
+  editable, bounded question. Nothing is sent until the learner submits it.
+- Desktop/mobile layouts, keyboard access, cancellation, errors and provider
+  switching are checked in a real browser with fixture/live evidence separated.
+
+WebMCP remains a researched follow-up, not an implemented dependency of this
+slice. See [the dated assessment](WEBMCP-RESEARCH-2026-09-26.md). It does not
+automatically connect the sidebar to a model or to application tools.
+
 The developer workflow is reproducing and fixing assistant failures around
 connectivity, then validating a bounded integration before release. The learner
 continues downloaded lessons offline; cloud AI must not block that work or leave

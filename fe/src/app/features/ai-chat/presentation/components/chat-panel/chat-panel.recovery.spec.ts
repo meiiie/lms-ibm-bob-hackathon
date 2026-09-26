@@ -20,7 +20,7 @@ describe('ChatPanelComponent interrupted initialization recovery', () => {
     TestBed.configureTestingModule({
       imports: [ChatPanelComponent],
       providers: [
-        { provide: AiAvailabilityService, useValue: { chatgptEnabled: signal(false), wiiiAvailable: signal(true) } },
+        { provide: AiAvailabilityService, useValue: { chatgptEnabled: signal(false), wiiiAvailable: signal(true), localSupported: signal(true) } },
         { provide: NetworkStatusService, useValue: { online, isEffectivelyOffline: () => !online() } },
         { provide: AiTokenService, useValue: { getToken, clearToken: () => {}, organizationId: () => null } },
         { provide: SessionManagementService, useValue: { currentRole: () => 'student' } },
@@ -56,7 +56,7 @@ describe('ChatPanelComponent interrupted initialization recovery', () => {
     TestBed.configureTestingModule({
       imports: [ChatPanelComponent],
       providers: [
-        { provide: AiAvailabilityService, useValue: { chatgptEnabled: signal(false), wiiiAvailable: signal(true) } },
+        { provide: AiAvailabilityService, useValue: { chatgptEnabled: signal(false), wiiiAvailable: signal(true), localSupported: signal(true) } },
         { provide: NetworkStatusService, useValue: { online, isEffectivelyOffline: () => !online() } },
         { provide: AiTokenService, useValue: { getToken, clearToken: () => {}, organizationId: () => null } },
         { provide: SessionManagementService, useValue: { currentRole: () => 'student' } },

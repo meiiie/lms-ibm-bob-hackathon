@@ -1,6 +1,74 @@
 # Current work state
 
-## Current continuation — personal ChatGPT sidebar
+## Current integration — local provider, UX and authorized merge
+
+26 September 2026, Vietnam (UTC+7). The owner subsequently authorized merging
+PR #3 while clearly documenting ChatGPT's online-only experimental status, asked
+for professional sidebar UX, optional local models, a WebMCP assessment and
+careful preservation of teammates' work. This decision supersedes the earlier
+requirement below to hold the entire PR solely for a new ChatGPT consent.
+
+- The existing `gemma3:4b` model answered a harmless lifeboat question through
+  Ollama at `127.0.0.1:11434` in 18.34 seconds. This is a real local-provider shell
+  check, not browser or installed-PWA proof. No model or runtime was installed;
+  the request released the model with `keep_alive:0` afterwards.
+- Added explicit same-device Ollama and LM Studio connections through isolated
+  browser fetch, fixed loopback endpoints, no LMS JWT/cookies, no automatic probe,
+  no queued/replayed requests, no cloud fallback and bounded cancellable responses.
+  Known Ollama cloud/remote models are excluded. LM Studio is not installed here
+  and its actual runtime remains unverified.
+- Sidebar polish preserves the existing design system, offers clear cloud/local
+  states and offline drafting, and copies selected text into a reviewed question
+  only on explicit action. New local setup remains reachable without cloud health.
+- PASS: all 101 targeted Angular tests in ChromeHeadless, exit 0; local log
+  `.tools/assistant-integration-fixed-tests.log`. The earlier 96-test run passed
+  before the final integration regressions were added.
+- Fresh integration review identified rapid-reconnect discovery and click-only
+  accessibility races. Three regression tests first failed against the old code
+  (14 passed, exit 1), then passed in the combined suite after the fixes. The
+  final suite also verifies deduplicated recovery and listener cleanup. Log:
+  `.tools/assistant-integration-before-fix.log`. Independent review found no
+  remaining blocker in these changes.
+- Real Chrome also exposed an inherited offline notice masking the lower part
+  of Send. The notice now moves outside the desktop sidebar, and the mobile panel
+  sits above it. The final browser run verified top/center/bottom pointer hits
+  across the whole 44px Send button on desktop and mobile.
+- PASS: `python scripts/verify-ai-sidebar.py --real-local --output
+  .tools/assistant-polish-browser-verified`, 14 acceptance groups, exit 0, real
+  Chrome 153.0.8010.53. The LMS identity and cloud/LM Studio responses were
+  synthetic. Exactly one real Ollama `gemma3:4b` request returned the nautical
+  mile answer through the sidebar while cloud routes were blocked by the fixture.
+  Local requests carried no LMS JWT/cookies/referrer and created no sync entries.
+  Desktop/mobile layouts, selected-passage privacy, offline drafts, explicit
+  recovery, cancellation and switching passed. Mobile means viewport/touch
+  emulation, not a physical phone. See the ignored output directory for labeled
+  captures, `summary.local.json` and `real-ollama-answer.local.json`.
+- Not verified by that browser run: real ChatGPT inference with the updated
+  model, full logged-in LMS/backend transport, installed-PWA service-worker
+  behavior, or production HTTPS local-network permission. Host networking stayed
+  enabled; this was a simulated cloud outage, not a physically disconnected host.
+- PASS: `node scripts/harness.cjs check`, all four harness regression tests,
+  development/production Compose validation and Caddy configuration validation
+  (`caddy adapt --validate` in the existing `caddy:2-alpine` image with network
+  disabled). Caddy reported its existing formatting warning. These checks do not
+  start the LMS stack or prove installed-PWA behavior.
+- The final PR checks are the gate for the production frontend build, complete
+  backend suite and Docker application smoke. See the checks and merge state on
+  [PR #3](https://github.com/meiiie/lms-ibm-bob-hackathon/pull/3) for the published
+  revision; the owner authorized merging only this PR after those checks pass.
+- WebMCP remains experimental and does not connect the Java ChatGPT adapter.
+  Defer a dependent workflow; see `docs/WEBMCP-RESEARCH-2026-09-26.md` and
+  `docs/LOCAL-AI-SETUP.md` for current capabilities, topology and prerequisites.
+- Remote main was `c94f9f9f` when inspected. Faiz's PR #1 adds only its own image,
+  with no changed-path overlap with PR #3. Preserve PR #1 and the owner's unrelated
+  `.factorypath` edit. Recheck remote main and the final PR head before merging.
+- Bob evidence: the original meiiie intermediate PNG is already on main and is
+  preserved byte-for-byte. Faiz's open PR image appears to show the wrong window,
+  not a Bob consumption summary; it also lacks a manifest entry. No teammate
+  evidence was changed or merged, and the private recovered transcript stays
+  ignored. Final consumption summaries and submission assets remain outstanding.
+
+## Earlier continuation — personal ChatGPT sidebar
 
 26 September 2026, Vietnam (UTC+7). After Bob's quota stop, the owner explicitly
 asked Codex to continue implementation and verify the connection. Work is on
@@ -67,8 +135,9 @@ historical next-step statements below; the new work is attributed to Codex.
   automatically retrying. The new probe ended pending at about 09:40 UTC+7 after
   its 600-second consent window and discarded its in-memory state. No live answer
   was obtained with the updated model. Do not reuse an expired probe code.
-  Next required step: start one new opt-in probe while the owner is available to
-  complete device consent, then verify a real answer before making PR #3 ready.
+  At that checkpoint the next step was a fresh opt-in consent and real-answer
+  probe. The later owner-authorized merge decision at the top of this document
+  supersedes that PR-readiness hold; live ChatGPT inference remains unverified.
   The revised test-only runner permits at most two explicit allowlisted model
   retries within the same connected session, without storing credentials.
 - Read-only backend review found no confirmed remaining blocker. A targeted test

@@ -4,6 +4,18 @@ Recorded 26 September 2026, 08:51 Vietnam (UTC+7). **The repository has real Bob
 evidence, but the submission package is not complete.** This is an artifact audit,
 not a new application test run or an eligibility ruling.
 
+### Later team-evidence check on 26 September
+
+Main still contained the original `meiiie` checkpoint when rechecked for the
+sidebar merge. [Faiz's separate PR #1](https://github.com/meiiie/lms-ibm-bob-hackathon/pull/1)
+at `a55f49c372e7bd584fb3e2104c6d1bf1c369f673` adds only
+`bob_sessions/faiz_devops_docker_review.png`, without a manifest row. The inspected
+image shows a browser/File Explorer and a missing-file message rather than the
+Bob task consumption summary or Docker results; it appears to be the wrong
+capture. Ask its author to supply the actual summary before treating it as
+evidence. This audit did not modify, comment on or merge that PR. Its changed file
+does not overlap PR #3, which preserves the original `meiiie` PNG.
+
 ## Checkpoint and scope
 
 GitHub `meiiie/lms-ibm-bob-hackathon`, branch `main`, was inspected at

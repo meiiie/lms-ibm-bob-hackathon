@@ -38,13 +38,15 @@ import { NetworkStatusService } from '../../../../../core/services/network-statu
 import { environment } from '../../../../../../environments/environment';
 import { AiAvailabilityService } from '../../../application/services/ai-availability.service';
 import { ChatgptPanelComponent } from '../chatgpt-panel/chatgpt-panel.component';
+import { LocalModelPanelComponent } from '../local-model-panel/local-model-panel.component';
 
 @Component({
   selector: 'app-chat-panel',
-  imports: [ChatgptPanelComponent],
+  imports: [ChatgptPanelComponent, LocalModelPanelComponent],
   template: `
     <div
       class="chat-panel"
+      role="region" aria-label="Study assistant"
       [class.sidebar-mode]="mode() === 'sidebar'"
       [class.widget-mode]="mode() === 'widget'"
       [class.mobile]="isMobile() && mode() === 'widget'"
@@ -56,7 +58,7 @@ import { ChatgptPanelComponent } from '../chatgpt-panel/chatgpt-panel.component'
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="header-icon">
             <path fill-rule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813A3.75 3.75 0 007.466 7.89l.813-2.846A.75.75 0 019 4.5zM18 1.5a.75.75 0 01.728.568l.258 1.036c.236.94.97 1.674 1.91 1.91l1.036.258a.75.75 0 010 1.456l-1.036.258c-.94.236-1.674.97-1.91 1.91l-.258 1.036a.75.75 0 01-1.456 0l-.258-1.036a2.625 2.625 0 00-1.91-1.91l-1.036-.258a.75.75 0 010-1.456l1.036-.258a2.625 2.625 0 001.91-1.91l.258-1.036A.75.75 0 0118 1.5z" clip-rule="evenodd" />
           </svg>
-          <span>{{ provider() === 'chatgpt' ? 'ChatGPT' : 'Wiii' }}</span>
+          <div class="header-copy"><span>{{ provider() === 'chatgpt' ? 'ChatGPT' : provider() === 'local' ? 'Local model' : 'Wiii' }}</span><small>{{ provider() === 'local' ? 'On this device' : 'Online study assistant' }}</small></div>
         </div>
         <div class="header-actions">
           @if (provider() === 'wiii' && mode() === 'sidebar') {
@@ -82,18 +84,23 @@ import { ChatgptPanelComponent } from '../chatgpt-panel/chatgpt-panel.component'
         </div>
       </div>
 
-      @if (availability.chatgptEnabled()) {
+      @if (availability.chatgptEnabled() || availability.localSupported()) {
         <div class="provider-picker">
           <label for="ai-provider">AI provider</label>
           <select id="ai-provider" aria-label="AI provider" [value]="provider()" (change)="changeProvider($event)">
-            <option value="wiii" [disabled]="!availability.wiiiAvailable()">Wiii</option>
-            <option value="chatgpt">ChatGPT (experimental)</option>
+            <option value="wiii" [disabled]="!availability.wiiiAvailable()">{{ availability.wiiiAvailable() ? 'Wiii · cloud' : 'Wiii · unavailable' }}</option>
+            @if (availability.chatgptEnabled() || provider() === 'chatgpt') { <option value="chatgpt" [disabled]="!availability.chatgptEnabled()">{{ availability.chatgptEnabled() ? 'ChatGPT · cloud (experimental)' : 'ChatGPT · unavailable' }}</option> }
+            @if (availability.localSupported()) { <option value="local">Local model · this device</option> }
           </select>
         </div>
       }
 
-      <!-- Offline state — shown when device has no connectivity -->
-      @if (provider() === 'chatgpt') {
+      <div class="provider-content" (pointerdown)="markProviderChosen()" (keydown)="markProviderChosen()"
+        (click)="markProviderChosen()" (input)="markProviderChosen()" (change)="markProviderChosen()">
+      <!-- Local reachability is independent of cloud connectivity. -->
+      @if (provider() === 'local') {
+        <app-local-model-panel />
+      } @else if (provider() === 'chatgpt') {
         <app-chatgpt-panel />
       } @else if (isOffline()) {
         <div class="offline-state" role="status" aria-live="polite">
@@ -112,6 +119,8 @@ import { ChatgptPanelComponent } from '../chatgpt-panel/chatgpt-panel.component'
         A single deliberate retry is offered; the button is outside the offline
         block so it stays visible once isOffline() flips back to false.
       -->
+      } @else if (!availability.wiiiAvailable()) {
+        <div class="error-state" role="status"><p>Wiii is unavailable right now.</p><p>Your lessons remain available. Choose another provider if one is available above.</p></div>
       } @else if (offlineReconnectReady()) {
         <div class="offline-state" role="status" aria-live="polite">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="offline-icon" aria-hidden="true">
@@ -155,6 +164,7 @@ import { ChatgptPanelComponent } from '../chatgpt-panel/chatgpt-panel.component'
           <span>Đang kết nối AI...</span>
         </div>
       }
+      </div>
     </div>
   `,
   styles: [`
@@ -174,12 +184,17 @@ import { ChatgptPanelComponent } from '../chatgpt-panel/chatgpt-panel.component'
       flex-direction: column;
       flex: 1;
       min-height: 0;
-      background: white;
+      background: var(--c-surface, #fff);
+      color: var(--c-text, #0a2a43);
       overflow: hidden;
     }
-    .provider-picker { padding:10px 14px; border-bottom:1px solid #ebebeb; }
-    .provider-picker label { display:block; margin-bottom:4px; font-size:12px; color:#576477; }
-    .provider-picker select { width:100%; padding:7px; border:1px solid #a9b4c5; border-radius:6px; background:white; color:#263244; }
+    .provider-content { display:flex; flex-direction:column; flex:1; min-height:0; min-width:0; overflow:hidden; }
+    .provider-picker { padding:.75rem 1.125rem; border-bottom:1px solid var(--c-border,#ebebeb); }
+    .provider-picker label { display:block; margin-bottom:.375rem; font-size:.75rem; color:var(--c-muted,#4b5565); font-weight:500; }
+    .provider-picker select { width:100%; min-height:2.75rem; padding:.625rem; border:1px solid #a9b6c3; border-radius:.5rem; background:var(--c-surface,#fff); color:var(--c-text,#0a2a43); font:inherit; font-size:.8125rem; }
+    .provider-picker select:focus-visible, button:focus-visible { outline:2px solid var(--c-text,#0a2a43); outline-offset:2px; }
+    .header-copy { display:flex; flex-direction:column; gap:.125rem; }
+    .header-copy small { font-size:.6875rem; font-weight:400; letter-spacing:0; color:var(--c-muted,#4b5565); }
 
     /* =========================================================
        SIDEBAR MODE — fills parent container, no fixed positioning
@@ -201,14 +216,14 @@ import { ChatgptPanelComponent } from '../chatgpt-panel/chatgpt-panel.component'
 
     /* Sidebar header — clean minimal (Claude.ai style) */
     .chat-panel.sidebar-mode .panel-header {
-      background: #ffffff;
-      color: #1a1a2e;
-      border-bottom: 1px solid #ebebeb;
+      background: var(--c-surface,#fff);
+      color: var(--c-text,#0a2a43);
+      border-bottom: 1px solid var(--c-border,#ebebeb);
       padding: 13px 14px;
     }
 
     .chat-panel.sidebar-mode .header-icon {
-      color: #0056D2;
+      color: var(--c-primary,#1c5c86);
     }
 
     .chat-panel.sidebar-mode .header-title {
@@ -223,8 +238,8 @@ import { ChatgptPanelComponent } from '../chatgpt-panel/chatgpt-panel.component'
       background: transparent;
       color: #9ca3af;
       border-radius: 6px;
-      width: 28px;
-      height: 28px;
+      width: 2.75rem;
+      height: 2.75rem;
     }
 
     .chat-panel.sidebar-mode .new-chat-button:hover,
@@ -273,8 +288,8 @@ import { ChatgptPanelComponent } from '../chatgpt-panel/chatgpt-panel.component'
       right: 0;
       bottom: 0;
       width: 100%;
-      height: 100%;
-      max-height: 100%;
+      height: 100dvh;
+      max-height: 100dvh;
       border-radius: 0;
     }
 
@@ -294,8 +309,9 @@ import { ChatgptPanelComponent } from '../chatgpt-panel/chatgpt-panel.component'
       align-items: center;
       justify-content: space-between;
       padding: 12px 16px;
-      background: linear-gradient(135deg, #0056D2 0%, #004BB5 100%);
-      color: white;
+      background: var(--c-surface,#fff);
+      color: var(--c-text,#0a2a43);
+      border-bottom: 1px solid var(--c-border,#ebebeb);
       flex-shrink: 0;
     }
 
@@ -320,13 +336,13 @@ import { ChatgptPanelComponent } from '../chatgpt-panel/chatgpt-panel.component'
     .new-chat-button,
     .expand-button,
     .close-button {
-      width: 30px;
-      height: 30px;
+      width: 2.75rem;
+      height: 2.75rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.15);
-      color: white;
+      background: transparent;
+      color: var(--c-muted,#4b5565);
       border: none;
       border-radius: 8px;
       cursor: pointer;
@@ -336,7 +352,7 @@ import { ChatgptPanelComponent } from '../chatgpt-panel/chatgpt-panel.component'
     .new-chat-button:hover,
     .expand-button:hover,
     .close-button:hover {
-      background: rgba(255, 255, 255, 0.25);
+      background: var(--c-bg,#f8fafc);
     }
 
     .new-chat-button svg,
@@ -421,8 +437,9 @@ import { ChatgptPanelComponent } from '../chatgpt-panel/chatgpt-panel.component'
 
     .error-state button,
     .retry-button {
+      min-height: 2.75rem;
       padding: 8px 16px;
-      background: #0056D2;
+      background: var(--c-primary,#1c5c86);
       color: white;
       border: none;
       border-radius: 8px;
@@ -448,6 +465,10 @@ import { ChatgptPanelComponent } from '../chatgpt-panel/chatgpt-panel.component'
         display: none;
       }
     }
+    @media (prefers-reduced-motion: reduce) {
+      .chat-panel.widget-mode, button { transition:none; }
+      .loading-spinner { animation:none; }
+    }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -459,7 +480,8 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   private readonly sanitizer = inject(DomSanitizer);
   private readonly networkStatus = inject(NetworkStatusService);
   readonly availability = inject(AiAvailabilityService);
-  readonly provider = signal<'wiii' | 'chatgpt'>('wiii');
+  readonly provider = signal<'wiii' | 'chatgpt' | 'local'>('wiii');
+  private providerChosen = false;
 
   // Inputs
   mode = input<'sidebar' | 'widget'>('sidebar');
@@ -521,9 +543,12 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
     effect(() => {
       const chatgpt = this.availability.chatgptEnabled();
       const wiii = this.availability.wiiiAvailable();
+      const local = this.availability.localSupported();
       untracked(() => {
-        if (chatgpt && !wiii && this.provider() === 'wiii') this.selectProvider('chatgpt');
-        else if (wiii && this.provider() === 'wiii' && !this.embedUrl() && !this.loadError()
+        if (this.providerChosen) return;
+        const preferred = wiii ? 'wiii' : chatgpt ? 'chatgpt' : local ? 'local' : 'wiii';
+        if (preferred !== this.provider()) this.selectProvider(preferred, false);
+        else if (wiii && !this.embedUrl() && !this.loadError()
           && !this.offlineReconnectReady()) this.initEmbed();
       });
     });
@@ -666,11 +691,15 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
 
   changeProvider(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
-    if (value === 'wiii' || value === 'chatgpt') this.selectProvider(value);
+    if (value === 'wiii' || value === 'chatgpt' || value === 'local') this.selectProvider(value);
   }
 
-  selectProvider(provider: 'wiii' | 'chatgpt'): void {
+  markProviderChosen(): void { this.providerChosen = true; }
+
+  selectProvider(provider: 'wiii' | 'chatgpt' | 'local', userInitiated = true): void {
     if (provider === 'chatgpt' && !this.availability.chatgptEnabled()) return;
+    if (provider === 'local' && !this.availability.localSupported()) return;
+    if (userInitiated) this.providerChosen = true;
     this.initGeneration++;
     this.initInFlight.set(false);
     this.embedUrl.set(null);

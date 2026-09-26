@@ -14,7 +14,7 @@ import { SessionExpiredService } from '../../../core/services/session-expired.se
   template: `
     @if (isOffline() && !isOfflineRoute()) {
       <div
-        class="pointer-events-none fixed bottom-20 right-3 z-[950] max-w-[calc(100vw-1.5rem)] transition-all duration-200 sm:bottom-4 sm:right-4 sm:max-w-sm"
+        class="offline-notice pointer-events-none fixed bottom-20 right-3 z-[950] max-w-[calc(100vw-1.5rem)] transition-all duration-200 sm:bottom-4 sm:right-4 sm:max-w-sm"
         role="status"
         aria-live="polite"
       >
@@ -93,6 +93,14 @@ import { SessionExpiredService } from '../../../core/services/session-expired.se
       </div>
     }
   `,
+  styles: [`
+    @media (min-width: 768px) {
+      :host-context(body:has(app-chat-panel)) .offline-notice {
+        left: 1rem;
+        right: auto;
+      }
+    }
+  `],
 })
 export class OfflineIndicatorComponent {
   protected readonly network = inject(NetworkStatusService);

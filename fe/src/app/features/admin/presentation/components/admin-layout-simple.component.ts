@@ -344,7 +344,7 @@ export class AdminLayoutSimpleComponent implements OnInit, OnDestroy {
     const isOperationalAdminRoute = route.startsWith('/admin/offline-storage')
       || route.startsWith('/admin/settings')
       || route.startsWith('/admin/logs');
-    return this.aiAvailability.isAvailable()
+    return this.aiAvailability.canOpenAssistant()
       && !this.shouldHideSidebar()
       && !isOperationalAdminRoute;
   });

@@ -63,6 +63,13 @@ the owner asked Codex to continue and check the ChatGPT sidebar. The ChatGPT
 implementation, new verification and follow-up documentation are Codex work.
 They must not be added to Bob usage totals or credited to Dark personally.
 
+The same Codex continuation on 26 September adds the optional browser-to-local
+Ollama/LM Studio adapter, sidebar UX, explicit selected-passage context, regression
+tests and WebMCP research. It reuses the existing LMS design and offline stack;
+it does not turn the PWA into an embedded model runtime. The real local probe used
+an already installed Ollama server and `gemma3:4b`; no model weights are bundled
+or relicensed by this repository. Consult the provider/model terms separately.
+
 The Java protocol adapter references `vishhvak/chatgpt-oauth` at revision
 `53299ef0b335b53f6204b1c64a316a48567ca76e`. Preserve its
 [MIT notice](third-party/chatgpt-oauth-LICENSE.txt). This protocol is reused

@@ -35,7 +35,7 @@ describe('ChatWidgetComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ChatWidgetComponent],
       providers: [
-        { provide: AiAvailabilityService, useValue: { chatgptEnabled: signal(false), wiiiAvailable: signal(true) } },
+        { provide: AiAvailabilityService, useValue: { chatgptEnabled: signal(false), wiiiAvailable: signal(true), localSupported: signal(true) } },
         {
           provide: AuthService,
           useValue: {

@@ -88,6 +88,7 @@ jobs:
           --include="**/chat-panel*.spec.ts"
           --include="**/chat-widget.component.spec.ts"
           --include="**/chatgpt*.spec.ts"
+          --include="**/local-model*.spec.ts"
           --include="**/ai-availability.service.spec.ts"
           --include="**/offline.interceptor.spec.ts"
           --include="**/error.interceptor.spec.ts"

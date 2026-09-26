@@ -38,7 +38,22 @@ describe('ChatgptPanelComponent (mock provider)', () => {
     component = fixture.componentInstance;
   });
 
-  afterEach(() => fixture.destroy());
+  afterEach(() => {
+    window.getSelection()?.removeAllRanges();
+    document.querySelectorAll('[data-test-study-passage]').forEach(element => element.remove());
+    fixture.destroy();
+  });
+
+  function selectPassage(text: string): void {
+    const passage = document.createElement('p');
+    passage.setAttribute('data-test-study-passage', 'true');
+    passage.textContent = text;
+    document.body.appendChild(passage);
+    const range = document.createRange();
+    range.selectNodeContents(passage);
+    window.getSelection()!.removeAllRanges();
+    window.getSelection()!.addRange(range);
+  }
 
   it('displays disabled state without offering connection', () => {
     api.status.and.returnValue(of({ enabled: false, status: 'disconnected' }));
@@ -98,6 +113,74 @@ describe('ChatgptPanelComponent (mock provider)', () => {
     expect(api.status).not.toHaveBeenCalled();
     expect(api.start).not.toHaveBeenCalled();
     expect(fixture.nativeElement.textContent).toContain('internet connection');
+  });
+
+  it('supports offline study starters without sending a request', () => {
+    online.set(false);
+    fixture.detectChanges();
+    const starter = fixture.nativeElement.querySelector('.starter-button') as HTMLButtonElement;
+    starter.click();
+    fixture.detectChanges();
+    const textarea = fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement;
+    expect(textarea.value).toContain('Explain this concept');
+    expect(textarea.disabled).toBeFalse();
+    expect(component.canSend()).toBeFalse();
+    expect(fixture.nativeElement.querySelector('button[type="submit"]').disabled).toBeTrue();
+    expect(api.ask).not.toHaveBeenCalled();
+    expect(api.status).not.toHaveBeenCalled();
+  });
+
+  it('retains an offline draft and waits for explicit sending after manual recovery', () => {
+    api.status.and.returnValue(of(connected));
+    fixture.detectChanges();
+    online.set(false);
+    fixture.detectChanges();
+    component.question.set('Explain buoyancy');
+    online.set(true);
+    fixture.detectChanges();
+    expect(component.question()).toBe('Explain buoyancy');
+    expect(component.canSend()).toBeFalse();
+    component.resume();
+    expect(component.canSend()).toBeTrue();
+    expect(api.ask).not.toHaveBeenCalled();
+  });
+
+  it('adds only an explicitly selected external passage as editable plain text', () => {
+    api.status.and.returnValue(of(connected));
+    fixture.detectChanges();
+    component.question.set('Explain this');
+    const passage = 'A hull displaces water. <example> stays plain text.';
+    selectPassage(passage);
+    component.addSelectedPassage();
+    fixture.detectChanges();
+    expect(component.question()).toBe('Explain this\n\nSelected passage:\n' + passage);
+    expect(fixture.nativeElement.querySelector('textarea').value).toBe(component.question());
+    expect(component.draftMessage()).toContain('Review it before sending');
+    expect(api.ask).not.toHaveBeenCalled();
+  });
+
+  it('refuses selection inside the assistant', () => {
+    api.status.and.returnValue(of(connected));
+    fixture.detectChanges();
+    const range = document.createRange();
+    range.selectNodeContents(fixture.nativeElement.querySelector('.intro-copy'));
+    window.getSelection()!.removeAllRanges();
+    window.getSelection()!.addRange(range);
+    component.addSelectedPassage();
+    expect(component.question()).toBe('');
+    expect(component.draftMessage()).toContain('outside the assistant');
+    expect(api.ask).not.toHaveBeenCalled();
+  });
+
+  it('refuses a selected passage that would exceed the combined draft limit', () => {
+    api.status.and.returnValue(of(connected));
+    fixture.detectChanges();
+    component.question.set('q'.repeat(1990));
+    selectPassage('A passage that does not fit.');
+    component.addSelectedPassage();
+    expect(component.question()).toBe('q'.repeat(1990));
+    expect(component.draftMessage()).toContain('shorter passage');
+    expect(api.ask).not.toHaveBeenCalled();
   });
 
   it('cancels polling offline and requires manual recovery without replay', fakeAsync(() => {
