@@ -36,7 +36,7 @@ public class ChatGptProviderAdapter implements ChatGptProvider {
     private final Duration answerTimeout;
 
     @Autowired
-    public ChatGptProviderAdapter(ObjectMapper json, @Value("${chatgpt.model:gpt-5.4-mini}") String model) {
+    public ChatGptProviderAdapter(ObjectMapper json, @Value("${chatgpt.model:gpt-6-luna}") String model) {
         this(WebClient.builder().codecs(c -> c.defaultCodecs().maxInMemorySize(65_536)).build(),
                 json, model, Duration.ofSeconds(15), Duration.ofSeconds(45));
     }
@@ -132,8 +132,7 @@ public class ChatGptProviderAdapter implements ChatGptProvider {
                             "parallel_tool_calls", false, "store", false, "stream", true));
             SseAnswer answer = new SseAnswer();
             // Read the successful stream directly so cancellation does not attempt a second body drain.
-            return safe(request.retrieve().onStatus(status -> !status.is2xxSuccessful(),
-                            response -> Mono.just(upstreamError(response.statusCode().value())))
+            return safe(request.retrieve().onStatus(status -> !status.is2xxSuccessful(), this::responseError)
                         .bodyToFlux(org.springframework.core.io.buffer.DataBuffer.class)
                         .<Boolean>handle((buffer, sink) -> {
                             try {
@@ -247,6 +246,28 @@ public class ChatGptProviderAdapter implements ChatGptProvider {
             case 429 -> new ChatGptException("rate_limited", 429, "ChatGPT request limit reached. Wait before trying again.");
             default -> ChatGptException.unavailable();
         };
+    }
+
+    private Mono<ChatGptException> responseError(ClientResponse response) {
+        if (response.statusCode().value() != 400) return Mono.just(upstreamError(response.statusCode().value()));
+        return response.bodyToMono(String.class).map(body -> {
+            try {
+                JsonNode value = json.readTree(body);
+                JsonNode error = value.path("error");
+                String code = error.path("code").asText(value.path("code").asText(""));
+                String detail = value.path("detail").isTextual() ? value.path("detail").asText("")
+                        : error.path("message").asText("");
+                String lower = detail.toLowerCase(java.util.Locale.ROOT);
+                if ("model_not_found".equals(code) || "unsupported_model".equals(code)
+                        || (lower.contains("model") && lower.contains("not supported"))) {
+                    return new ChatGptException("model_not_supported", 409,
+                            "This model is unavailable for your ChatGPT account. Ask the server owner to configure a supported CHATGPT_MODEL.");
+                }
+            } catch (Exception ignored) {
+                // Provider text is neither returned nor attached as an exception cause.
+            }
+            return ChatGptException.unavailable();
+        }).defaultIfEmpty(ChatGptException.unavailable()).onErrorReturn(ChatGptException.unavailable());
     }
 
     private <T> Mono<T> safe(Mono<T> operation, Duration timeout) {

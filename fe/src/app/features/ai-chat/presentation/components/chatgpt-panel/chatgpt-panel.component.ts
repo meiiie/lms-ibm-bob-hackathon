@@ -213,6 +213,8 @@ export class ChatgptPanelComponent implements OnInit, OnDestroy {
             ? 'Your LMS session expired. Sign in to the LMS again, then reconnect ChatGPT.'
           : expired
             ? 'Your connection expired. Connect again to continue.'
+          : code === 'model_not_supported'
+            ? 'Your ChatGPT connection is valid, but this LMS is using an unsupported model. Ask the LMS administrator to configure a supported model, then send your question again.'
             : 'ChatGPT could not complete this request. Try again when your connection is ready.');
         if (operation === 'poll' || status === 0) this.needsResume.set(true);
       },

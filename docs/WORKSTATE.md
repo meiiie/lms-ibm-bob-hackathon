@@ -18,9 +18,14 @@ historical next-step statements below; the new work is attributed to Codex.
   ChatGPT device/poll/ask/disconnect, cancellation/offline recovery, and real HTTP
   interceptor composition with synthetic provider responses. Log (local/ignored):
   `.tools/chatgpt-frontend-final-test.log`.
-- PASS: 26 backend regression tests (8 adapter, 11 session, 3 controller,
-  4 manual-probe diagnostic tests), exit 0 at 09:19:45 UTC+7, using the isolated
-  output described below. Log: `.tools/chatgpt-backend-terminal-tests-final.log`.
+  The later model-error change passed all 15 focused panel tests at 09:30:31;
+  log: `.tools/chatgpt-model-error-test.log`. It preserves the connected state
+  and question, gives administrator guidance, and does not retry or reconnect.
+- PASS: 27 backend regression tests (9 adapter, 11 session, 3 controller,
+  4 manual-probe diagnostic tests), exit 0 at 09:27:53 UTC+7, using the isolated
+  output described below. Log: `.tools/chatgpt-model-tests-final.log`. A strengthened
+  65,536-byte provider-error regression then passed in the 9-test adapter rerun
+  at 09:29:29; log: `.tools/chatgpt-model-bound-tests-final.log`.
   Independent review found no blocking issue after the corrections below.
 - PASS: `python scripts/verify-ai-sidebar.py`, 9 acceptance groups in real Chrome
   153.0.8010.53, with visibly labeled synthetic LMS/provider fixtures. Covers both
@@ -35,7 +40,8 @@ historical next-step statements below; the new work is attributed to Codex.
   1,304 backend tests, 65 targeted frontend tests, frontend build, worker tests,
   harness, Compose validation and Docker application smoke:
   https://github.com/meiiie/lms-ibm-bob-hackathon/actions/runs/36210385752.
-  Draft PR #3 remains open while the live inference failure is investigated:
+  PR #3 contains the implementation and follow-up fixes; consult its current
+  checks and merge status for the final revision:
   https://github.com/meiiie/lms-ibm-bob-hackathon/pull/3.
 - Live probe used the actual Java adapter/session service with a synthetic LMS
   owner, not the full application. OpenAI returned a device code and polling
@@ -47,14 +53,22 @@ historical next-step statements below; the new work is attributed to Codex.
   chat or full LMS end-to-end login. The second connection was also discarded.
   A third diagnostic probe ended pending after its 600-second consent window;
   no new consent or answer was obtained, and its in-memory state was discarded.
+  A fourth probe, using the corrected stream reader, authenticated successfully
+  and received HTTP 400 within 1,055 ms: the fixed diagnostic classification was
+  `model is not supported`. OpenAI rejected `gpt-5.4-mini`; this was a model error,
+  not an authentication failure. The probe was stopped and its state discarded.
+  Configuration now defaults to `gpt-6-luna` from the pinned official Codex
+  0.157.1 catalog. Unsupported models return safe `model_not_supported` / HTTP 409
+  and preserve the connection; the sidebar gives administrator guidance without
+  automatically retrying. A new live check is pending.
 - Read-only backend review found no confirmed remaining blocker. A targeted test
   exposed a successful-response overflow path attempting to drain the upstream
   body again; direct Flux cancellation now passes the bounded-stream regression.
   A second reproduced regression showed a completed answer followed by an open
   HTTP stream timing out. Incremental SSE frame handling now ends and cancels on
   completion, with bytewise UTF-8/CRLF, truncated, failed and incomplete response
-  coverage. This is a proven fixture failure, not yet the diagnosed cause of the
-  live request failure. Test-only diagnostics were also corrected to observe one
+  coverage. This is a proven fixture failure; the later live probe separately
+  identified an unsupported model. Test-only diagnostics were also corrected to observe one
   body subscription and keep their manual retry input deadline bounded.
 - The first Maven attempt also encountered missing existing class files in the
   IDE-shared `backend/target` output, plus a corrected new test generic type error.

@@ -83,7 +83,7 @@ class ChatGptProviderAdapterTest {
             }).block();
             try {
                 var body = json.readTree(captured.getBodyAsString().block());
-                assertThat(body.path("model").asText()).isEqualTo("gpt-5.4-mini");
+                assertThat(body.path("model").asText()).isEqualTo("gpt-6-luna");
                 assertThat(body.path("input").isArray()).isTrue();
                 assertThat(body.path("input").get(0).path("content").get(0).path("text").asText()).isEqualTo("Question");
                 assertThat(body.path("store").asBoolean(true)).isFalse();
@@ -145,17 +145,36 @@ class ChatGptProviderAdapterTest {
         AtomicBoolean cancelled = new AtomicBoolean();
         var provider = new ChatGptProviderAdapter(WebClient.builder()
                 .exchangeFunction(r -> Mono.<ClientResponse>never().doOnCancel(() -> cancelled.set(true))).build(),
-                json, "gpt-5.4-mini", Duration.ofMillis(25), Duration.ofMillis(25));
+                json, "gpt-6-luna", Duration.ofMillis(25), Duration.ofMillis(25));
         assertCode(() -> provider.start().block(), "unavailable");
         assertThat(cancelled).isTrue();
     }
 
+    @Test
+    void unsupportedModelGetsActionableSafeErrorAndErrorBodiesRemainBounded() {
+        var provider = adapter(r -> reply(400, "{\"detail\":\"The 'private-model' model is not supported when using Codex with a ChatGPT account. secret-token\"}"));
+        assertThatThrownBy(() -> provider.ask(credential, "Question").block())
+                .isInstanceOfSatisfying(ChatGptException.class, error -> {
+                    assertThat(error.code()).isEqualTo("model_not_supported");
+                    assertThat(error.status()).isEqualTo(409);
+                    assertThat(error.getMessage()).contains("CHATGPT_MODEL").doesNotContain("private-model", "secret-token");
+                    assertThat(error.getCause()).isNull();
+                });
+        assertCode(() -> adapter(r -> reply(400, "{\"error\":{\"code\":\"model_not_found\",\"message\":\"secret\"}}"))
+                .ask(credential, "Question").block(), "model_not_supported");
+        assertCode(() -> adapter(r -> reply(400, "{\"detail\":\"model is not supported " + "x".repeat(70000) + "\"}"))
+                .ask(credential, "Question").block(), "unavailable");
+    }
+
     private ChatGptProviderAdapter adapter(ExchangeFunction transport) {
         return new ChatGptProviderAdapter(WebClient.builder().codecs(c -> c.defaultCodecs().maxInMemorySize(65536))
-                .exchangeFunction(transport).build(), json, "gpt-5.4-mini", Duration.ofSeconds(5), Duration.ofSeconds(5));
+                .exchangeFunction(transport).build(), json, "gpt-6-luna", Duration.ofSeconds(5), Duration.ofSeconds(5));
     }
     private Mono<ClientResponse> reply(int status, String body) {
-        return Mono.just(ClientResponse.create(HttpStatus.valueOf(status)).header("Content-Type", "application/json").body(body).build());
+        var strategies = org.springframework.web.reactive.function.client.ExchangeStrategies.builder()
+                .codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(65_536)).build();
+        return Mono.just(ClientResponse.create(HttpStatus.valueOf(status), strategies)
+                .header("Content-Type", "application/json").body(body).build());
     }
     private void assertCode(Runnable operation, String code) {
         assertThatThrownBy(operation::run).isInstanceOfSatisfying(ChatGptException.class, error -> {

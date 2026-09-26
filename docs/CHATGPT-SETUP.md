@@ -13,11 +13,18 @@ migration is required. Set these in the backend process or a private Compose env
 
 ```dotenv
 CHATGPT_CONNECTION_ENABLED=true
-CHATGPT_MODEL=gpt-5.4-mini
+CHATGPT_MODEL=gpt-6-luna
 ```
 
-The model default comes from the pinned protocol example; actual account/model
-availability must be checked live. Do not put provider tokens in environment
+The default is listed in the official Codex 0.157.1 model catalog linked below;
+actual account entitlement must still be checked live. A real probe authenticated
+successfully but OpenAI rejected the old `gpt-5.4-mini` protocol-example default
+as unsupported. Update existing private env files as well as the application.
+Restart the backend to apply an env change; this clears its in-memory ChatGPT
+connections, so reconnect ChatGPT afterwards.
+An unsupported-model error keeps the connection and asks the instance administrator
+to select an available model; it does not require reconnecting the LMS account.
+Do not put provider tokens in environment
 files, Angular configuration or browser storage. The feature needs no shared
 OpenAI API key. No existing Codex login cache is read.
 
@@ -90,6 +97,9 @@ these routes and the offline interceptor bypasses all `/api/v3/ai/` mutations.
 
 - Official [Codex authentication](https://learn.chatgpt.com/docs/auth) documents
   device-code login for Codex. It does not establish generic LMS SSO approval.
+- Official [Codex 0.157.1 model catalog](https://github.com/openai/codex/blob/36650394c5b38c2990ccf2a3457165ca3e9d9726/codex-rs/models-manager/models.json)
+  lists `gpt-6-luna`; this catalog is model metadata, not proof of access for every
+  ChatGPT account. See WORKSTATE for the actual live verification result.
 - Protocol reference: [chatgpt-oauth at 53299ef](https://github.com/vishhvak/chatgpt-oauth/tree/53299ef0b335b53f6204b1c64a316a48567ca76e),
   including the required `client_version` query parameter on Responses requests.
   Its MIT notice is preserved in [third-party attribution](third-party/chatgpt-oauth-LICENSE.txt).

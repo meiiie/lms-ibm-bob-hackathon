@@ -116,7 +116,7 @@ app:
 # Experimental personal ChatGPT connection; credentials are held in this instance's memory only.
 chatgpt:
   enabled: ${CHATGPT_CONNECTION_ENABLED:false}
-  model: ${CHATGPT_MODEL:gpt-5.4-mini}
+  model: ${CHATGPT_MODEL:gpt-6-luna}
 
 # Wiii AI Integration (Sprint 175: "Cắm Phích Cắm")
 wiii:

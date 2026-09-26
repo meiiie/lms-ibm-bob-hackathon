@@ -202,4 +202,25 @@ describe('ChatgptPanelComponent (mock provider)', () => {
     expect(component.needsResume()).toBeTrue();
     expect(component.error()).toContain('rate limited');
   }));
+
+  it('preserves a valid connection and question when the configured model is unsupported', fakeAsync(() => {
+    api.status.and.returnValue(of(connected));
+    api.ask.and.returnValue(throwError(() => new HttpErrorResponse({
+      status: 409,
+      error: { error: { code: 'model_not_supported', message: 'raw-provider-detail' } },
+    })));
+    fixture.detectChanges();
+    component.question.set('Explain buoyancy');
+    component.send(new Event('submit'));
+    tick(10_000);
+    fixture.detectChanges();
+    expect(component.connection()?.status).toBe('connected');
+    expect(component.question()).toBe('Explain buoyancy');
+    expect(component.needsResume()).toBeFalse();
+    expect(component.busy()).toBeFalse();
+    expect(api.ask).toHaveBeenCalledOnceWith('Explain buoyancy');
+    expect(api.start).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain('Ask the LMS administrator');
+    expect(component.error()).not.toContain('raw-provider-detail');
+  }));
 });
