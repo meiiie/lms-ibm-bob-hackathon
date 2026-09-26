@@ -99,6 +99,9 @@ services:
       WIII_WEBHOOK_ENABLED: ${WIII_WEBHOOK_ENABLED:-false}
       WIII_SERVICE_TOKEN: ${WIII_SERVICE_TOKEN:-}
       WIII_TOKEN_EXCHANGE_URL: ${WIII_TOKEN_EXCHANGE_URL:-}
+      # Optional personal ChatGPT study assistant (disabled by default)
+      CHATGPT_CONNECTION_ENABLED: ${CHATGPT_CONNECTION_ENABLED:-false}
+      CHATGPT_MODEL: ${CHATGPT_MODEL:-gpt-5.4-mini}
       # Email
       SPRING_MAIL_HOST: ${MAIL_HOST:-}
       SPRING_MAIL_PORT: ${MAIL_PORT:-587}

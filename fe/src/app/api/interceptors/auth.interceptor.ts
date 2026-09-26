@@ -5,6 +5,7 @@ import { catchError, filter, take, switchMap } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 import { NetworkStatusService } from '../../core/services/network-status.service';
 import { SessionExpiredService } from '../../core/services/session-expired.service';
+import { NO_AUTOMATIC_REPLAY } from './request-policy';
 
 let isRefreshing = false;
 const refreshTokenSubject = new BehaviorSubject<string | null>(null);
@@ -27,7 +28,7 @@ export const authInterceptor = (req: HttpRequest<any>, next: HttpHandlerFn): Obs
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       const isAuthRoute = req.url.includes('/auth/login') || req.url.includes('/auth/refresh');
-      if (error.status === 401 && !isAuthRoute) {
+      if (error.status === 401 && !isAuthRoute && !req.context.get(NO_AUTOMATIC_REPLAY)) {
         return handleTokenRefresh(req, next, authService, networkService, sessionService);
       }
       return throwError(() => error);

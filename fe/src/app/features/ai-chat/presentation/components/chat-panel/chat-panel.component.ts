@@ -36,9 +36,12 @@ import { WiiiContextService } from '../../../infrastructure/api/wiii-context.ser
 import { AuthService } from '../../../../../core/services/auth.service';
 import { NetworkStatusService } from '../../../../../core/services/network-status.service';
 import { environment } from '../../../../../../environments/environment';
+import { AiAvailabilityService } from '../../../application/services/ai-availability.service';
+import { ChatgptPanelComponent } from '../chatgpt-panel/chatgpt-panel.component';
 
 @Component({
   selector: 'app-chat-panel',
+  imports: [ChatgptPanelComponent],
   template: `
     <div
       class="chat-panel"
@@ -53,10 +56,10 @@ import { environment } from '../../../../../../environments/environment';
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="header-icon">
             <path fill-rule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813A3.75 3.75 0 007.466 7.89l.813-2.846A.75.75 0 019 4.5zM18 1.5a.75.75 0 01.728.568l.258 1.036c.236.94.97 1.674 1.91 1.91l1.036.258a.75.75 0 010 1.456l-1.036.258c-.94.236-1.674.97-1.91 1.91l-.258 1.036a.75.75 0 01-1.456 0l-.258-1.036a2.625 2.625 0 00-1.91-1.91l-1.036-.258a.75.75 0 010-1.456l1.036-.258a2.625 2.625 0 001.91-1.91l.258-1.036A.75.75 0 0118 1.5z" clip-rule="evenodd" />
           </svg>
-          <span>Wiii</span>
+          <span>{{ provider() === 'chatgpt' ? 'ChatGPT' : 'Wiii' }}</span>
         </div>
         <div class="header-actions">
-          @if (mode() === 'sidebar') {
+          @if (provider() === 'wiii' && mode() === 'sidebar') {
             <button class="new-chat-button" (click)="clearChat()" title="Cuộc trò chuyện mới">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z" />
@@ -64,11 +67,13 @@ import { environment } from '../../../../../../environments/environment';
               </svg>
             </button>
           }
+          @if (provider() === 'wiii') {
           <button class="expand-button" (click)="openFullWiii()" title="Mở toàn màn hình">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
               <path d="M13.28 7.78l3.22-3.22v2.69a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.69l-3.22 3.22a.75.75 0 001.06 1.06zM2 17.25v-4.5a.75.75 0 011.5 0v2.69l3.22-3.22a.75.75 0 011.06 1.06L4.56 16.5h2.69a.75.75 0 010 1.5h-4.5a.75.75 0 01-.75-.75z" />
             </svg>
           </button>
+          }
           <button class="close-button" (click)="onClose()" title="Đóng" aria-label="Đóng trợ lý AI">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
               <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
@@ -77,8 +82,20 @@ import { environment } from '../../../../../../environments/environment';
         </div>
       </div>
 
+      @if (availability.chatgptEnabled()) {
+        <div class="provider-picker">
+          <label for="ai-provider">AI provider</label>
+          <select id="ai-provider" aria-label="AI provider" [value]="provider()" (change)="changeProvider($event)">
+            <option value="wiii" [disabled]="!availability.wiiiAvailable()">Wiii</option>
+            <option value="chatgpt">ChatGPT (experimental)</option>
+          </select>
+        </div>
+      }
+
       <!-- Offline state — shown when device has no connectivity -->
-      @if (isOffline()) {
+      @if (provider() === 'chatgpt') {
+        <app-chatgpt-panel />
+      } @else if (isOffline()) {
         <div class="offline-state" role="status" aria-live="polite">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="offline-icon" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 3l18 18M8.111 8.111A5.97 5.97 0 006 12c0 1.657.672 3.157 1.757 4.243M10.586 10.586A2 2 0 0112 10a2 2 0 012 2 2 2 0 01-.586 1.414M16.243 16.243A5.97 5.97 0 0018 12a5.97 5.97 0 00-1.757-4.243M12 20.5V21" />
@@ -160,6 +177,9 @@ import { environment } from '../../../../../../environments/environment';
       background: white;
       overflow: hidden;
     }
+    .provider-picker { padding:10px 14px; border-bottom:1px solid #ebebeb; }
+    .provider-picker label { display:block; margin-bottom:4px; font-size:12px; color:#576477; }
+    .provider-picker select { width:100%; padding:7px; border:1px solid #a9b4c5; border-radius:6px; background:white; color:#263244; }
 
     /* =========================================================
        SIDEBAR MODE — fills parent container, no fixed positioning
@@ -438,6 +458,8 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly networkStatus = inject(NetworkStatusService);
+  readonly availability = inject(AiAvailabilityService);
+  readonly provider = signal<'wiii' | 'chatgpt'>('wiii');
 
   // Inputs
   mode = input<'sidebar' | 'widget'>('sidebar');
@@ -496,6 +518,15 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   private refreshPending = false;
 
   constructor() {
+    effect(() => {
+      const chatgpt = this.availability.chatgptEnabled();
+      const wiii = this.availability.wiiiAvailable();
+      untracked(() => {
+        if (chatgpt && !wiii && this.provider() === 'wiii') this.selectProvider('chatgpt');
+        else if (wiii && this.provider() === 'wiii' && !this.embedUrl() && !this.loadError()
+          && !this.offlineReconnectReady()) this.initEmbed();
+      });
+    });
     // Sprint 221: Connect iframe to WiiiContextService for page-aware AI.
     // When the iframe viewChild becomes available (after embedUrl is set),
     // attach a load listener so we connect after the Wiii embed app initializes.
@@ -538,7 +569,7 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.checkMobile();
-    if (!this.networkStatus.isEffectivelyOffline()) {
+    if (!this.networkStatus.isEffectivelyOffline() && this.availability.wiiiAvailable()) {
       this.initEmbed();
     }
     // If offline on open, offlineReconnectReady stays false until online signal fires.
@@ -575,7 +606,7 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
    */
   async initEmbed(): Promise<void> {
     // Do not start a cloud request while offline.
-    if (this.networkStatus.isEffectivelyOffline()) {
+    if (this.provider() !== 'wiii' || this.destroyed || this.networkStatus.isEffectivelyOffline()) {
       return;
     }
     // Do not issue a second request if one is already in-flight (double-click guard).
@@ -622,13 +653,8 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
         this.loadError.set(true);
       }
     } finally {
-      // Always clear the in-flight guard when this call completes — whether it
-      // was superseded by a newer initGeneration or not. initInFlight only
-      // prevents a second concurrent call; it must not stay locked after the
-      // promise settles. Because initInFlight is a signal, clearing it here
-      // will re-trigger the restore effect if connectivity already returned,
-      // surfacing the retry button without a second online-event.
-      this.initInFlight.set(false);
+      // A superseded request must not release the lock owned by its replacement.
+      if (generation === this.initGeneration) this.initInFlight.set(false);
     }
   }
 
@@ -636,6 +662,22 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   retryInit(): void {
     this.offlineReconnectReady.set(false);
     this.initEmbed();
+  }
+
+  changeProvider(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    if (value === 'wiii' || value === 'chatgpt') this.selectProvider(value);
+  }
+
+  selectProvider(provider: 'wiii' | 'chatgpt'): void {
+    if (provider === 'chatgpt' && !this.availability.chatgptEnabled()) return;
+    this.initGeneration++;
+    this.initInFlight.set(false);
+    this.embedUrl.set(null);
+    this.loadError.set(false);
+    this.offlineReconnectReady.set(false);
+    this.provider.set(provider);
+    if (provider === 'wiii') this.initEmbed();
   }
 
   onClose(): void {

@@ -1,5 +1,89 @@
 # Current work state
 
+## Current continuation — personal ChatGPT sidebar
+
+26 September 2026, Vietnam (UTC+7). After Bob's quota stop, the owner explicitly
+asked Codex to continue implementation and verify the connection. Work is on
+`codex/chatgpt-study-assistant`, based on `c94f9f9f`. This section supersedes
+historical next-step statements below; the new work is attributed to Codex.
+
+- Implemented optional backend device login, per-principal in-memory credentials,
+  bounded single-question responses and disconnect; disabled by default through
+  `CHATGPT_CONNECTION_ENABLED=false`. Added independent ChatGPT choice in the
+  existing sidebar, keeping Wiii and offline learning separate.
+- Fixed the inherited Wiii stale-finally lock race. ChatGPT HTTP requests now opt
+  out of automatic 5xx retry and LMS-token refresh/replay. Provider authorization
+  errors use safe HTTP 409 responses so they do not expire the LMS session.
+- PASS: 65 targeted Angular tests in ChromeHeadless, exit 0. Includes Wiii/widget,
+  ChatGPT device/poll/ask/disconnect, cancellation/offline recovery, and real HTTP
+  interceptor composition with synthetic provider responses. Log (local/ignored):
+  `.tools/chatgpt-frontend-final-test.log`.
+- PASS: 21 backend regression tests (7 adapter, 11 session, 3 controller), exit 0,
+  using the isolated output described below. Read-only review found no blocking
+  issue after the stream cancellation fix.
+- PASS: `python scripts/verify-ai-sidebar.py`, 9 acceptance groups in real Chrome
+  153.0.8010.53, with visibly labeled synthetic LMS/provider fixtures. Covers both
+  providers, disabled/unavailable cases, device/poll/ask/disconnect, plain text,
+  rate-limit recovery, offline no replay and iframe message isolation. It does not
+  verify live provider authentication, a real backend or service-worker behavior.
+- PASS: working-tree harness configuration; `git diff --check`. Production build
+  and final CI are still being verified at this checkpoint.
+- Live probe used the actual Java adapter/session service with a synthetic LMS
+  owner, not the full application. OpenAI returned a device code and polling
+  remained pending. The 180-second consent window ended without connection or a
+  live answer, and the probe discarded its in-memory state. In a second probe the
+  owner completed consent: the actual adapter reached `connected`, proving device
+  polling and token exchange. Its answer request then failed with safe error
+  `unavailable` (exit 1). Inference is being diagnosed; do not claim working live
+  chat or full LMS end-to-end login. The second connection was also discarded.
+- Read-only backend review found no confirmed remaining blocker. A targeted test
+  exposed a successful-response overflow path attempting to drain the upstream
+  body again; direct Flux cancellation now passes the bounded-stream regression.
+- The first Maven attempt also encountered missing existing class files in the
+  IDE-shared `backend/target` output, plus a corrected new test generic type error.
+  Rerunning with identical project dependencies/compiler settings and isolated
+  `.tools/chatgpt-maven-target` avoids the output collision. No unrelated domain
+  sources or the owner's `.factorypath` change were modified.
+- The submission audit is in `docs/SUBMISSION-READINESS.md`. The final expanded
+  Bob summary, team task coverage and demo/video/slides/cover remain outstanding.
+  The user stopped the UI capture attempt with Escape; no new summary was captured.
+- Docker recovered at 08:58:49 UTC+7: Linux engine 29.7.2 responded to `docker version`,
+  `docker info` and `docker ps`. Stale `dockerInference` and secrets-engine runtime
+  sockets were preserved by renaming their parent runtime directories; no settings,
+  images, volumes or container data were reset. The three backups are under
+  `%LOCALAPPDATA%` with suffixes `run.before-recovery-20260926`,
+  `run.before-recovery2-20260926`, and `docker-secrets-engine.before-recovery-20260926`.
+  An existing unrelated container resumed under its restart policy. No LMS stack
+  was launched. With about 2 GB free RAM, run heavy builds sequentially.
+
+See `docs/CHATGPT-SETUP.md` for configuration, consent steps and prototype limits.
+Do not publish the local recovered transcript or private probe state.
+
+## Latest verified checkpoint — Bob quota stop
+
+Verified by Codex on 26 September 2026 at 08:34 Vietnam (UTC+7). This checkpoint
+supersedes older statements below about PR status and missing Bob evidence.
+
+- Bob task `b3f61aaa13f3e3d94298655249da2d8c` stopped with `BudgetExceededError`
+  at 08:24:34 UTC+7; recorded task consumption is 38.658728 Bobcoins.
+- Its offline-safe sidebar PR #2 is merged as `3432af2aa65b47027eae5aaddaa06fdad5e20618`.
+  All six CI jobs passed on the final PR head. Bob's latest targeted Angular run
+  recorded 35 passing tests; live ChatGPT integration and full user flows are not
+  established by those tests.
+- Bob then inspected backend code for the ChatGPT follow-up. No implementation
+  writes are recorded after the 08:23 continuation request. That feature remains
+  unfinished.
+- A real 08:18 Bob IDE screenshot and manifest are already on remote main. Their
+  28.50 Bobcoin figure is an intermediate checkpoint, not the final session total.
+- Codex recovered 303 stored messages read-only. The transcript and handoff are
+  local, Git-ignored files: `bob_sessions/meiiie_b3f61aaa13f3e3d94298655249da2d8c_history.local.md`
+  and `docs/BOB-SESSION-HANDOFF.local.md`. Review privacy before sharing them.
+- No product code changed or tests reran during this recovery audit. Preserve
+  the unrelated `.factorypath` edit and existing research documents. Next: review
+  the follow-up integration and capture the actual final Bob summary evidence.
+
+## Earlier checkpoint (historical)
+
 Updated 26 September 2026, ~08:45 UTC+7 (Vietnam).
 
 ## Goal and decisions

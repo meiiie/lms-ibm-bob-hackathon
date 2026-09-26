@@ -51,11 +51,28 @@ relicense those third-party tools or the separate SDK.
 
 ## New hackathon contribution
 
-Exact scope is still proposed in [PRD.md](PRD.md). No application feature has been
-implemented for the event by this preparation. For completed work, record the
-actual problem, changed behavior, commit, verification, limits and real Bob task
-evidence. Every relevant participant captures actual summaries in `bob_sessions/`.
-The current manifest has no evidence rows; templates are not proof of usage.
+Bob implemented the offline-safe assistant sidebar and AI interceptor bypass in
+[PR #2](https://github.com/meiiie/lms-ibm-bob-hackathon/pull/2), merged on
+26 September 2026 at 08:16:45 UTC+7 as `3432af2aa65b47027eae5aaddaa06fdad5e20618`.
+The underlying Wiii embedding, AI token service and offline-learning infrastructure
+are reused upstream code. Bob's latest targeted run recorded 35 passing tests;
+that is not proof of a live ChatGPT connection.
+
+After Bob task `b3f61aaa13f3e3d94298655249da2d8c` stopped with a quota error,
+the owner asked Codex to continue and check the ChatGPT sidebar. The ChatGPT
+implementation, new verification and follow-up documentation are Codex work.
+They must not be added to Bob usage totals or credited to Dark personally.
+
+The Java protocol adapter references `vishhvak/chatgpt-oauth` at revision
+`53299ef0b335b53f6204b1c64a316a48567ca76e`. Preserve its
+[MIT notice](third-party/chatgpt-oauth-LICENSE.txt). This protocol is reused
+reference material, not a new authentication protocol invented during the event.
+
+The manifest now has an actual screenshot row from 08:18 UTC+7 showing 28.50
+Bobcoins. It is an intermediate IDE checkpoint, not the final consumption panel.
+The task later reached approximately 38.66 Bobcoins before stopping. The recovered
+303-message transcript remains local and excluded from Git pending privacy review.
+Every participant still needs to capture their own relevant real Bob summaries.
 
 Before submission, record the final revision, identify precisely what changed
 during the event, and link all actual screenshots through the manifest.

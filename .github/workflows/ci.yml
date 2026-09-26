@@ -82,6 +82,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify assistant and offline request behavior
+        run: >-
+          npm run test --
+          --include="**/chat-panel*.spec.ts"
+          --include="**/chat-widget.component.spec.ts"
+          --include="**/chatgpt*.spec.ts"
+          --include="**/ai-availability.service.spec.ts"
+          --include="**/offline.interceptor.spec.ts"
+          --include="**/error.interceptor.spec.ts"
+          --include="**/auth.interceptor.spec.ts"
+          --browsers=ChromeHeadless --no-watch --no-progress
+
       - name: Build frontend
         run: npm run build
 

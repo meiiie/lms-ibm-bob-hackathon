@@ -2,13 +2,17 @@
 
 Fork of [Maritime LMS](https://github.com/linhlinhlin/LMS_hohulili), created after
 the owner-authorized [MIT transition](https://github.com/linhlinhlin/LMS_hohulili/pull/541).
-The existing LMS is reused; the new developer-workflow improvement is still to
-be agreed and built. This repository is not yet a completed hackathon submission.
+The existing LMS is reused. The hackathon work improves debugging and verification
+of its assistant around offline/reconnect failures, with an optional personal
+ChatGPT follow-up. Bob's first sidebar fix is merged in PR #2; Codex continues
+the follow-up after Bob's quota stop. See the verification limits below before
+treating this repository as a completed submission.
 
 - **Start with Bob:** [Team setup](docs/BOB-SETUP.md) · [First-task prompt](docs/BOB-START-PROMPT.md)
 - **Current scope/status:** [PRD](docs/PRD.md) · [WORKSTATE](docs/WORKSTATE.md)
 - **Provenance/evidence:** [PREEXISTING](docs/PREEXISTING.md) · [Bob sessions](bob_sessions/README.md)
-- **Submission:** [Checklist](docs/SUBMISSION-CHECKLIST.md) · [Draft](submission/TEMPLATE.md)
+- **Optional ChatGPT connection:** [Setup and limits](docs/CHATGPT-SETUP.md)
+- **Submission:** [Readiness audit](docs/SUBMISSION-READINESS.md) · [Checklist](docs/SUBMISSION-CHECKLIST.md) · [Draft](submission/TEMPLATE.md)
 
 Build window: **25 September 22:00–27 September 22:00, 2026, Vietnam (UTC+7)**.
 Internal target: 27 September 20:00 UTC+7. Neko Core is the team name, not an LMS

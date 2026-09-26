@@ -4,8 +4,17 @@ This directory belongs at the root of the repository submitted to the IBM Bob
 2.0 Hackathon. It records evidence from the Neko Core team; the team name does
 not identify a software dependency of this LMS.
 
-Status: scaffold only. No Bob task screenshots have been supplied yet. An empty
-manifest and this README do not satisfy the evidence requirement.
+Status (26 September 2026, Vietnam UTC+7): the manifest contains the real
+`meiiie_dark-offline-sidebar-01_summary.png` IDE checkpoint captured at 08:18,
+showing 28.50 Bobcoins. The task continued afterwards and stopped with a quota
+error at 08:24:34. This image is not the expanded final consumption-summary panel;
+capture that panel before treating this task's evidence as complete. Preserve the
+existing image and its numbers as an intermediate checkpoint.
+
+The local database task ID is `b3f61aaa13f3e3d94298655249da2d8c`; the manifest
+uses the team label `dark-offline-sidebar-01`. A recovered local transcript is
+Git-ignored pending privacy review. Codex's later ChatGPT implementation is not
+additional Bob usage and must not be entered as a Bob session.
 
 ## Capture each relevant task
 
