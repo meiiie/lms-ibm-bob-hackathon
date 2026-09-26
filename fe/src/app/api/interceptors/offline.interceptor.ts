@@ -7,8 +7,14 @@ import { OfflineSyncService } from '../../core/services/offline-sync.service';
 import { NetworkStatusService } from '../../core/services/network-status.service';
 import { isOfflineCompatibleHttpError } from '../../core/utils/offline-http-error';
 
-/** Paths that must never be intercepted offline (auth, health checks) */
-const NEVER_INTERCEPT_PREFIXES = ['/api/v3/auth/', '/api/v3/sync/', '/actuator/'];
+/**
+ * Paths that must never be intercepted offline.
+ * - auth/sync/actuator: already excluded.
+ * - /api/v3/ai/: cloud-only; failing offline and then queuing a token
+ *   exchange as a sync item would pollute IndexedDB with non-replayable
+ *   cloud credentials and create a false pending-sync badge.
+ */
+const NEVER_INTERCEPT_PREFIXES = ['/api/v3/auth/', '/api/v3/sync/', '/actuator/', '/api/v3/ai/'];
 const DEFAULT_OFFLINE_COURSES_PAGE_SIZE = 12;
 const BACKGROUND_MUTATION_NETWORK_TIMEOUT_MS = 2_000;
 

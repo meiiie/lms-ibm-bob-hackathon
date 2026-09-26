@@ -89,6 +89,18 @@ describe('shouldBypassOfflineInterception', () => {
   it('keeps course requests eligible for offline fallback', () => {
     expect(shouldBypassOfflineInterception('/api/v3/courses/11111111-1111-1111-1111-111111111111')).toBeFalse();
   });
+
+  /**
+   * Regression: /api/v3/ai/token was previously not in the bypass list.
+   * When offline, the token exchange POST fell through to the mutation queue,
+   * creating a spurious IndexedDB sync item and a false pending-sync badge.
+   * AI endpoints are cloud-only and must never be queued or replayed offline.
+   */
+  it('bypasses AI cloud endpoints so they are never queued as offline mutations', () => {
+    expect(shouldBypassOfflineInterception('/api/v3/ai/token')).toBeTrue();
+    expect(shouldBypassOfflineInterception('/api/v3/ai/chat')).toBeTrue();
+    expect(shouldBypassOfflineInterception('/api/v3/ai/sessions')).toBeTrue();
+  });
 });
 
 describe('background learning mutation queue policy', () => {

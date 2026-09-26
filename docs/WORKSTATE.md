@@ -1,17 +1,14 @@
 # Current work state
 
-Updated 26 September 2026, Vietnam (UTC+7).
-
-Final preparation checkpoint: 00:56 UTC+7. Setup is published on the fork's main
-branch, and the independent workspace plus first-task prompt were opened through
-the Bob CLI in a separate window. This does not certify account/trust or AI activation.
+Updated 26 September 2026, ~08:45 UTC+7 (Vietnam).
 
 ## Goal and decisions
 
 Prepare the Neko Core submission fork of LMS for work in IBM Bob. The owner has
 authorized merging the prepared MIT transition, then creating the submission
 fork and adapting the existing Bob preparation kit. A teammate understands and
-has run the LMS. Exact hackathon scope remains proposed in PRD.
+has run the LMS. Hackathon scope: offline-safe AI assistant sidebar (first
+deliverable from docs/DARK-BOB-TASK.md).
 
 ## Preparation in this checkout
 
@@ -68,12 +65,78 @@ fork; inherited production image publishing/deployment is guarded to upstream.
 - Actual Bob skill/hook activation, IBMid/instance/quota and product browser flows
   are not verified by file installation. See BOB-SETUP for startup commands.
 
+## First deliverable: offline-safe assistant sidebar
+
+Branch: `codex/dark-offline-assistant` from `d70ac29f`.
+Authorized by owner per docs/DARK-BOB-TASK.md.
+
+### Changes
+
+**`fe/src/app/features/ai-chat/presentation/components/chat-panel/chat-panel.component.ts`**
+- Inject `NetworkStatusService`; derive `isOffline = computed(() => !networkStatus.online())`
+- `ngOnInit`: skip `initEmbed()` when `isEffectivelyOffline()`
+- Template: offline state branch (with guidance to continue downloaded lessons,
+  accessible `role=status` div, close button always visible); reconnect-ready branch
+  (separate from offline block so the button persists once `isOffline()` becomes false)
+- `initInFlight` signal guards double-click (second call is no-op while first is pending);
+  also suppresses `offlineReconnectReady` during ordinary online init
+- Connectivity-loss effect: increments `initGeneration` (invalidates in-flight promise),
+  clears `embedUrl`, resets `loadError`, resets `offlineReconnectReady`
+- Connectivity-restore effect: sets `offlineReconnectReady` only when `!initInFlight`
+  and `!embedUrl` and `!loadError`; reactive on `initInFlight` signal so button appears
+  as soon as the pending promise settles after reconnect
+- `initEmbed()`: generation token guards commit post-await; mid-flight offline check
+  after `await`; `finally` always clears `initInFlight`
+- PostMessage bridge: `!iframeRef → return` (missing iframe rejects all messages);
+  source window checked against snapshot taken before `await`; `refreshGeneration`
+  check ensures refresh targets the same iframe that sent the request
+- `ngOnDestroy`: sets `destroyed=true`, increments `initGeneration`
+
+**`fe/src/app/api/interceptors/offline.interceptor.ts`**
+- Added `/api/v3/ai/` to `NEVER_INTERCEPT_PREFIXES`. AI token exchange was not
+  previously bypassed; offline failures fell into the mutation queue, creating a
+  spurious sync item and false pending-sync badge.
+
+### Tests
+
+**`fe/src/app/features/ai-chat/presentation/components/chat-panel/chat-panel.component.spec.ts`**
+  35 cases: offline open, offline mid-init, e2e reconnect (online pending → offline → online
+  → old resolves (no-op) → retry → new request → iframe), teardown, online flow, postMessage
+  bridge (valid, dedup, replacement guard, wrong origin/source), double-click = 1 request.
+
+**`fe/src/app/features/ai-chat/presentation/components/chat-panel/chat-panel.recovery.spec.ts`**
+  Coordinator regression: stale init must not strand recovery.
+
+**`fe/src/app/api/interceptors/offline.interceptor.spec.ts`**
+  Regression: `/api/v3/ai/` paths bypass offline interception.
+
+### Verification (round 2, commit da4fbcb4)
+
+```
+npm.cmd --prefix fe run test -- \
+  --include="**/chat-panel.component.spec.ts" \
+  --include="**/chat-panel.recovery.spec.ts" \
+  --include="**/offline.interceptor.spec.ts" \
+  --browsers=ChromeHeadless --no-watch --no-progress
+```
+Result: **35/35 SUCCESS, exit 0** — Chrome Headless 153.0.0.0 (Windows 10)
+
+```
+SITEMAP_BASE_URL=http://127.0.0.1:9 npm.cmd --prefix fe run build
+```
+Result: Build succeeded (sitemap fetch offline fallback as documented; bundles generated,
+no TypeScript or Angular compile errors).
+
+### Coordinator baseline
+
+Coordinator reproduced the original compiled app in real Chrome (port 4311,
+offline open): 1 token request fired despite being offline; new sync item appeared.
+docs/DARK-QA-BASELINE.md records the original defect. All findings fixed across two
+commits (5d47ddf1 and da4fbcb4).
+
 ## Next step
 
-Open the fork root in Bob. Verify account, instance/quota and workspace trust.
-Use docs/BOB-START-PROMPT.md in Plan mode to validate one small developer-workflow
-improvement. Agree criteria, then switch to Build/Agent. Record each real task.
-
-After meaningful work, replace this checkpoint with actual changed files/commits,
-commands/results, unresolved failures, Bob evidence and the next concrete step.
-Do not mark proposed functionality or a template as complete.
+PR open on meiiie/lms-ibm-bob-hackathon: `codex/dark-offline-assistant → main`.
+Await coordinator's independent verification and green CI before merge.
+After merge: implement the follow-on personal ChatGPT connection per docs/DARK-BOB-TASK.md
+(feasibility report due after offline sidebar review passes).
