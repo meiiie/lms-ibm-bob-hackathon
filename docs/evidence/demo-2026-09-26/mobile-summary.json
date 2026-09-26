@@ -1,0 +1,43 @@
+{
+  "origin": "https://neko-core-lms-demo.pages.dev",
+  "viewport": "375x812 touch emulation, not physical device",
+  "mocks": false,
+  "progressWrites": false,
+  "result": "PASS",
+  "cloud": {
+    "chatgptEnabled": false,
+    "status": "disconnected",
+    "wiiiHealth": {
+      "status": "healthy",
+      "aiServiceStatus": "not_configured",
+      "webhookEnabled": false,
+      "version": "3.0"
+    }
+  },
+  "panel": {
+    "classes": "chat-panel widget-mode mobile visible",
+    "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 375,
+      "height": 812,
+      "top": 0,
+      "right": 375,
+      "bottom": 812,
+      "left": 0
+    },
+    "position": "fixed",
+    "transform": "matrix(1, 0, 0, 1, 0, 0)"
+  },
+  "horizontalOverflow": false,
+  "providerOptions": [
+    {
+      "value": "wiii",
+      "disabled": true
+    },
+    {
+      "value": "local",
+      "disabled": false
+    }
+  ]
+}

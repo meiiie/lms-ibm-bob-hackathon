@@ -83,3 +83,10 @@ Every participant still needs to capture their own relevant real Bob summaries.
 
 Before submission, record the final revision, identify precisely what changed
 during the event, and link all actual screenshots through the manifest.
+
+On 26 September, the owner also asked Codex to deploy a free public demo. The
+isolated student-only backend profile, Cloudflare Pages proxy and build package,
+Railway/Neon configuration and hosted PWA acceptance runner are Codex continuation
+work in PR #4. The Angular offline learning implementation and seeded maritime
+course are reused LMS features; deploying or verifying them does not make them
+new Bob-authored features. Only actual hosted acceptance results may be reported.

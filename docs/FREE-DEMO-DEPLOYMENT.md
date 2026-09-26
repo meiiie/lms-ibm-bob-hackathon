@@ -10,9 +10,13 @@ requests to one fixed Railway backend; Neon stores the demo's PostgreSQL data.
 This retains the existing Angular / Java 21 / Spring Boot application.
 
 Account setup and official CLI authorization are complete. The frontend is
-published at `https://neko-core-lms-demo.pages.dev`; the backend and actual student
-flow are still being verified. **A working end-to-end demo is not yet claimed.**
-The acceptance results below must be filled in after verification.
+published at [neko-core-lms-demo.pages.dev](https://neko-core-lms-demo.pages.dev)
+from the CI artifact for `86ceb885` (run `36240432617`). A native backend connected
+to the separate Neon database passed health, student login, and 31-lesson checks.
+Railway deployment succeeded and the public backend and genuine browser login
+work. **Offline text reload, completion persistence and real backend reconnect
+sync passed at 20:35 UTC+7.** See [actual evidence and limits](DEMO-VERIFICATION.md).
+Physical-device installation and offline video are not tested.
 
 The Railway part is a **time-limited credit trial**, not permanent free hosting.
 Do not add a payment method, upgrade a plan, enable paid add-ons, or assume that
@@ -35,14 +39,17 @@ If Railway is unavailable, **Render Free + Neon** is a fallback only after testi
 the backend within 512 MB RAM / 0.1 CPU. Render sleeps after 15 idle minutes and
 usually needs about one minute to wake. Its filesystem is ephemeral. Render's
 own Free Postgres expires after 30 days, so it is not the selected database.
+The native backend peaked at **552.3 MB RSS with `-Xmx384m`**; this is not proof
+that Render's 512 MB limit is sufficient, and heap size is not total process RAM.
 
 ## Demo isolation and feature scope
 
 - Create new demo resources and a new database. Leave the upstream production
   domains, deployment workflows, accounts, databases, and storage untouched.
-- Use the dedicated backend build at `deploy/demo-backend/Dockerfile` and
-  root `railway.json`; use Spring profiles **`prod,demo`**. These are deployment
-  artifacts being prepared for this target, not the inherited production stack.
+- Use `deploy/demo-backend/Dockerfile`, configured explicitly in Railway's
+  service settings and `RAILWAY_DOCKERFILE_PATH`; use Spring profiles
+  **`prod,demo`**. The rejected legacy `railway.json` was removed. This is a separate
+  demo target, not the inherited production stack.
 - Use the Pages files in `deploy/demo-pages/` and
   `scripts/build-demo-pages.mjs`. Bind the proxy to the **verified demo backend**;
   never turn it into an arbitrary URL proxy. Database/JWT secrets belong only in
@@ -60,13 +67,15 @@ own Free Postgres expires after 30 days, so it is not the selected database.
 
 ## Deployment sequence
 
-1. **Account owner:** finish Railway and Neon signup and any provider-required
-   human verification. Select the free options and inspect the actual quotas.
-   Account signup or an OAuth session alone does not prove deployment readiness.
+1. **Account owner:** Railway and Neon signup/authorization are complete. The
+   actual Railway account showed **$5 credit / 30 trial days**, with no card added
+   and no plan upgrade. Recheck remaining credit before the handoff. Signup alone
+   does not prove deployment readiness.
 2. **DevOps owner:** create a dedicated Neon Free project/database. Store its
    TLS-enabled JDBC connection details in Railway secrets; do not paste them into
    shared instructions, screenshots, or a public issue.
-3. Deploy the dedicated backend from a reviewed, recorded Git revision. Set the
+3. Deploy the dedicated backend from a reviewed, recorded Git revision. Use only
+   **one replica in Singapore**, as configured for this account. Set the
    demo database, a new random JWT secret, `prod,demo` profiles, and required demo
    account settings. Confirm the student guard and seed behavior before exposing
    it. Keep all optional external integrations disabled.
@@ -88,12 +97,23 @@ run. No credential values belong in this table.
 | Item | Verified value |
 | --- | --- |
 | Source commit / PR | PR #4; frontend artifact built from `86ceb885`, CI run `36240432617` |
-| Backend build and deploy commands | PENDING — use the dedicated demo artifacts above |
+| Backend configuration and deploy | Explicit Dockerfile `deploy/demo-backend/Dockerfile` plus `RAILWAY_DOCKERFILE_PATH`; health `/actuator/health`, timeout 300 seconds, restart `ON_FAILURE` with 3 retries, one Singapore replica. Settings verified through the official CLI's GraphQL `serviceInstanceUpdate`. Source `c9c67946` was archived from tracked files only, then `npx.cmd --offline @railway/cli up .tools/demo-upload-c9c67946 --path-as-root --no-gitignore --service lms-api --environment production --detach` deployed it to the linked isolated project. Deployment `84e5413c-3d70-4b5e-9109-b52623182084` succeeded. |
 | Pages build and deploy commands | CI ran `node scripts/build-demo-pages.mjs`; downloaded its `demo-pages` artifact and verified with `node scripts/build-demo-pages.mjs --check-only`; deployed from `deploy/demo-pages` with `npx.cmd wrangler pages deploy --project-name neko-core-lms-demo --branch main` |
-| Public HTTPS demo URL | `https://neko-core-lms-demo.pages.dev` — frontend HTTP checks passed; full application acceptance pending |
-| Backend health / database migration result | 131 migrations through version159 applied to the new database. First startup exposed an inherited video healthcheck mismatch; demo-only fix and 72 focused tests passed. Runtime recheck pending. |
-| Public synthetic student access instructions | PENDING — never substitute administrator credentials |
-| Remaining Railway credit and check time (UTC+7) | $5 credit / 30 trial days before deployment, 26 September around18:50; usage must be rechecked after deploy |
+| Public HTTPS demo URL | `https://neko-core-lms-demo.pages.dev` — real UI login, course download, offline reload/progress and reconnect passed; see `docs/DEMO-VERIFICATION.md` |
+| Backend health / database migration result | All 131 migrations through version 159 applied to the new Neon database; one enabled student and zero enabled privileged users. Native smoke and 72 focused tests passed. Railway also reports `UP` with startup in 15.725 seconds; observed memory 495.8 MB / 1,024 MB. Public Pages-proxy checks at 20:30 UTC+7 passed login, role verification, blocked admin/registration/encoded-password/checkout requests and disabled cloud AI. |
+| Synthetic student access instructions | The owner's ignored `.tools/demo-access.local.md` contains the demo URL and learner credentials. Share through the team's private handoff; never substitute administrator credentials or commit passwords. |
+| Remaining Railway credit and check time (UTC+7) | $4.99126 / 30 trial days on 26 September around 20:31; credit decreases while resources run |
+| Pages Functions failure policy | Production and preview `fail_open=false` verified through the official Cloudflare API; the fixed backend binding was preserved and API health rechecked. Quota exhaustion itself was not forced. |
+
+Railway setup required two corrections: the first attempt rejected multiple
+regions, so San Francisco was removed; the second used Railpack autodetection and
+failed, so the service now selects the Dockerfile explicitly. Railway also
+rejected a new `railwayConfigFile` setting as deprecated, despite the CLI noting
+that existing files work until 1 December. The verified service settings above
+are the actual deployment configuration; do not require a newly attached config
+file or describe either failed attempt as a successful deployment. The unused
+legacy file has been removed from the final branch; these are explicit service
+settings, not a claim that configuration-as-code is active.
 
 ## Acceptance and handoff
 

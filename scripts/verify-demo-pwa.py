@@ -198,8 +198,12 @@ async def main(args):
                 await expect(card).to_be_visible()
                 await card.locator("app-course-download-button button").first.click()
                 await expect(page.get_by_role("heading", name=re.compile(r"Tải về:"))).to_be_visible()
-                await page.locator('input[name="videoQuality"][value="none"]').check()
-                await page.get_by_role("button", name="Tải về", exact=True).click()
+                confirm_download = page.get_by_role("button", name="Tải về", exact=True)
+                await expect(confirm_download).to_be_visible()
+                no_video = page.locator('input[name="videoQuality"][value="none"]')
+                if await no_video.count():
+                    await no_video.check()
+                await confirm_download.click()
                 async def downloaded():
                     value = await read_offline(page, fixture)
                     return value if (value and value["course"] and value["lesson"] and
@@ -219,6 +223,30 @@ async def main(args):
                 online_text = " ".join((await prose.inner_text()).split())
                 assert len(online_text) >= 80, "Online text lesson is empty or too short for this acceptance"
                 await page.wait_for_function("navigator.serviceWorker.controller?.state === 'activated'", timeout=180000)
+                manifest = await page.evaluate("""async () => await (await fetch('/ngsw.json?ngsw-bypass=true',
+                    {signal: AbortSignal.timeout(30000)})).json()""")
+                prefetch = [url for group in manifest["assetGroups"]
+                            if group.get("installMode") == "prefetch" for url in group.get("urls", [])]
+                async def prefetch_ready():
+                    return await page.evaluate("""async urls => {
+                        const names = (await caches.keys()).filter(name => name.includes(':assets:') && name.endsWith(':cache'));
+                        const stores = await Promise.all(names.map(name => caches.open(name)));
+                        for (const url of urls) {
+                            let found = false;
+                            for (const store of stores) {
+                                const response = await store.match(url);
+                                if (response?.ok) {found = true; break;}
+                            }
+                            if (!found) return false;
+                        }
+                        return true;
+                    }""", prefetch)
+                await until("actual service-worker prefetch cache population", prefetch_ready, 180)
+                worker_state = await page.evaluate("""async () => await (await fetch('/ngsw/state',
+                    {signal: AbortSignal.timeout(15000)})).text()""")
+                (output / "ngsw-state-online.txt").write_text(worker_state, encoding="utf-8")
+                assert "Driver state: NORMAL" in worker_state, "Angular service worker is not in NORMAL state"
+                assert "* initialization(" not in worker_state, "Service-worker initialization is still pending"
                 worker = await page.evaluate("""async () => {
                     const registration = await navigator.serviceWorker.ready;
                     return {controller: navigator.serviceWorker.controller?.scriptURL,
@@ -228,25 +256,27 @@ async def main(args):
                 assert worker["controller"].endswith("/sw-wrapper.js"), "Expected the deployed PWA wrapper"
                 assert worker["active"] == "activated"
                 assert any(name.startswith("ngsw:") for name in worker["caches"]), "Angular SW caches missing"
-                passed(step, serviceWorker=worker,
+                passed(step, serviceWorker=worker, prefetchedAssetCount=len(prefetch),
                        onlineTextSha256=hashlib.sha256(online_text.encode("utf-8")).hexdigest())
 
                 step = "offline reload served by service worker"
                 cdp = await context.new_cdp_session(page)
-                await cdp.send("Network.enable")
-                await cdp.send("Network.setCacheDisabled", {"cacheDisabled": True})
+                await cdp.send("Network.clearBrowserCache")
+                await cdp.detach()
                 await context.set_offline(True)
+                assert not await page.evaluate("navigator.onLine"), "Chrome did not enter offline mode before reload"
                 response = await page.reload(wait_until="domcontentloaded")
                 assert response and response.ok and response.from_service_worker, "Offline document did not come from the service worker"
                 await expect(page.locator("app-lesson-content")).to_be_visible(timeout=60000)
                 await expect(page.locator("#lesson-heading")).to_have_text(fixture["lessonTitle"])
-                assert not await page.get_by_text("Lỗi tải bài học", exact=True).count()
-                assert not await page.evaluate("navigator.onLine")
+                await expect(page.get_by_text("Lỗi tải bài học", exact=True)).not_to_be_visible()
+                assert not await page.evaluate("navigator.onLine"), "Chrome offline mode did not survive reload"
                 await expect(prose).to_be_visible()
                 lesson_text = " ".join((await prose.inner_text()).split())
                 assert lesson_text == online_text, "Offline prose does not match the actual online lesson text"
                 await capture(page, output, "02-offline-reloaded-lesson.png", "OFFLINE RELOAD / REAL SW CACHE")
-                passed(step, fromServiceWorker=True, bodyCharacters=len(lesson_text), httpCacheDisabled=True,
+                passed(step, fromServiceWorker=True, bodyCharacters=len(lesson_text), httpCacheCleared=True,
+                       navigatorOnline=False,
                        offlineTextSha256=hashlib.sha256(lesson_text.encode("utf-8")).hexdigest())
 
                 step = "complete text lesson offline"
@@ -273,9 +303,9 @@ async def main(args):
                 if page.url != lesson_url:
                     await page.goto(lesson_url, wait_until="domcontentloaded")
                 response = await page.reload(wait_until="domcontentloaded")
-                assert response and response.ok and response.from_service_worker
+                assert response and response.ok and response.from_service_worker, "Second offline reload bypassed the SW"
                 await expect(page.locator("app-lesson-content")).to_be_visible(timeout=60000)
-                assert is_complete(await read_offline(page, fixture), fixture)
+                assert is_complete(await read_offline(page, fixture), fixture), "Offline completion was not retained"
                 await capture(page, output, "03-offline-progress-persisted.png", "OFFLINE PROGRESS PERSISTED AFTER RELOAD")
                 passed(step, fromServiceWorker=True)
 

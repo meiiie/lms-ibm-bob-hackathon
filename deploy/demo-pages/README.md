@@ -65,14 +65,18 @@ published. API authorization remains the backend's responsibility. Set Pages
 Functions to **fail closed** so quota exhaustion cannot return an HTML app shell
 in place of an API response. Static assets do not invoke Functions, while API
 traffic still consumes the account's Workers allowance.
+For `neko-core-lms-demo`, both production and preview `fail_open=false` were
+applied and read back through the Cloudflare API on 26 September. The backend
+binding was preserved; actual quota exhaustion was not simulated.
 
 The site's absence of a root `404.html` preserves Pages SPA fallback. Service
 worker caching/downloading remains the LMS's existing user-device behavior;
 `no-store` here prevents HTTP/CDN caching of authenticated API responses. ChatGPT
 requires internet; a running loopback model is a separate optional connection.
 Hosted HTTPS browsers may ask for local-network permission and the model runtime
-must allow this exact Pages origin. No claim of deployed/offline browser success
-is made until the actual hosted build has passed acceptance checks.
+must allow this exact Pages origin. The actual hosted desktop Chrome flow passed
+offline text reload, completion persistence and reconnect sync on 26 September;
+see [verification and limits](../../docs/DEMO-VERIFICATION.md).
 The inherited runtime SEO service may still set upstream canonical metadata;
 the static `X-Robots-Tag: noindex, nofollow` response header prevents indexing.
 

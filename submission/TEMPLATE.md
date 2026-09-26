@@ -8,7 +8,9 @@
   technologies only if actually used in the final improvement.
 - Public repository: https://github.com/meiiie/lms-ibm-bob-hackathon
 - Final branch/commit: [record after verification]
-- Interactive demo URL: [not deployed by this setup]
+- Interactive demo URL: https://neko-core-lms-demo.pages.dev (isolated student demo;
+  provide private learner access instructions with submission; offline text acceptance
+  passed, while trial credit and capability limits are in `docs/FREE-DEMO-DEPLOYMENT.md`)
 - Video MP4, up to 5 minutes: [not produced]
 - Slides PDF: [not produced]
 - Cover PNG/JPG, recommended 16:9: [not produced]
