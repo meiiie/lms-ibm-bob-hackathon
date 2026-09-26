@@ -11,6 +11,12 @@
  * Architecture:
  *   Browser → iframe(Wiii Embed) → Wiii AI directly
  *   Latency: ~1-3s (single hop, direct SSE) vs ~3-7s (double hop via LMS proxy)
+ *
+ * Offline safety (Sprint 221b):
+ *   - Opening while offline shows an accessible offline state; no token exchange or iframe.
+ *   - Losing connectivity during a pending init aborts that init (destroyed flag).
+ *   - Reconnection shows a single manual retry — no automatic retry loop.
+ *   - Teardown prevents stale async results from committing after destroy.
  */
 import {
   Component,
@@ -20,6 +26,8 @@ import {
   output,
   signal,
   effect,
+  computed,
+  untracked,
   HostListener,
   OnInit,
   OnDestroy,
@@ -32,6 +40,7 @@ import { AiTokenService } from '../../../infrastructure/api/ai-token.service';
 import { SessionManagementService } from '../../../application/services/session-management.service';
 import { WiiiContextService } from '../../../infrastructure/api/wiii-context.service';
 import { AuthService } from '../../../../../core/services/auth.service';
+import { NetworkStatusService } from '../../../../../core/services/network-status.service';
 import { environment } from '../../../../../../environments/environment';
 
 @Component({
@@ -66,7 +75,7 @@ import { environment } from '../../../../../../environments/environment';
               <path d="M13.28 7.78l3.22-3.22v2.69a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.69l-3.22 3.22a.75.75 0 001.06 1.06zM2 17.25v-4.5a.75.75 0 011.5 0v2.69l3.22-3.22a.75.75 0 011.06 1.06L4.56 16.5h2.69a.75.75 0 010 1.5h-4.5a.75.75 0 01-.75-.75z" />
             </svg>
           </button>
-          <button class="close-button" (click)="onClose()" title="Đóng">
+          <button class="close-button" (click)="onClose()" title="Đóng" aria-label="Đóng trợ lý AI">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
               <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
             </svg>
@@ -74,8 +83,38 @@ import { environment } from '../../../../../../environments/environment';
         </div>
       </div>
 
+      <!-- Offline state — shown when device has no connectivity -->
+      @if (isOffline()) {
+        <div class="offline-state" role="status" aria-live="polite">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="offline-icon" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 3l18 18M8.111 8.111A5.97 5.97 0 006 12c0 1.657.672 3.157 1.757 4.243M10.586 10.586A2 2 0 0112 10a2 2 0 012 2 2 2 0 01-.586 1.414M16.243 16.243A5.97 5.97 0 0018 12a5.97 5.97 0 00-1.757-4.243M12 20.5V21" />
+          </svg>
+          <p class="offline-heading">Không có kết nối mạng</p>
+          <p class="offline-guidance">
+            Trợ lý AI cần kết nối internet. Trong khi đó bạn có thể tiếp tục
+            với <strong>bài học đã tải về</strong>.
+          </p>
+        </div>
+
+      <!--
+        Reconnect-ready state — device is back online but no init has run yet.
+        A single deliberate retry is offered; the button is outside the offline
+        block so it stays visible once isOffline() flips back to false.
+      -->
+      } @else if (offlineReconnectReady()) {
+        <div class="offline-state" role="status" aria-live="polite">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="offline-icon" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.111 8.111A5.97 5.97 0 006 12a5.97 5.97 0 005.97 5.97 5.97 5.97 0 005.97-5.97 5.97 5.97 0 00-1.757-4.243M12 3v1m0 16v1" />
+          </svg>
+          <p class="offline-heading">Đã kết nối lại</p>
+          <p class="offline-guidance">Kết nối mạng đã được khôi phục.</p>
+          <button class="retry-button" (click)="retryInit()" aria-label="Thử kết nối lại trợ lý AI">
+            Kết nối trợ lý AI
+          </button>
+        </div>
+
       <!-- Wiii iframe (fills remaining space) -->
-      @if (embedUrl()) {
+      } @else if (embedUrl()) {
         <!--
           Security note:
           Wiii runs on a trusted, separate origin. allow-same-origin is intentional
@@ -95,13 +134,13 @@ import { environment } from '../../../../../../environments/environment';
           title="Wiii AI Chat"
         ></iframe>
       } @else if (loadError()) {
-        <div class="error-state">
+        <div class="error-state" role="alert">
           <span>Không thể kết nối AI. Vui lòng thử lại sau.</span>
-          <button (click)="retryInit()">Thử lại</button>
+          <button (click)="retryInit()" aria-label="Thử kết nối lại trợ lý AI">Thử lại</button>
         </div>
       } @else {
-        <div class="loading-state">
-          <div class="loading-spinner"></div>
+        <div class="loading-state" role="status" aria-live="polite">
+          <div class="loading-spinner" aria-hidden="true"></div>
           <span>Đang kết nối AI...</span>
         </div>
       }
@@ -303,17 +342,25 @@ import { environment } from '../../../../../../environments/environment';
     }
 
     /* =========================================================
-       LOADING / ERROR STATES
+       LOADING / ERROR / OFFLINE STATES
        ========================================================= */
-    .loading-state {
+    .loading-state,
+    .error-state,
+    .offline-state {
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      gap: 12px;
+      padding: 24px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .loading-state {
       gap: 16px;
       color: #6b7280;
-      font-size: 14px;
     }
 
     .loading-spinner {
@@ -330,19 +377,36 @@ import { environment } from '../../../../../../environments/environment';
     }
 
     .error-state {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      padding: 24px;
       color: #dc2626;
-      font-size: 14px;
-      text-align: center;
     }
 
-    .error-state button {
+    /* Offline state */
+    .offline-state {
+      color: #374151;
+    }
+
+    .offline-icon {
+      width: 48px;
+      height: 48px;
+      color: #9ca3af;
+    }
+
+    .offline-heading {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 0;
+      color: #111827;
+    }
+
+    .offline-guidance {
+      margin: 0;
+      color: #6b7280;
+      line-height: 1.5;
+      max-width: 260px;
+    }
+
+    .error-state button,
+    .retry-button {
       padding: 8px 16px;
       background: #0056D2;
       color: white;
@@ -352,7 +416,8 @@ import { environment } from '../../../../../../environments/environment';
       font-size: 14px;
     }
 
-    .error-state button:hover {
+    .error-state button:hover,
+    .retry-button:hover {
       background: #004BB5;
     }
 
@@ -378,6 +443,7 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   private readonly contextService = inject(WiiiContextService);
   private readonly authService = inject(AuthService);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly networkStatus = inject(NetworkStatusService);
 
   // Inputs
   mode = input<'sidebar' | 'widget'>('sidebar');
@@ -391,11 +457,49 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   embedUrl = signal<SafeResourceUrl | null>(null);
   loadError = signal(false);
 
+  /**
+   * True when the device is offline (derived from NetworkStatusService).
+   * Offline state takes priority over loadError/loading in the template.
+   */
+  readonly isOffline = computed(() => !this.networkStatus.online());
+
+  /**
+   * True once connectivity is restored while the offline state is showing,
+   * so the panel offers a single deliberate retry rather than auto-reiniting.
+   * Reset on every retryInit() call to avoid duplicate in-flight requests.
+   */
+  offlineReconnectReady = signal(false);
+
   // View child for postMessage bridge
   wiiiIframe = viewChild<ElementRef<HTMLIFrameElement>>('wiiiIframe');
 
   // Track message listener for cleanup
   private messageHandler: ((event: MessageEvent) => void) | null = null;
+
+  /**
+   * Destroyed flag — prevents stale async init results from committing after
+   * ngOnDestroy(). Set once; never reset.
+   */
+  private destroyed = false;
+
+  /** Token used to abort a pending init when the component is destroyed or goes offline. */
+  private initGeneration = 0;
+
+  /**
+   * True while initEmbed() is awaiting getToken(). Signal so the restore effect
+   * re-evaluates reactively when the in-flight call settles.
+   * - Prevents double-click from issuing a second request (retryInit is no-op if in-flight)
+   * - Prevents the reconnect-restore effect from surfacing the retry button during normal online init
+   * - When the promise settles (finally), the signal update triggers the effect to re-evaluate
+   *   and surface the retry button if connectivity has already returned.
+   */
+  private readonly initInFlight = signal(false);
+
+  /**
+   * True while a token-refresh response is in-flight for wiii:auth-expired.
+   * Prevents duplicate refresh requests if the iframe sends the event twice.
+   */
+  private refreshPending = false;
 
   constructor() {
     // Sprint 221: Connect iframe to WiiiContextService for page-aware AI.
@@ -413,15 +517,45 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
         });
       }
     });
+
+    // Connectivity-loss effect: invalidate any in-flight init and clear a
+    // stale embedUrl so a reconnecting promise cannot resurrect an old iframe.
+    // Only acts on the offline transition (online → false).
+    effect(() => {
+      const online = this.networkStatus.online();
+      if (!online) {
+        this.initGeneration++;       // abort current in-flight initEmbed
+        this.embedUrl.set(null);     // discard any previously-rendered iframe
+        this.loadError.set(false);   // suppress error state while offline
+        this.offlineReconnectReady.set(false);
+      }
+    });
+
+    // Connectivity-restore effect: surface the single deliberate retry button.
+    // Reactive on both online() and initInFlight() so that if connectivity
+    // returned while the old promise was still pending, the button appears as
+    // soon as the promise settles and clears initInFlight.
+    effect(() => {
+      const online = this.networkStatus.online();
+      const inFlight = this.initInFlight();
+      if (online && !inFlight && !untracked(() => this.embedUrl()) && !untracked(() => this.loadError())) {
+        this.offlineReconnectReady.set(true);
+      }
+    });
   }
 
   ngOnInit(): void {
     this.checkMobile();
-    this.initEmbed();
+    if (!this.networkStatus.isEffectivelyOffline()) {
+      this.initEmbed();
+    }
+    // If offline on open, offlineReconnectReady stays false until online signal fires.
     this.setupMessageBridge();
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
+    this.initGeneration++;          // invalidate any in-flight promise
     if (this.messageHandler) {
       window.removeEventListener('message', this.messageHandler);
     }
@@ -441,17 +575,44 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   /**
    * Initialize embed by exchanging token and building iframe URL.
    * Auth is passed via URL hash fragment (secure — not sent to server).
+   *
+   * Guards:
+   * - Skips if device is offline at call time.
+   * - Aborts if component is destroyed while the token exchange is in-flight
+   *   (generation token check) to prevent a stale embedUrl from being set.
    */
   async initEmbed(): Promise<void> {
+    // Do not start a cloud request while offline.
+    if (this.networkStatus.isEffectivelyOffline()) {
+      return;
+    }
+    // Do not issue a second request if one is already in-flight (double-click guard).
+    if (this.initInFlight()) {
+      return;
+    }
+
     this.loadError.set(false);
     this.embedUrl.set(null);
+    this.offlineReconnectReady.set(false);
+    this.initInFlight.set(true);
+
+    const generation = ++this.initGeneration;
 
     try {
       const token = await this.tokenService.getToken();
+
+      // Abort if destroyed or superseded while awaiting.
+      if (this.destroyed || generation !== this.initGeneration) return;
+
       if (token) {
         const wiiiEmbedUrl = environment.wiiiEmbedUrl;
         if (!this.isTrustedCrossOriginEmbedUrl(wiiiEmbedUrl)) {
           this.loadError.set(true);
+          return;
+        }
+
+        // Check again: we may have gone offline during the token exchange.
+        if (this.networkStatus.isEffectivelyOffline()) {
           return;
         }
 
@@ -465,11 +626,23 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
         this.loadError.set(true);
       }
     } catch {
-      this.loadError.set(true);
+      if (!this.destroyed && generation === this.initGeneration) {
+        this.loadError.set(true);
+      }
+    } finally {
+      // Always clear the in-flight guard when this call completes — whether it
+      // was superseded by a newer initGeneration or not. initInFlight only
+      // prevents a second concurrent call; it must not stay locked after the
+      // promise settles. Because initInFlight is a signal, clearing it here
+      // will re-trigger the restore effect if connectivity already returned,
+      // surfacing the retry button without a second online-event.
+      this.initInFlight.set(false);
     }
   }
 
+  /** Manual retry — deliberate action, resets reconnect-ready flag. */
   retryInit(): void {
+    this.offlineReconnectReady.set(false);
     this.initEmbed();
   }
 
@@ -501,25 +674,60 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
    * PostMessage bridge — handles token refresh requests from Wiii embed.
    * When the AI JWT expires mid-conversation, the iframe sends 'wiii:auth-expired'
    * and we respond with a fresh token.
+   *
+   * Security: messages are only accepted from the exact Wiii embed origin.
+   * A window claiming a trusted origin via event.origin spoofing is not possible
+   * in the browser security model, but we additionally validate the origin string
+   * is a known cross-origin to prevent same-origin privilege escalation.
    */
   private setupMessageBridge(): void {
     const wiiiOrigin = this.getEmbedOrigin();
     if (!wiiiOrigin) return;
 
     this.messageHandler = async (event: MessageEvent) => {
-      // Origin validation — only accept messages from Wiii embed
+      // Origin validation — only accept messages from the exact Wiii embed origin.
+      // event.origin is set by the browser; a page cannot spoof it.
+      // We also reject same-origin messages via isTrustedCrossOrigin to prevent a
+      // rogue same-domain window from impersonating the Wiii embed.
       if (event.origin !== wiiiOrigin) return;
 
+      // Source validation — reject messages from any window other than the known
+      // iframe's contentWindow. event.source is the actual sending Window reference;
+      // even if an attacker matches the origin string, they cannot match this reference.
+      // Also reject when no iframe is mounted (wiiiIframe is null) — a message
+      // claiming the Wiii origin when no embed is active has no legitimate sender.
+      const iframeRef = this.wiiiIframe();
+      if (!iframeRef) return;
+      if (event.source !== iframeRef.nativeElement.contentWindow) return;
+
       if (event.data?.type === 'wiii:auth-expired') {
-        // Re-exchange token via LMS backend
-        this.tokenService.clearToken();
-        const token = await this.tokenService.getToken();
-        if (token) {
-          const iframe = this.wiiiIframe();
-          iframe?.nativeElement.contentWindow?.postMessage(
-            { type: 'wiii:auth', payload: { token } },
-            wiiiOrigin
-          );
+        // Deduplicate: if a refresh is already in-flight, ignore the duplicate event.
+        if (this.refreshPending) return;
+        // Do not refresh while offline — it will fail anyway and generate noise.
+        if (this.networkStatus.isEffectivelyOffline()) return;
+
+        this.refreshPending = true;
+        // Snapshot the iframe reference and generation before awaiting. After
+        // the await, verify the same iframe is still mounted to prevent a
+        // replaced iframe from receiving a stale token.
+        const senderWindow = iframeRef.nativeElement.contentWindow;
+        const refreshGeneration = this.initGeneration;
+        try {
+          // Re-exchange token via LMS backend
+          this.tokenService.clearToken();
+          const token = await this.tokenService.getToken();
+          // Do not send a stale token after destroy or if the iframe was replaced.
+          if (this.destroyed) return;
+          if (this.initGeneration !== refreshGeneration) return;
+          if (token && senderWindow) {
+            // Do NOT print or log the token.
+            senderWindow.postMessage(
+              { type: 'wiii:auth', payload: { token } },
+              wiiiOrigin
+            );
+          }
+        } finally {
+          this.refreshPending = false;
         }
       }
     };
