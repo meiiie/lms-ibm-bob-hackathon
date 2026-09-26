@@ -14,15 +14,17 @@ treating this repository as a completed submission.
 - **Optional ChatGPT connection:** [Setup and limits](docs/CHATGPT-SETUP.md)
 - **Local AI and offline boundaries:** [Ollama / LM Studio setup](docs/LOCAL-AI-SETUP.md)
 - **WebMCP decision:** [Research as of 26 September 2026](docs/WEBMCP-RESEARCH-2026-09-26.md)
-- **Hosted student demo:** [Open the demo](https://neko-core-lms-demo.pages.dev) · [Deployment, access and limits](docs/FREE-DEMO-DEPLOYMENT.md)
+- **Hosted LMS demo:** [Open the demo](https://neko-core-lms-demo.pages.dev) · [Deployment, access and limits](docs/FREE-DEMO-DEPLOYMENT.md)
+- **Demo role access:** [Accounts and current rollout status](docs/DEMO-ACCOUNTS.md)
 - **Submission:** [Readiness audit](docs/SUBMISSION-READINESS.md) · [Checklist](docs/SUBMISSION-CHECKLIST.md) · [Draft](submission/TEMPLATE.md)
 
 Build window: **25 September 22:00–27 September 22:00, 2026, Vietnam (UTC+7)**.
 Internal target: 27 September 20:00 UTC+7. Neko Core is the team name, not an LMS
 software dependency. A separate synthetic student demo is deployed on Cloudflare
 Pages, Railway trial and Neon Free; real login, offline text learning, reload and
-reconnect sync passed [hosted acceptance](docs/DEMO-VERIFICATION.md). The account owner holds learner
-access instructions; cloud AI, payments, uploads and privileged accounts are disabled.
+reconnect sync passed [hosted acceptance](docs/DEMO-VERIFICATION.md). The owner has
+requested all four role accounts; see [rollout status and private access](docs/DEMO-ACCOUNTS.md).
+Cloud AI, payments, uploads and unprovisioned external integrations remain disabled.
 
 ChatGPT requires internet. Downloaded lessons remain independent of cloud AI.
 Local AI requires a running server and a downloaded chat model on the learner's

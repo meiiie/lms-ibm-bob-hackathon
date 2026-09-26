@@ -1,5 +1,24 @@
 # Current work state
 
+## Demo role access — in progress
+
+26 September 2026, Vietnam (UTC+7). The owner explicitly requested enabling the
+teacher, organization manager and system administrator accounts. This supersedes
+the original student-only demo restriction. Branch: `codex/demo-roles` from merged
+PR #4. Preserve the owner's `.factorypath` edit and all Bob evidence.
+
+Four role identities are being prepared with independent private passwords.
+Teacher identity reuses the SAF-101 owner ID to preserve course/class/question-bank
+relations. Other seed identities remain disabled with unusable randomized hashes.
+The demo filter delegates ordinary management routes to existing RBAC while
+retaining restrictions on integrations that are not provisioned. Three new role
+passwords were stored in the existing ignored secrets file and set on Railway
+without deploying the old image. No credential values were printed or committed.
+
+Next: run the combined backend checks, deploy the new backend, verify real role
+logins/dashboard/data and negative access checks, update the private team handoff,
+then publish and merge the scoped changes. See `docs/DEMO-ACCOUNTS.md`.
+
 ## Free demo deployment — hosted acceptance passed
 
 26 September 2026, Vietnam (UTC+7). The owner authorized choosing and deploying

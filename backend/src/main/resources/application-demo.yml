@@ -27,6 +27,9 @@ app:
   demo:
     database-ack: ${DEMO_DATABASE_ACK:}
     student-password: ${DEMO_STUDENT_PASSWORD:}
+    teacher-password: ${DEMO_TEACHER_PASSWORD:}
+    org-admin-password: ${DEMO_ORG_ADMIN_PASSWORD:}
+    admin-password: ${DEMO_ADMIN_PASSWORD:}
   cors:
     allowed-origins: ${APP_BASE_URL}
   storage:

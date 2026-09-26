@@ -26,9 +26,12 @@ public class DemoSafetyConfiguration {
         if (!"isolated-demo-only".equals(environment.getProperty("app.demo.database-ack"))) {
             throw new IllegalStateException("Set DEMO_DATABASE_ACK=isolated-demo-only only for a new demo database.");
         }
-        String password = environment.getProperty("app.demo.student-password", "");
-        if (password.length() < 24 || password.getBytes(StandardCharsets.UTF_8).length > 72) {
-            throw new IllegalStateException("DEMO_STUDENT_PASSWORD must contain at least 24 characters and at most 72 UTF-8 bytes.");
+        for (String role : List.of("student", "teacher", "org-admin", "admin")) {
+            String password = environment.getProperty("app.demo." + role + "-password", "");
+            if (password.length() < 24 || password.getBytes(StandardCharsets.UTF_8).length > 72) {
+                throw new IllegalStateException("DEMO_" + role.toUpperCase(java.util.Locale.ROOT).replace('-', '_')
+                        + "_PASSWORD must contain at least 24 characters and at most 72 UTF-8 bytes.");
+            }
         }
         for (String property : List.of("app.auth.google.enabled", "app.auth.google.redirect-flow-enabled",
                 "app.video.ingest.enabled", "app.sepay.enabled", "chatgpt.enabled", "wiii.webhook.enabled",
