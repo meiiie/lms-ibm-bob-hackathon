@@ -117,7 +117,23 @@ class ChatGptProviderAdapterTest {
         var provider = adapter(r -> reply(500, "private body"));
         assertCode(() -> provider.parseAnswer("data: {\"type\":\"response.output_text.delta\",\"delta\":\"partial\"}\n\n"), "unavailable");
         assertCode(() -> provider.parseAnswer("data: {\"type\":\"response.failed\",\"secret\":\"hidden\"}\n\n"), "unavailable");
+        assertCode(() -> provider.parseAnswer("data: {\"type\":\"response.incomplete\"}\n\n"), "unavailable");
         assertCode(() -> provider.parseAnswer("data: {bad-json-secret}\n\n"), "unavailable");
+    }
+
+    @Test
+    void terminalEventReturnsAnswerAndCancelsAnOtherwiseOpenStream() {
+        for (String terminal : new String[]{"data: {\"type\":\"response.completed\"}\r\n\r\n", "data: [DONE]\r\n\r\n"}) {
+            AtomicBoolean cancelled = new AtomicBoolean();
+            String stream = "data: {\"type\":\"response.output_text.delta\",\"delta\":\"Thủy thủ ⚓\"}\r\n\r\n" + terminal;
+            byte[] bytes = stream.getBytes(StandardCharsets.UTF_8);
+            var provider = adapter(request -> Mono.just(ClientResponse.create(HttpStatus.OK)
+                    .header("Content-Type", "text/event-stream")
+                    .body(Flux.range(0, bytes.length).<org.springframework.core.io.buffer.DataBuffer>map(i -> DefaultDataBufferFactory.sharedInstance.wrap(new byte[]{bytes[i]}))
+                            .concatWith(Flux.never()).doOnCancel(() -> cancelled.set(true))).build()));
+            assertThat(provider.ask(credential, "Question").block()).isEqualTo("Thủy thủ ⚓");
+            assertThat(cancelled).isTrue();
+        }
     }
 
     @Test

@@ -130,7 +130,7 @@ public class ChatGptProviderAdapter implements ChatGptProvider {
                             "input", List.of(Map.of("type", "message", "role", "user", "content",
                                     List.of(Map.of("type", "input_text", "text", question)))),
                             "parallel_tool_calls", false, "store", false, "stream", true));
-            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            SseAnswer answer = new SseAnswer();
             // Read the successful stream directly so cancellation does not attempt a second body drain.
             return safe(request.retrieve().onStatus(status -> !status.is2xxSuccessful(),
                             response -> Mono.just(upstreamError(response.statusCode().value())))
@@ -138,37 +138,81 @@ public class ChatGptProviderAdapter implements ChatGptProvider {
                         .<Boolean>handle((buffer, sink) -> {
                             try {
                                 int size = buffer.readableByteCount();
-                                if (bytes.size() + size > MAX_STREAM_BYTES) {
-                                    sink.error(tooLarge());
-                                } else {
-                                    byte[] chunk = new byte[size];
-                                    buffer.read(chunk);
-                                    bytes.writeBytes(chunk);
-                                    sink.next(true);
-                                }
+                                if (size > MAX_STREAM_BYTES - answer.totalBytes) throw tooLarge();
+                                byte[] chunk = new byte[size];
+                                buffer.read(chunk);
+                                sink.next(answer.accept(chunk));
                             } finally {
                                 DataBufferUtils.release(buffer);
                             }
-                        }).doOnDiscard(org.springframework.core.io.buffer.DataBuffer.class, DataBufferUtils::release)
-                        .then(Mono.fromCallable(() -> parseAnswer(bytes.toString(StandardCharsets.UTF_8)))), answerTimeout);
+                        }).takeUntil(Boolean::booleanValue)
+                        .doOnDiscard(org.springframework.core.io.buffer.DataBuffer.class, DataBufferUtils::release)
+                        .then(Mono.fromCallable(answer::finish)), answerTimeout);
         });
     }
 
     String parseAnswer(String stream) {
-        StringBuilder answer = new StringBuilder();
-        boolean completed = false;
-        for (String block : stream.replace("\r\n", "\n").replace('\r', '\n').split("\n\n")) {
+        SseAnswer answer = new SseAnswer();
+        answer.accept(stream.getBytes(StandardCharsets.UTF_8));
+        return answer.finish();
+    }
+
+    private final class SseAnswer {
+        private final StringBuilder answer = new StringBuilder();
+        private final ByteArrayOutputStream frame = new ByteArrayOutputStream();
+        private int totalBytes;
+        private int lineBytes;
+        private boolean previousCr;
+        private boolean completed;
+
+        boolean accept(byte[] chunk) {
+            if (chunk.length > MAX_STREAM_BYTES - totalBytes) throw tooLarge();
+            totalBytes += chunk.length;
+            for (byte value : chunk) {
+                if (completed) break;
+                if (value == '\r') {
+                    newline();
+                    previousCr = true;
+                } else if (value == '\n') {
+                    if (!previousCr) newline();
+                    previousCr = false;
+                } else {
+                    previousCr = false;
+                    frame.write(value);
+                    lineBytes++;
+                }
+            }
+            return completed;
+        }
+
+        private void newline() {
+            if (lineBytes == 0) {
+                processFrame();
+                frame.reset();
+            } else {
+                frame.write('\n');
+                lineBytes = 0;
+            }
+        }
+
+        String finish() {
+            if (!completed && frame.size() > 0) processFrame();
+            if (!completed || answer.toString().isBlank()) throw ChatGptException.unavailable();
+            return answer.toString();
+        }
+
+        private void processFrame() {
             StringBuilder data = new StringBuilder();
             String eventName = "message";
-            for (String line : block.split("\n")) {
+            for (String line : frame.toString(StandardCharsets.UTF_8).split("\n")) {
                 if (line.startsWith("event:")) eventName = line.substring(6).stripLeading();
                 if (line.startsWith("data:")) {
                     if (!data.isEmpty()) data.append('\n');
                     data.append(line.substring(5).stripLeading());
                 }
             }
-            if (data.isEmpty()) continue;
-            if ("[DONE]".contentEquals(data)) { completed = true; break; }
+            if (data.isEmpty()) return;
+            if ("[DONE]".contentEquals(data)) { completed = true; return; }
             try {
                 JsonNode event = json.readTree(data.toString());
                 String type = event.path("type").asText(eventName);
@@ -187,8 +231,6 @@ public class ChatGptProviderAdapter implements ChatGptProvider {
                 throw ChatGptException.unavailable();
             }
         }
-        if (!completed || answer.toString().isBlank()) throw ChatGptException.unavailable();
-        return answer.toString();
     }
 
     private Mono<JsonNode> jsonResponse(ClientResponse response) {

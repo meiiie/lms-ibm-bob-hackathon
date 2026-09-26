@@ -11,8 +11,9 @@ error at 08:24:34. This image is not the expanded final consumption-summary pane
 capture that panel before treating this task's evidence as complete. Preserve the
 existing image and its numbers as an intermediate checkpoint.
 
-The local database task ID is `b3f61aaa13f3e3d94298655249da2d8c`; the manifest
-uses the team label `dark-offline-sidebar-01`. A recovered local transcript is
+The manifest uses the verified local database task ID
+`b3f61aaa13f3e3d94298655249da2d8c`; its notes preserve the historical team label
+`dark-offline-sidebar-01`. A recovered local transcript is
 Git-ignored pending privacy review. Codex's later ChatGPT implementation is not
 additional Bob usage and must not be entered as a Bob session.
 
@@ -35,6 +36,7 @@ This is a naming example, not an existing screenshot.
 - `task_id`: the real Bob task identifier or a consistently recorded local label.
 - `task_description`: the actual work performed in that task.
 - `completed_at_vietnam`: actual completion time in ISO 8601 with `+07:00`.
+  Leave blank when completion is unverified; put checkpoint capture times in notes.
   Vietnam uses UTC+7. Do not replace timestamps with the time of file upload.
 - `summary_png`: filename relative to this directory; the file must exist.
 - `history_markdown_optional`: optional reviewed history export, if available.

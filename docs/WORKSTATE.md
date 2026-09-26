@@ -18,16 +18,25 @@ historical next-step statements below; the new work is attributed to Codex.
   ChatGPT device/poll/ask/disconnect, cancellation/offline recovery, and real HTTP
   interceptor composition with synthetic provider responses. Log (local/ignored):
   `.tools/chatgpt-frontend-final-test.log`.
-- PASS: 21 backend regression tests (7 adapter, 11 session, 3 controller), exit 0,
-  using the isolated output described below. Read-only review found no blocking
-  issue after the stream cancellation fix.
+- PASS: 26 backend regression tests (8 adapter, 11 session, 3 controller,
+  4 manual-probe diagnostic tests), exit 0 at 09:19:45 UTC+7, using the isolated
+  output described below. Log: `.tools/chatgpt-backend-terminal-tests-final.log`.
+  Independent review found no blocking issue after the corrections below.
 - PASS: `python scripts/verify-ai-sidebar.py`, 9 acceptance groups in real Chrome
   153.0.8010.53, with visibly labeled synthetic LMS/provider fixtures. Covers both
   providers, disabled/unavailable cases, device/poll/ask/disconnect, plain text,
   rate-limit recovery, offline no replay and iframe message isolation. It does not
   verify live provider authentication, a real backend or service-worker behavior.
-- PASS: working-tree harness configuration; `git diff --check`. Production build
-  and final CI are still being verified at this checkpoint.
+- PASS: working-tree harness configuration; `git diff --check`; production Angular
+  build with `SITEMAP_BASE_URL=http://127.0.0.1:9` (documented offline sitemap
+  fallback and existing CommonJS warnings). Local build log is ignored at
+  `.tools/chatgpt-frontend-build.log`.
+- PASS: all six CI jobs on `5afc450a66b6093deb25eed86c4da9cd210d9da1`, including
+  1,304 backend tests, 65 targeted frontend tests, frontend build, worker tests,
+  harness, Compose validation and Docker application smoke:
+  https://github.com/meiiie/lms-ibm-bob-hackathon/actions/runs/36210385752.
+  Draft PR #3 remains open while the live inference failure is investigated:
+  https://github.com/meiiie/lms-ibm-bob-hackathon/pull/3.
 - Live probe used the actual Java adapter/session service with a synthetic LMS
   owner, not the full application. OpenAI returned a device code and polling
   remained pending. The 180-second consent window ended without connection or a
@@ -36,9 +45,17 @@ historical next-step statements below; the new work is attributed to Codex.
   polling and token exchange. Its answer request then failed with safe error
   `unavailable` (exit 1). Inference is being diagnosed; do not claim working live
   chat or full LMS end-to-end login. The second connection was also discarded.
+  A third diagnostic probe ended pending after its 600-second consent window;
+  no new consent or answer was obtained, and its in-memory state was discarded.
 - Read-only backend review found no confirmed remaining blocker. A targeted test
   exposed a successful-response overflow path attempting to drain the upstream
   body again; direct Flux cancellation now passes the bounded-stream regression.
+  A second reproduced regression showed a completed answer followed by an open
+  HTTP stream timing out. Incremental SSE frame handling now ends and cancels on
+  completion, with bytewise UTF-8/CRLF, truncated, failed and incomplete response
+  coverage. This is a proven fixture failure, not yet the diagnosed cause of the
+  live request failure. Test-only diagnostics were also corrected to observe one
+  body subscription and keep their manual retry input deadline bounded.
 - The first Maven attempt also encountered missing existing class files in the
   IDE-shared `backend/target` output, plus a corrected new test generic type error.
   Rerunning with identical project dependencies/compiler settings and isolated
@@ -47,6 +64,8 @@ historical next-step statements below; the new work is attributed to Codex.
 - The submission audit is in `docs/SUBMISSION-READINESS.md`. The final expanded
   Bob summary, team task coverage and demo/video/slides/cover remain outstanding.
   The user stopped the UI capture attempt with Escape; no new summary was captured.
+  The existing manifest now records the verified Bob task ID and labels the
+  08:18 screenshot as intermediate; its unverified completion timestamp is blank.
 - Docker recovered at 08:58:49 UTC+7: Linux engine 29.7.2 responded to `docker version`,
   `docker info` and `docker ps`. Stale `dockerInference` and secrets-engine runtime
   sockets were preserved by renaming their parent runtime directories; no settings,
