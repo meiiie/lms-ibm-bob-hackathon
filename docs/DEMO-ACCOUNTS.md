@@ -1,5 +1,16 @@
 # Demo role accounts
 
+## Full access — 27 September 2026
+
+The owner requested removing all demo-only restrictions. All four accounts now
+use normal LMS permissions for their role, including create/update/delete actions,
+profile/password updates, uploads and administrative configuration. Existing
+ownership and organization checks remain. Learner accounts are not system admins.
+New accounts and edits persist across deployment; bootstrap no longer restores
+the four identities or disables other users on every restart. See
+[rollout and verification](DEMO-FULL-ACCESS.md). The 26 September restrictions and
+test results below are historical and are superseded by this change.
+
 On 26 September 2026 the owner requested enabling all four LMS roles in the
 isolated hosted demo. This supersedes the original student-only access policy.
 All four accounts are deployed and have passed real hosted login and role checks.
@@ -24,12 +35,11 @@ assignments and question banks remain linked. All four accounts use the demo
 organization. Learner progress is preserved. Other inherited seed accounts stay
 disabled and their known seed passwords are replaced with an unknown random hash.
 
-The initializer restores the four demo identities on backend startup and disables
-other accounts; this is a shared fixture, not a production user directory. Admin
-actions change the shared demo data. The original payment, email, cloud AI, uploads,
-media processing and related configuration restrictions remain because those
-integrations are not provisioned. Ordinary role access uses the application's
-existing Spring Security checks.
+The initializer provisions a fresh isolated database once. An existing hosted
+demo is adopted without resetting its users or settings; later restarts skip the
+seed operations. Admin actions change the shared demo data. Uploads are enabled;
+payment, email, cloud AI and media processing need their respective configured
+providers. Ordinary role access uses the application's existing Spring Security checks.
 
 SAF-101 is self-paced. Instructor-led class-only APIs are not applicable to it;
 use teacher course/learner views when demonstrating that course.

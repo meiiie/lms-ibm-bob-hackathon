@@ -3,3 +3,6 @@
 !backend/pom.xml
 !backend/src/
 !backend/src/**
+!deploy/
+!deploy/demo-backend/
+!deploy/demo-backend/entrypoint.sh

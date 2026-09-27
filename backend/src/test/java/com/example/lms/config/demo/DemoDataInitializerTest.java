@@ -80,32 +80,36 @@ class DemoDataInitializerTest {
         when(jdbc.queryForObject(anyString(), eq(UUID.class), any(), any(), eq(DemoDataInitializer.STUDENT_EMAIL),
                 any(), any(), any(), any())).thenReturn(existingStudentId);
 
+        when(jdbc.queryForObject(contains("WHERE setting_key = ?"), eq(Integer.class), eq("demo.bootstrap.v1")))
+                .thenReturn(0, 1);
         initializer.run(null);
         initializer.run(null);
 
         ArgumentCaptor<String> enrollmentSql = ArgumentCaptor.forClass(String.class);
-        verify(jdbc, times(2)).update(enrollmentSql.capture(), eq(classId), eq(existingStudentId));
+        verify(jdbc).update(enrollmentSql.capture(), eq(classId), eq(existingStudentId));
         assertThat(enrollmentSql.getAllValues()).allSatisfy(sql -> assertThat(sql)
                 .contains("ON CONFLICT (student_id, class_id) DO NOTHING")
                 .doesNotContain("DO UPDATE", "DELETE"));
-        verify(jdbc, times(2)).update(anyString(), eq(DemoDataInitializer.TEACHER_EMAIL), anyString(),
+        verify(jdbc).update(anyString(), eq(DemoDataInitializer.TEACHER_EMAIL), anyString(),
                 eq(organizationId), eq(teacherId));
     }
 
     @Test
-    void disablesEveryOtherAccountAndReplacesPublicSeedPasswordsWithAFreshDiscardedSecret() {
+    void disablesInheritedSeedAccountsOnlyDuringFreshBootstrap() {
+        when(jdbc.queryForObject(contains("WHERE setting_key = ?"), eq(Integer.class), eq("demo.bootstrap.v1")))
+                .thenReturn(0, 1);
         initializer.run(null);
         initializer.run(null);
 
         ArgumentCaptor<String> disabledPassword = ArgumentCaptor.forClass(String.class);
-        verify(jdbc, times(2)).update(contains("WHERE email NOT IN (?, ?, ?, ?)"), disabledPassword.capture(),
+        verify(jdbc).update(contains("WHERE email NOT IN (?, ?, ?, ?)"), disabledPassword.capture(),
                 eq(DemoDataInitializer.STUDENT_EMAIL), eq(DemoDataInitializer.TEACHER_EMAIL),
                 eq(DemoDataInitializer.ORG_ADMIN_EMAIL), eq(DemoDataInitializer.ADMIN_EMAIL));
         assertThat(disabledPassword.getAllValues()).allSatisfy(hash -> {
             assertThat(hash).startsWith("encoded:");
             UUID.fromString(hash.substring("encoded:".length()));
         });
-        assertThat(disabledPassword.getAllValues().get(0)).isNotEqualTo(disabledPassword.getAllValues().get(1));
+        assertThat(disabledPassword.getAllValues()).hasSize(1);
     }
 
     @Test
@@ -155,6 +159,34 @@ class DemoDataInitializerTest {
         assertThatThrownBy(() -> initializer.run(null)).isInstanceOf(TransactionException.class);
 
         assertThat(readiness.isReady()).isFalse();
+    }
+
+    @Test
+    void adoptsExistingHostedAccountsWithoutResettingCredentialsSettingsOrProgress() {
+        when(jdbc.queryForObject(contains("WHERE username IN"), eq(Integer.class))).thenReturn(4);
+
+        initializer.run(null);
+
+        assertThat(readiness.isReady()).isTrue();
+        verifyNoInteractions(passwords);
+        verify(jdbc).update(contains("ON CONFLICT (setting_key) DO NOTHING"), eq("demo.bootstrap.v1"));
+        verify(jdbc, never()).update(anyString(), anyString(), anyString(), anyString(), anyString(), anyString());
+        verify(jdbc, never()).queryForObject(anyString(), ArgumentMatchers.<RowMapper<DemoDataInitializer.DemoClass>>any());
+        verify(transactions).commit(transaction);
+    }
+
+    @Test
+    void initializedRestartDoesNotRequireTheSeedCourseOrChangeAnyAccountsOrSettings() {
+        when(jdbc.queryForObject(contains("WHERE setting_key = ?"), eq(Integer.class), eq("demo.bootstrap.v1")))
+                .thenReturn(1);
+
+        initializer.run(null);
+
+        assertThat(readiness.isReady()).isTrue();
+        verify(jdbc).queryForObject(anyString(), eq(Integer.class), eq("demo.bootstrap.v1"));
+        verifyNoMoreInteractions(jdbc);
+        verifyNoInteractions(passwords);
+        verify(transactions).commit(transaction);
     }
 
     private void verifyAccount(String id, String username, String email, String password, String fullName, String role) {

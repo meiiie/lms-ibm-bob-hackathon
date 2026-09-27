@@ -18,11 +18,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class DemoRequestFilterTest {
     @Test
-    void encodedAuthPathCannotReachDecodedMvcHandler() throws Exception {
+    void encodedAuthPathUsesNormalMvcAndSecurityHandling() throws Exception {
         var controller = new PasswordHandler();
         var mvc = MockMvcBuilders.standaloneSetup(controller).addFilters(readyFilter()).build();
-        mvc.perform(put(URI.create("/api/v3/%61uth/password"))).andExpect(status().isForbidden());
-        assertThat(controller.reached).isFalse();
+        mvc.perform(put(URI.create("/api/v3/%61uth/password"))).andExpect(status().isOk());
+        assertThat(controller.reached).isTrue();
     }
 
     @Test
@@ -73,13 +73,13 @@ class DemoRequestFilterTest {
             "POST,/api/v3/admin/storage/orphans/file/release", "POST,/api/v3/video-assets/from-upload",
             "POST,/api/v3/video-assets/asset/retry", "POST,/api/v3/video-assets/storage/orphan-cleanup",
             "PUT,/api/v3/organizations/org/payment-config", "POST,/api/v3/organizations/org/invites/email"})
-    void preventsSharedAccountChangesAndExternalSideEffects(String method, String path) throws Exception {
+    void delegatesFormerlyBlockedActionsToNormalAuthorizationAndProviderConfiguration(String method, String path) throws Exception {
         var response = new MockHttpServletResponse();
         var chain = new MockFilterChain();
         readyFilter().doFilter(new MockHttpServletRequest(method, path), response, chain);
-        assertThat(response.getStatus()).isEqualTo(403);
-        assertThat(response.getContentAsString()).contains("demo_restricted");
-        assertThat(chain.getRequest()).isNull();
+        assertThat(response.getStatus()).isEqualTo(200);
+        assertThat(response.getContentAsString()).isEmpty();
+        assertThat(chain.getRequest()).isNotNull();
     }
 
     @ParameterizedTest
@@ -122,23 +122,23 @@ class DemoRequestFilterTest {
     }
 
     @Test
-    void rejectsMultipartUploadsOutsideFileControllerToo() throws Exception {
+    void allowsMultipartUploadsToReachNormalFileValidation() throws Exception {
         var request = new MockHttpServletRequest("POST", "/api/v3/assignments/assignment/submit");
         request.setContentType("Multipart/Form-Data; boundary=example");
         var response = new MockHttpServletResponse();
         var chain = new MockFilterChain();
         readyFilter().doFilter(request, response, chain);
-        assertThat(response.getStatus()).isEqualTo(403);
-        assertThat(chain.getRequest()).isNull();
+        assertThat(response.getStatus()).isEqualTo(200);
+        assertThat(chain.getRequest()).isNotNull();
     }
 
     @Test
-    void restrictionsAlsoApplyWhenHostedUnderContextPath() throws Exception {
+    void allowsAccountCreationUnderAContextPath() throws Exception {
         var request = new MockHttpServletRequest("POST", "/demo/api/v3/auth/register");
         request.setContextPath("/demo");
         var response = new MockHttpServletResponse();
         readyFilter().doFilter(request, response, new MockFilterChain());
-        assertThat(response.getStatus()).isEqualTo(403);
+        assertThat(response.getStatus()).isEqualTo(200);
     }
 
     private DemoRequestFilter readyFilter() {

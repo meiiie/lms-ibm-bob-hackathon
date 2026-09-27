@@ -1,3 +1,13 @@
+## Owner-approved demo access update — 27 September 2026
+
+Remove demo-only capability restrictions across all four role portals. Normal
+role/ownership rules remain; demo administrators can manage the actual demo.
+Account/password/settings changes and new users must survive backend restarts.
+File upload/download must work and persist through deployment. Verify real browser
+writes and preserve teammate work, existing courses and learner progress. External
+services require their own configuration; do not present placeholders as working.
+Details and representative acceptance: [DEMO-FULL-ACCESS](DEMO-FULL-ACCESS.md).
+
 # Hackathon scope — working proposal
 
 ## Release acceptance — 27 September 2026

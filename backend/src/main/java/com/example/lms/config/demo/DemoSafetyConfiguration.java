@@ -33,17 +33,5 @@ public class DemoSafetyConfiguration {
                         + "_PASSWORD must contain at least 24 characters and at most 72 UTF-8 bytes.");
             }
         }
-        for (String property : List.of("app.auth.google.enabled", "app.auth.google.redirect-flow-enabled",
-                "app.video.ingest.enabled", "app.sepay.enabled", "chatgpt.enabled", "wiii.webhook.enabled",
-                "cloudflare.r2.enabled", "cloudflare.stream.enabled", "spring.kafka.enabled")) {
-            if (environment.getProperty(property, Boolean.class, false)) {
-                throw new IllegalStateException("Demo requires " + property + "=false.");
-            }
-        }
-        for (String property : List.of("gotenberg.url", "wiii.webhook.secret", "wiii.service-token")) {
-            if (!environment.getProperty(property, "").isBlank()) {
-                throw new IllegalStateException("Demo requires " + property + " to be empty.");
-            }
-        }
     }
 }
