@@ -157,6 +157,7 @@
     "currentPassword": "Current password",
     "verifyEmail": "Verify email",
     "inviteCode": "Invite code",
+    "continueWithEmail": "Continue with email",
     "continueWithGoogle": "Continue with Google",
     "orContinueWith": "or continue with",
     "alreadyHaveAccount": "Already have an account?",

@@ -35,7 +35,8 @@ repository. Do not remove that guard to deploy the demo.
 - GitHub repository secret: `CLOUDFLARE_API_TOKEN`. Account permission:
   **Cloudflare Pages:Edit**, restricted to the account containing this demo.
   Cloudflare scopes this permission by account, not by a single Pages project.
-  Rotate before its expiry and revoke it when the demo is retired.
+  Current token expires **28 October 2026**. Rotate before expiry and revoke it
+  when the demo is retired.
 - The public Cloudflare account ID and project name are fixed in the workflow;
   they are identifiers, not credentials. `BACKEND_ORIGIN` is the fixed demo API
   in `deploy/demo-pages/wrangler.jsonc`.

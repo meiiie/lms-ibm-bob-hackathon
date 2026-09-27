@@ -1,4 +1,5 @@
 {
+  "Đăng nhập Google hiện tạm thời chưa khả dụng. Vui lòng dùng email và mật khẩu.": "Google sign-in is currently unavailable. Please use email and password.",
   "# .env.prod — biến môi trường cần thiết": "# .env.prod — required environment variable",
   "## Câu hỏi kiểm tra nhanh __NEKO_0__": "## Quick test question __NEKO_0__",
   "## Hoạt động thực hành __NEKO_0__": "## Practice activities __NEKO_0__",
