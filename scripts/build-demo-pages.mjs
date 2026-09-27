@@ -43,6 +43,13 @@ export async function verifyServiceWorker(directory) {
       if (!manifest.hashTable[url]) throw new Error(`Unhashed service-worker asset: ${url}`);
     }
   }
+  for (const locale of ['vi', 'en', 'legacy-ui.en']) {
+    const url = `/locales/${locale}.json`;
+    if (!manifest.hashTable[url] || !manifest.assetGroups.some(group =>
+      group.installMode === 'prefetch' && group.urls?.includes(url))) {
+      throw new Error(`Offline translation must be prefetched: ${url}`);
+    }
+  }
   await readFile(join(directory, 'ngsw-worker.js'));
   await readFile(join(directory, 'manifest.webmanifest'));
   return manifest;

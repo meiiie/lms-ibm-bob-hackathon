@@ -19,23 +19,34 @@ async function fixture(t) {
   const sourceDir = join(root, 'browser');
   const targetDir = join(root, 'pages');
   await mkdir(sourceDir);
+  await mkdir(join(sourceDir, 'locales'));
   const files = {
     'index.csr.html': html,
     'main-FIXTURE.js': '/* synthetic Angular fixture */',
     'chunk-FIXTURE.js': '/* synthetic lazy course feature */',
     'manifest.webmanifest': '{"name":"Synthetic fixture","start_url":"/"}',
     'ngsw-worker.js': '/* synthetic service worker */',
+    'locales/vi.json': '{"language":"vi"}',
+    'locales/en.json': '{"language":"en"}',
+    'locales/legacy-ui.en.json': '{}',
   };
   for (const [name, contents] of Object.entries(files)) await writeFile(join(sourceDir, name), contents);
   const manifest = {
     configVersion: 1, index: '/index.csr.html',
-    assetGroups: [{ name: 'app-shell', urls: Object.keys(files).map(name => `/${name}`) }],
+    assetGroups: [{ name: 'app-shell', installMode: 'prefetch', urls: Object.keys(files).map(name => `/${name}`) }],
     dataGroups: [{ name: 'existing-course-cache', synthetic: true }],
     hashTable: Object.fromEntries(Object.entries(files).map(([name, content]) => [`/${name}`, hash(content)])),
   };
   await writeFile(join(sourceDir, 'ngsw.json'), JSON.stringify(manifest));
   return { root, sourceDir, targetDir, manifest, files };
 }
+
+test('rejects a build that cannot load translations offline', async t => {
+  const f = await fixture(t);
+  f.manifest.assetGroups[0].urls = f.manifest.assetGroups[0].urls.filter(url => url !== '/locales/en.json');
+  await writeFile(join(f.sourceDir, 'ngsw.json'), JSON.stringify(f.manifest));
+  await assert.rejects(verifyServiceWorker(f.sourceDir), /Offline translation must be prefetched/);
+});
 
 test('packages all assets and both shells; every SW hash matches and source remains untouched', async t => {
   const f = await fixture(t);

@@ -130,6 +130,8 @@
     "school": "School",
     "government": "Government",
     "maritimeSafety": "Maritime Safety",
+    "maritimeLogistics": "Maritime logistics",
+    "maritimeLaw": "Maritime law",
     "shipControl": "Ship Handling",
     "shipEngine": "Marine Engineering",
     "searchPlaceholder": "What do you want to learn today?",

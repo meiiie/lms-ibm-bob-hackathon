@@ -1,5 +1,37 @@
 # Current work state
 
+## 27 September release integration — in progress
+
+The owner authorized completing PR review, current demo deployment, CI/CD and
+README/handoff updates. Branch `codex/demo-cd` starts from team main `a60b06ce`.
+All PRs #1–#5 were merged and its six CI jobs passed (run 36301580921).
+
+- Deployed that verified frontend artifact to Cloudflare (`a98d260e`). Railway
+  now tracks this fork/main with Wait for CI enabled; deployment
+  `839f6eac-3c45-4c9f-b242-72e990952dc6` is SUCCESS at `a60b06ce`.
+- Added exact-CI-artifact demo CD, source validation, stale-run checks, a public
+  revision marker and health probes. Cloudflare token provisioning and final
+  automatic deployment still need read-back verification before declaring done.
+- Source review found missing offline locales, nonreactive login/menu labels,
+  two unresolved sidebar keys and unrecoverable translation-catalog outages.
+  Fixes preserve the team's i18n approach; login now exposes VI/EN directly.
+- All 16 Node deployment/proxy/packaging tests pass. First Angular attempt failed
+  because local node_modules lacked the team's new ngx-translate dependencies;
+  npm ci completed from the existing lockfile. All 106 selected Angular tests now pass; the demo build is running.
+  Fixed the inherited bridge spec wiping Jasmine's DOM; final run has no late
+  reporter error. Harness checks and all four harness regressions also pass.
+- Fresh independent Verify review found no CD trust blocker; its remaining
+  legacy-only catalog recovery issue was fixed and covered by a new regression.
+- Visually checked the current Bob images: meiiie 38.66, Toshiro 39.98. Corrected
+  manifest values/actual filenames without editing PNGs. Faiz still needs the
+  actual summary; video/slides/cover and final submission receipt are outstanding.
+- Preserve the unrelated owner edit `backend/.factorypath`, synthetic database,
+  learner progress and all teammate evidence. This work is attributed to Codex.
+
+Next: finish tests, PR CI, authorized merge, verify automatic deployments and real
+Chrome role/i18n/offline behavior, then record exact final release results.
+
+
 ## Demo role access — deployed and verified
 
 26 September 2026, **21:35 UTC+7 (Vietnam)**. The owner requested enabling

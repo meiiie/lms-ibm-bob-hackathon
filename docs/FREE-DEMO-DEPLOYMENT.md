@@ -1,5 +1,12 @@
 # Free public demo deployment
 
+## Current delivery — 27 September 2026
+
+Use [DEMO-CI-CD](DEMO-CI-CD.md) for the new release pipeline, revision marker,
+credentials, rollback and quota checks. All four role accounts are enabled.
+The dated deployment records below remain historical evidence.
+
+
 Updated **26 September 2026**. All team times below use **Vietnam, UTC+7**.
 
 ## Decision and current status

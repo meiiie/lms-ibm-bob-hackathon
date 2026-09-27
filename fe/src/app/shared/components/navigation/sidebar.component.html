@@ -52,7 +52,7 @@
             @if (orgListBackRoute()) {
                 <a [routerLink]="orgListBackRoute()" class="sidebar-org-back">
                     <app-icon name="chevron-left" size="xs"/>
-                    <span>{{ 'orgAdmin.organizations' | translate }}</span>
+                    <span>{{ 'admin.organizations' | translate }}</span>
                 </a>
             }
         </div>
@@ -171,7 +171,7 @@
                     <div class="user-menu-divider"></div>
                     <a [routerLink]="profileRoute()" class="user-menu-item" role="menuitem" (click)="closeUserMenu()">
                         <app-icon name="settings" size="sm"/>
-                        <span>{{ 'profile.settings' | translate }}</span>
+                        <span>{{ 'nav.settings' | translate }}</span>
                     </a>
                     <div class="user-menu-divider"></div>
                     <!-- Language switcher inside sidebar user menu -->

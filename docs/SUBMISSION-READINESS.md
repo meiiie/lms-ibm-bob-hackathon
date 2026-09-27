@@ -1,5 +1,23 @@
 # Submission readiness audit
 
+## Current checkpoint — 27 September 2026 (UTC+7)
+
+The hosted demo and four role accounts are live. PRs #1–#5 are merged; main
+`a60b06ce` includes the team's English UI and evidence additions. Demo release
+hardening/CI deployment is recorded in [DEMO-CI-CD](DEMO-CI-CD.md) and WORKSTATE.
+
+The two expanded Bob summaries were visually checked: meiiie **38.66** Bobcoins
+and Toshiro **39.98**. The manifest now resolves both actual image filenames.
+Faiz's image is still the wrong screen and needs replacement by its author.
+All teammate PNGs are preserved. [Evidence inventory](../bob_sessions/README.md).
+
+The [submission draft](../submission/TEMPLATE.md) contains a proposed title and
+descriptions grounded in the implemented work. The final MP4, PDF slides, cover,
+complete participant evidence and submission-form receipt are still outstanding.
+This release does not claim those assets have been created or submitted.
+
+## Historical audit — superseded where the current checkpoint differs
+
 Recorded 26 September 2026, 08:51 Vietnam (UTC+7). **The repository has real Bob
 evidence, but the submission package is not complete.** This is an artifact audit,
 not a new application test run or an eligibility ruling.
