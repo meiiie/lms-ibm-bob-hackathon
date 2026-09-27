@@ -2,7 +2,7 @@ import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { DestroyRef, Injectable, Injector, NgZone, PLATFORM_ID, effect, inject } from '@angular/core';
 import { TranslationObject } from '@ngx-translate/core';
-import { catchError, firstValueFrom, forkJoin, of } from 'rxjs';
+import { firstValueFrom, forkJoin } from 'rxjs';
 import { AppLanguage, LanguageService } from './language.service';
 
 const TRANSLATED_ATTRIBUTES = ['aria-label', 'placeholder', 'title'] as const;
@@ -57,7 +57,8 @@ export class UiTranslationBridgeService {
   private readonly attributeTranslations = new WeakMap<Element, Map<string, AttributeTranslation>>();
   private readonly translatedElements = new Set<Element>();
 
-  private catalogPromise?: Promise<Map<string, string>>;
+  private catalogPromise?: Promise<Map<string, string> | null>;
+  private catalogFailed = false;
   private translationPatterns: TranslationPattern[] = [];
   private observer?: MutationObserver;
   private activeLanguage: AppLanguage = 'vi';
@@ -66,7 +67,18 @@ export class UiTranslationBridgeService {
   initialize(): void {
     if (this.initialized || !isPlatformBrowser(this.platformId)) return;
     this.initialized = true;
-    this.destroyRef.onDestroy(() => this.observer?.disconnect());
+    const retryCatalog = () => {
+      if (this.activeLanguage === 'en' && this.catalogFailed) {
+        this.catalogPromise = undefined;
+        this.catalogFailed = false;
+        void this.translateDocument();
+      }
+    };
+    this.document.defaultView?.addEventListener('online', retryCatalog);
+    this.destroyRef.onDestroy(() => {
+      this.observer?.disconnect();
+      this.document.defaultView?.removeEventListener('online', retryCatalog);
+    });
 
     this.ngZone.runOutsideAngular(() => {
       this.observer = new MutationObserver((mutations) => this.handleMutations(mutations));
@@ -84,6 +96,10 @@ export class UiTranslationBridgeService {
         const lang = this.language.currentLang();
         this.activeLanguage = lang;
         if (lang === 'en') {
+          if (this.catalogFailed) {
+            this.catalogPromise = undefined;
+            this.catalogFailed = false;
+          }
           void this.translateDocument();
         } else {
           this.restoreVietnamese();
@@ -95,14 +111,14 @@ export class UiTranslationBridgeService {
 
   private async translateDocument(): Promise<void> {
     const catalog = await this.getCatalog();
-    if (this.activeLanguage !== 'en') return;
+    if (!catalog || this.activeLanguage !== 'en') return;
     this.translateSubtree(this.document.documentElement, catalog);
   }
 
   private async handleMutations(mutations: MutationRecord[]): Promise<void> {
     if (this.activeLanguage !== 'en') return;
     const catalog = await this.getCatalog();
-    if (this.activeLanguage !== 'en') return;
+    if (!catalog || this.activeLanguage !== 'en') return;
 
     for (const mutation of mutations) {
       if (mutation.type === 'characterData' && mutation.target instanceof Text) {
@@ -238,16 +254,19 @@ export class UiTranslationBridgeService {
     this.translatedElements.clear();
   }
 
-  private getCatalog(): Promise<Map<string, string>> {
+  private getCatalog(): Promise<Map<string, string> | null> {
     this.catalogPromise ??= firstValueFrom(
       forkJoin({
         vi: this.http.get<TranslationObject>('/locales/vi.json'),
         en: this.http.get<TranslationObject>('/locales/en.json'),
-        legacy: this.http
-          .get<LegacyTranslationCatalog>('/locales/legacy-ui.en.json')
-          .pipe(catchError(() => of({}))),
+        legacy: this.http.get<LegacyTranslationCatalog>('/locales/legacy-ui.en.json'),
       }),
-    ).then(({ vi, en, legacy }) => this.buildCatalog(vi, en, legacy));
+    ).then(({ vi, en, legacy }) => this.buildCatalog(vi, en, legacy)).catch(() => {
+      // Keep the original UI during an outage; retry on reconnect or language switch,
+      // not on every DOM mutation while the network is unavailable.
+      this.catalogFailed = true;
+      return null;
+    });
     return this.catalogPromise;
   }
 

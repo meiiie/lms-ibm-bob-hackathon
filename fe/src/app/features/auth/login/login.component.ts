@@ -25,6 +25,7 @@ import { isNewUser } from '../../../core/utils/auth.util';
 import { GoogleSigninButtonComponent } from '../components/google-signin-button.component';
 import { OrganizationService } from '../../admin/infrastructure/services/organization.service';
 import { SeoService } from '../../../core/services/seo.service';
+import { LanguageSwitcherComponent } from '../../../shared/components/language-switcher/language-switcher.component';
 
 type LoginStep = 'identify' | 'password' | 'google' | 'register';
 
@@ -43,7 +44,7 @@ type RegisterPasswordForm = {
 
 @Component({
   selector: 'app-login',
-  imports: [RouterModule, ReactiveFormsModule, GoogleSigninButtonComponent, TranslatePipe],
+  imports: [RouterModule, ReactiveFormsModule, GoogleSigninButtonComponent, TranslatePipe, LanguageSwitcherComponent],
   templateUrl: './login.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -97,18 +98,18 @@ export class LoginComponent {
   readonly currentDisplayName = computed(() => this.lookupResult()?.displayName || this.currentEmail());
   readonly stepTitle = computed(() => {
     switch (this.step()) {
-      case 'identify': return this.t.instant('auth.login');
-      case 'password': return this.t.instant('auth.password');
-      case 'google': return this.t.instant('auth.continueWithGoogle');
-      case 'register': return this.t.instant('auth.createAccount');
+      case 'identify': return 'auth.login';
+      case 'password': return 'auth.password';
+      case 'google': return 'auth.continueWithGoogle';
+      case 'register': return 'auth.createAccount';
     }
   });
   readonly stepDescription = computed(() => {
     switch (this.step()) {
       case 'identify': return '';
-      case 'password': return this.t.instant('auth.loginSubtitle');
-      case 'google': return this.t.instant('auth.continueWithGoogle');
-      case 'register': return this.t.instant('auth.dontHaveAccount');
+      case 'password': return 'auth.loginSubtitle';
+      case 'google': return 'auth.continueWithGoogle';
+      case 'register': return 'auth.dontHaveAccount';
     }
   });
 

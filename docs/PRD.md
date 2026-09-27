@@ -1,5 +1,18 @@
 # Hackathon scope — working proposal
 
+## Release acceptance — 27 September 2026
+
+- Preserve the team's English/Vietnamese UI, with reactive language switching
+  and prefetched translation catalogs for offline reload.
+- Deploy only successful CI artifacts from this fork's current main branch.
+- Keep Railway on the demo database with Wait for CI enabled; preserve role
+  credentials, course ownership and learner progress.
+- Verify actual hosted roles, English UI and offline text behavior; record exact
+  revisions/results and failure boundaries in WORKSTATE.
+- Preserve existing Bob screenshots and correct manifest references against the
+  actual files. Keep submission assets not yet supplied explicitly outstanding.
+
+
 Status: the owner selected the offline-safe assistant workstream, then authorized
 the optional personal ChatGPT follow-up on 26 September 2026 (Vietnam, UTC+7).
 The historical proposal below records the original preparation context.

@@ -1,5 +1,62 @@
 # Current work state
 
+## 27 September release integration — PR #6 verification checkpoint
+
+The owner authorized completing PR review, current demo deployment, CI/CD and
+README/handoff updates. Branch `codex/demo-cd` starts from team main `a60b06ce`.
+All PRs #1–#5 were merged and its six CI jobs passed (run 36301580921).
+
+- Deployed that verified frontend artifact to Cloudflare (`a98d260e`). Railway
+  now tracks this fork/main with Wait for CI enabled; deployment
+  `839f6eac-3c45-4c9f-b242-72e990952dc6` is SUCCESS at `a60b06ce`.
+- Added exact-CI-artifact demo CD, source validation, stale-run checks, a public
+  revision marker and health probes. The owner approved a Pages:Edit token for this account, expiring 28 October;
+  GitHub confirmed CLOUDFLARE_API_TOKEN was added. Final automatic delivery is
+  verified through [PR #6](https://github.com/meiiie/lms-ibm-bob-hackathon/pull/6)
+  and its linked CI/CD runs; do not infer delivery from provisioning alone.
+- Source review found missing offline locales, nonreactive login/menu labels,
+  two unresolved sidebar keys and unrecoverable translation-catalog outages.
+  Fixes preserve the team's i18n approach; login now exposes VI/EN directly.
+- All 16 Node deployment/proxy/packaging tests pass. First Angular attempt failed
+  because local node_modules lacked the team's new ngx-translate dependencies;
+  npm ci completed from the existing lockfile. All 106 selected Angular tests and the demo build pass (378 files;
+  largest asset 1,232,303 bytes). Inherited bundle/CommonJS warnings remain.
+  Fixed the inherited bridge spec wiping Jasmine's DOM; final run has no late
+  reporter error. Harness checks and all four harness regressions also pass.
+- Fresh independent Verify review found no CD trust blocker; its remaining
+  legacy-only catalog recovery issue was fixed and covered by a new regression.
+- Visually checked the current Bob images: meiiie 38.66, Toshiro 39.98. Corrected
+  manifest values/actual filenames without editing PNGs. Faiz still needs the
+  actual summary; video/slides/cover and final submission receipt are outstanding.
+- Preserve the unrelated owner edit `backend/.factorypath`, synthetic database,
+  learner progress and all teammate evidence. This work is attributed to Codex.
+
+Preview acceptance at `6957ec90` passed real EN/VI switching, saved English
+with a delayed real locale response, mobile layout and offline reload/switching
+with HTTP cache cleared and all three catalogs cached. The initial runner wrongly
+used async wait_for_function: a minimal `async () => false` probe returned False
+immediately on this installed Playwright version. It now awaits evaluate in a
+bounded Python polling loop, checks every prefetch response and normal SW state.
+No application PWA repair was needed beyond the missing locale prefetch.
+
+Visual inspection then caught the inherited email action labeled only “Email”
+and an untranslated Google-unavailable server message. Restored the explicit
+“Continue with email” action and added the observed message to the English catalog.
+Those final copy changes are covered by the browser runner on the final release.
+
+The first PR #6 revision passed all six CI jobs in run `36303174062`; newer heads
+must pass their own checks. Railway credit read-back on 27 September was about
+$4.861 with 30 trial days reported, no exhausted free allowance. This remains
+credit-funded temporary hosting, not a promise of permanent free capacity.
+
+Delivery record: [PR #6](https://github.com/meiiie/lms-ibm-bob-hackathon/pull/6),
+[CI](https://github.com/meiiie/lms-ibm-bob-hackathon/actions/workflows/ci.yml),
+[Demo CD](https://github.com/meiiie/lms-ibm-bob-hackathon/actions/workflows/demo-deploy.yml).
+The live revision marker gives the deployed frontend commit and run IDs. Final
+hosted role/PWA acceptance is recorded in the PR delivery notes after deployment.
+This checkpoint does not certify later commits or the event submission receipt.
+
+
 ## Demo role access — deployed and verified
 
 26 September 2026, **21:35 UTC+7 (Vietnam)**. The owner requested enabling

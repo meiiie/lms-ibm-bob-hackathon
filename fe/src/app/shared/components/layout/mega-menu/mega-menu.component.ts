@@ -1,6 +1,6 @@
-import { Component, ChangeDetectionStrategy, ViewEncapsulation, inject, signal, computed, HostListener } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ViewEncapsulation, signal, computed, HostListener } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-mega-menu',
@@ -37,7 +37,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
             <div>
               <p class="mb-4 text-xs font-bold uppercase tracking-widest text-gray-400">{{ 'nav.categories' | translate }}</p>
               <ul class="space-y-1">
-                @for (cat of categories(); track cat.slug) {
+                @for (cat of categories; track cat.slug) {
                   <li>
                     <a [routerLink]="cat.path"
                        (click)="hideMenu()"
@@ -52,7 +52,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
                           @case ('award') { <circle cx="12" cy="8" r="6"/><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/> }
                         }
                       </svg>
-                      {{ cat.name }}
+                      {{ cat.name | translate }}
                     </a>
                   </li>
                 }
@@ -110,21 +110,20 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MegaMenuComponent {
-  private t = inject(TranslateService);
   isMenuVisible = signal(false);
   private hideMenuTimeout?: number;
   isScrolled = signal(false);
   private lastScrollY = 0;
   menuTop = computed(() => this.isScrolled() ? '64px' : '130px');
 
-  readonly categories = computed(() => [
-    { slug: 'safety', path: '/courses/an-toan-hang-hai', name: this.t.instant('nav.maritimeSafety'), icon: 'shield' },
-    { slug: 'navigation', path: '/courses/dieu-khien-tau', name: this.t.instant('nav.shipControl'), icon: 'compass' },
-    { slug: 'engineering', path: '/courses/ky-thuat-may-tau', name: this.t.instant('nav.shipEngine'), icon: 'cog' },
-    { slug: 'logistics', path: '/courses/logistics-hang-hai', name: 'Logistics hàng hải', icon: 'truck' },
-    { slug: 'law', path: '/courses/luat-hang-hai', name: 'Luật hàng hải', icon: 'scale' },
+  readonly categories = [
+    { slug: 'safety', path: '/courses/an-toan-hang-hai', name: 'nav.maritimeSafety', icon: 'shield' },
+    { slug: 'navigation', path: '/courses/dieu-khien-tau', name: 'nav.shipControl', icon: 'compass' },
+    { slug: 'engineering', path: '/courses/ky-thuat-may-tau', name: 'nav.shipEngine', icon: 'cog' },
+    { slug: 'logistics', path: '/courses/logistics-hang-hai', name: 'nav.maritimeLogistics', icon: 'truck' },
+    { slug: 'law', path: '/courses/luat-hang-hai', name: 'nav.maritimeLaw', icon: 'scale' },
     { slug: 'certificates', path: '/courses/stcw', name: 'STCW', icon: 'award' },
-  ]);
+  ];
 
   readonly certificates = [
     'STCW Cơ bản',

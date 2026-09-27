@@ -16,3 +16,6 @@
 
 /index.csr.html
   Cache-Control: no-cache, must-revalidate
+
+/__demo-release.json
+  Cache-Control: no-cache, no-store, must-revalidate

@@ -4,18 +4,26 @@ This directory belongs at the root of the repository submitted to the IBM Bob
 2.0 Hackathon. It records evidence from the Neko Core team; the team name does
 not identify a software dependency of this LMS.
 
-Status (26 September 2026, Vietnam UTC+7): the manifest contains the real
-`meiiie_dark-offline-sidebar-01_summary.png` IDE checkpoint captured at 08:18,
-showing 28.50 Bobcoins. The task continued afterwards and stopped with a quota
-error at 08:24:34. This image is not the expanded final consumption-summary panel;
-capture that panel before treating this task's evidence as complete. Preserve the
-existing image and its numbers as an intermediate checkpoint.
+Status checked **27 September 2026, Vietnam (UTC+7)** against current tracked files:
 
-The manifest uses the verified local database task ID
-`b3f61aaa13f3e3d94298655249da2d8c`; its notes preserve the historical team label
-`dark-offline-sidebar-01`. A recovered local transcript is
-Git-ignored pending privacy review. Codex's later ChatGPT implementation is not
-additional Bob usage and must not be entered as a Bob session.
+- `meiiie_dark-offline-sidebar-01_summary.png` now shows the expanded Bob task
+  summary: task `b3f61aaa13f3e3d94298655249da2d8c`, **38.66 Bobcoins**, 9/9 tasks.
+  The team replaced the earlier 28.50 checkpoint under the same filename.
+- `toshiro_task01_en-vi_language_switch_summary.png.png` shows task
+  `6e1c4fab0fd885ba517f99a2dfe89646`, **39.98 Bobcoins**, 10/10 tasks and quota
+  exceeded. The manifest points to this actual filename; capture time does not
+  independently establish completion time.
+- `faiz_devops_docker_review.png` shows a browser/File Explorer missing-file
+  error, not Bob's expanded task summary. Its author still needs to supply the
+  correct image and task details. Do not infer Bob consumption from text in a
+  different assistant's browser page.
+- A team-published history export is tracked as
+  `bob-task-b3f61aaa13f3e3d94298655249da2d8c-2026-09-26.md`. The separately
+  recovered `*.local.md` remains ignored. Transcripts supplement screenshots.
+
+The current images are preserved byte-for-byte. Final team/task coverage still
+requires the participants' confirmation. Codex continuation, deployment and
+verification are not additional Bob usage and must not be added to these totals.
 
 ## Capture each relevant task
 

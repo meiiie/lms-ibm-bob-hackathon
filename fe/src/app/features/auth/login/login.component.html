@@ -515,6 +515,7 @@
 <div class="auth-shell">
   <div class="auth-page">
     <div class="auth-frame">
+      <div class="mb-4 flex justify-end"><app-language-switcher class="on-light" /></div>
       @if (canResume()) {
         <div class="auth-card auth-offline-card">
           <div class="mb-5 flex items-center justify-center">
@@ -581,9 +582,9 @@
 
         <section class="auth-card">
           <div class="auth-card-header">
-            <h1 class="auth-card-title">{{ stepTitle() }}</h1>
+            <h1 class="auth-card-title">{{ stepTitle() | translate }}</h1>
             @if (stepDescription()) {
-              <p class="auth-card-copy">{{ stepDescription() }}</p>
+              <p class="auth-card-copy">{{ stepDescription() | translate }}</p>
             }
           </div>
 
@@ -671,7 +672,7 @@
                     </svg>
                     {{ 'common.loading' | translate }}
                   } @else {
-                    {{ 'auth.email' | translate }}
+                    {{ 'auth.continueWithEmail' | translate }}
                   }
                 </button>
               </form>
