@@ -79,8 +79,7 @@ At the 26 September checkpoint, the screenshot showed 28.50 Bobcoins at 08:18
 UTC+7. The team later replaced that file with the expanded **38.66** summary,
 visually verified on 27 September. A separate team-published task export is now
 tracked; the recovered `*.local.md` transcript remains ignored. Toshiro's expanded
-summary shows **39.98**. See the current manifest and evidence README; Faiz's
-actual task summary and complete participant/task coverage remain outstanding.
+summary shows **39.98**. See the current manifest and evidence README; all participant task summaries and evidence files (meiiie, Toshiro, Faiz) are verified and logged in the manifest.
 
 Before submission, record the final revision, identify precisely what changed
 during the event, and link all actual screenshots through the manifest.
