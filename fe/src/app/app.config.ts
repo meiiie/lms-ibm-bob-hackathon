@@ -4,6 +4,8 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { registerLocaleData } from '@angular/common';
 import localeVi from '@angular/common/locales/vi';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { provideTranslateService } from '@ngx-translate/core';
+import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
@@ -204,6 +206,10 @@ export const appConfig: ApplicationConfig = {
       deps: [AuthService],
       multi: true
     },
+    // i18n — ngx-translate v18 standalone providers
+    provideTranslateService({
+      loader: provideTranslateHttpLoader({ prefix: '/locales/', suffix: '.json' }),
+    }),
     // ✅ NEW: SOTA 2025 Global Lucide Icon Provider
     importProvidersFrom(LucideAngularModule.pick({
       Search,

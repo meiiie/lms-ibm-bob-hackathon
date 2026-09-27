@@ -33,6 +33,7 @@ ngsw_prod.json
 
 # Miscellaneous
 /.angular/cache
+/.legacy-ui-source.json
 .sass-cache/
 /connect.lock
 /coverage

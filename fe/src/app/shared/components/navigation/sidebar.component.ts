@@ -2,6 +2,7 @@ import { Component, input, output, signal, computed, inject, ChangeDetectionStra
 
 import { RouterModule, Router, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { OrganizationContextService } from '../../../core/services/organization-context.service';
 import { Organization, OrganizationType, UserRole } from '../../../shared/types/user.types';
@@ -9,6 +10,7 @@ import { IconComponent, IconName } from '../icon/icon.component';
 import { SidebarTooltipDirective } from '../../directives/sidebar-tooltip.directive';
 import { getPortalLandingRoute } from '../../../core/utils/portal-route.util';
 import { initialsAvatar } from '../../utils/avatar.util';
+import { LanguageSwitcherComponent } from '../language-switcher/language-switcher.component';
 
 export interface SidebarMenuItem {
   label: string;
@@ -34,7 +36,7 @@ export interface SidebarConfig {
 
 @Component({
   selector: 'app-sidebar',
-  imports: [RouterModule, RouterLinkActive, IconComponent, SidebarTooltipDirective],
+  imports: [RouterModule, RouterLinkActive, IconComponent, SidebarTooltipDirective, TranslatePipe, LanguageSwitcherComponent],
   encapsulation: ViewEncapsulation.None,
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.css',

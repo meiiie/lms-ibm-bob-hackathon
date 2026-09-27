@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import {
   AuthLookupResponse,
   AuthResponse,
@@ -42,7 +43,7 @@ type RegisterPasswordForm = {
 
 @Component({
   selector: 'app-login',
-  imports: [RouterModule, ReactiveFormsModule, GoogleSigninButtonComponent],
+  imports: [RouterModule, ReactiveFormsModule, GoogleSigninButtonComponent, TranslatePipe],
   templateUrl: './login.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -56,6 +57,7 @@ export class LoginComponent {
   private injector = inject(Injector);
   private orgService = inject(OrganizationService);
   private seo = inject(SeoService);
+  private t = inject(TranslateService);
 
   identifyForm: FormGroup<IdentifyForm>;
   passwordForm: FormGroup<PasswordForm>;
@@ -95,26 +97,18 @@ export class LoginComponent {
   readonly currentDisplayName = computed(() => this.lookupResult()?.displayName || this.currentEmail());
   readonly stepTitle = computed(() => {
     switch (this.step()) {
-      case 'identify':
-        return 'Đăng nhập';
-      case 'password':
-        return 'Nhập mật khẩu';
-      case 'google':
-        return 'Đăng nhập bằng Google';
-      case 'register':
-        return 'Tạo tài khoản';
+      case 'identify': return this.t.instant('auth.login');
+      case 'password': return this.t.instant('auth.password');
+      case 'google': return this.t.instant('auth.continueWithGoogle');
+      case 'register': return this.t.instant('auth.createAccount');
     }
   });
   readonly stepDescription = computed(() => {
     switch (this.step()) {
-      case 'identify':
-        return '';
-      case 'password':
-        return 'Nhập mật khẩu để tiếp tục.';
-      case 'google':
-        return 'Chọn tài khoản Google đã liên kết.';
-      case 'register':
-        return 'Email này chưa có tài khoản.';
+      case 'identify': return '';
+      case 'password': return this.t.instant('auth.loginSubtitle');
+      case 'google': return this.t.instant('auth.continueWithGoogle');
+      case 'register': return this.t.instant('auth.dontHaveAccount');
     }
   });
 
@@ -196,7 +190,7 @@ export class LoginComponent {
       },
       error: (error) => {
         this.isLoading.set(false);
-        this.errorMessage.set(error.error?.message || 'Không thể xác định phương thức đăng nhập. Vui lòng thử lại.');
+        this.errorMessage.set(error.error?.message || this.t.instant('errors.general'));
       }
     });
   }
@@ -227,7 +221,7 @@ export class LoginComponent {
       error: (error: any) => {
         this.isLoading.set(false);
         this.errorMessage.set(this.getErrorMessage(
-          error.error?.message || 'Đăng nhập thất bại. Vui lòng thử lại.'
+          error.error?.message || this.t.instant('auth.invalidCredentials')
         ));
       },
     });
@@ -276,7 +270,7 @@ export class LoginComponent {
       },
       error: (error) => {
         this.isLoading.set(false);
-        this.errorMessage.set(error.error?.message || 'Tạo tài khoản thất bại. Vui lòng thử lại.');
+        this.errorMessage.set(error.error?.message || this.t.instant('errors.general'));
       }
     });
   }
@@ -295,7 +289,7 @@ export class LoginComponent {
       },
       error: () => {
         this.inviteOrgName.set('');
-        this.inviteCodeError.set('Mã mời không hợp lệ hoặc đã hết hạn');
+        this.inviteCodeError.set(this.t.instant('errors.validation'));
       }
     });
   }
@@ -347,14 +341,14 @@ export class LoginComponent {
 
   private getErrorMessage(error: string): string {
     const errorMappings: Record<string, string> = {
-      'Invalid credentials': 'Email hoặc mật khẩu không đúng',
-      'Thông tin đăng nhập không chính xác': 'Email hoặc mật khẩu không đúng',
-      'User not found': 'Tài khoản không tồn tại',
-      'Account locked': 'Tài khoản đã bị khóa',
-      'Too many attempts': 'Quá nhiều lần thử đăng nhập. Vui lòng thử lại sau.',
-      'Network error': 'Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet.',
-      'Server error': 'Lỗi máy chủ. Vui lòng thử lại sau.',
-      'Login failed': 'Đăng nhập thất bại. Vui lòng thử lại.',
+      'Invalid credentials': this.t.instant('auth.invalidCredentials'),
+      'Thông tin đăng nhập không chính xác': this.t.instant('auth.invalidCredentials'),
+      'User not found': this.t.instant('auth.emailNotFound'),
+      'Account locked': this.t.instant('errors.unauthorized'),
+      'Too many attempts': this.t.instant('errors.general'),
+      'Network error': this.t.instant('errors.network'),
+      'Server error': this.t.instant('errors.serverError'),
+      'Login failed': this.t.instant('auth.invalidCredentials'),
     };
 
     for (const [key, message] of Object.entries(errorMappings)) {

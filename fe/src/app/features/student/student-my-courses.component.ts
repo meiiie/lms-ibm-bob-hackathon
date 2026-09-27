@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal, computed, ChangeDetectionStrategy } 
 
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { StudentEnrollmentService } from './services/enrollment.service';
@@ -60,6 +61,7 @@ interface EnhancedEnrolledCourse extends EnrolledCourse {
     ButtonComponent,
     CourseDownloadButtonComponent,
     PaginationComponent,
+    TranslatePipe,
   ],
   template: `
     <div class="my-courses-container">

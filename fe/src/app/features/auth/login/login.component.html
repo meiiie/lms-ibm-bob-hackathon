@@ -522,7 +522,7 @@
               <img src="/icons/logo-master.png" alt="LMS Maritime" class="h-12 w-12 rounded-2xl shadow-sm">
               <div class="auth-brand-text text-left">
                 <p class="auth-brand-kicker">LMS Maritime</p>
-                <p class="auth-brand-title">Tiếp tục ngoại tuyến</p>
+                <p class="auth-brand-title">{{ 'offline.offlineLearning' | translate }}</p>
               </div>
             </a>
           </div>
@@ -541,7 +541,7 @@
           </div>
 
           <div class="auth-banner auth-banner-success mb-5">
-            Bạn đang offline. Nội dung đã tải xuống và tiến trình học tập vẫn sẵn sàng để tiếp tục.
+            {{ 'offline.syncWhenOnline' | translate }}
           </div>
 
           <button
@@ -549,7 +549,7 @@
             (click)="resumeOffline()"
             class="auth-primary"
           >
-            Tiếp tục với phiên ngoại tuyến
+            {{ 'offline.offlineLearningDesc' | translate }}
           </button>
         </div>
       } @else if (isOfflineNoSession()) {
@@ -565,9 +565,9 @@
             </svg>
           </div>
 
-          <h1 class="auth-card-title">Không có kết nối mạng</h1>
+          <h1 class="auth-card-title">{{ 'offline.title' | translate }}</h1>
           <p class="auth-card-copy mx-auto max-w-xl">
-            Hãy kết nối internet để đăng nhập hoặc tạo tài khoản mới.
+            {{ 'auth.offlineWarning' | translate }}
           </p>
         </div>
       } @else {
@@ -593,7 +593,7 @@
               <button
                 type="button"
                 class="auth-banner-close"
-                aria-label="Đóng thông báo"
+                [attr.aria-label]="'common.close' | translate"
                 (click)="dismissSuccessMessage()"
               >
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -609,7 +609,7 @@
               <button
                 type="button"
                 class="auth-banner-close"
-                aria-label="Đóng thông báo"
+                [attr.aria-label]="'common.close' | translate"
                 (click)="dismissError()"
               >
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -632,7 +632,7 @@
                 (authError)="onGoogleAuthError($event)"
               />
 
-              <div class="auth-divider" role="separator" aria-label="Hoặc đăng nhập bằng email">Hoặc</div>
+              <div class="auth-divider" role="separator" [attr.aria-label]="'auth.orContinueWith' | translate">{{ 'auth.orContinueWith' | translate }}</div>
 
               <form [formGroup]="identifyForm" (ngSubmit)="submitIdentifier()" class="auth-section" novalidate>
                 <div class="auth-field">
@@ -654,7 +654,7 @@
                   >
 
                   @if (identifyForm.controls.email.invalid && identifyForm.controls.email.touched) {
-                    <p id="email-error" class="auth-input-note">Vui lòng nhập địa chỉ email hợp lệ.</p>
+                    <p id="email-error" class="auth-input-note">{{ 'auth.invalidEmail' | translate }}</p>
                   }
                 </div>
 
@@ -669,9 +669,9 @@
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                     </svg>
-                    Đang kiểm tra
+                    {{ 'common.loading' | translate }}
                   } @else {
-                    Tiếp tục với email
+                    {{ 'auth.email' | translate }}
                   }
                 </button>
               </form>
@@ -687,13 +687,13 @@
                 </div>
 
                 <button type="button" (click)="backToIdentifier()" class="auth-link-button">
-                  Đổi
+                  {{ 'common.edit' | translate }}
                 </button>
               </div>
 
               <form [formGroup]="passwordForm" (ngSubmit)="submitPassword()" class="auth-section" novalidate>
                 <div class="auth-field">
-                  <label for="password" class="auth-label">Mật khẩu</label>
+                  <label for="password" class="auth-label">{{ 'auth.password' | translate }}</label>
                   <div class="auth-password-wrap">
                     <input
                       #passwordInput
@@ -701,7 +701,7 @@
                       [type]="showPassword() ? 'text' : 'password'"
                       formControlName="password"
                       autocomplete="current-password"
-                      placeholder="Nhập mật khẩu"
+                      [placeholder]="'auth.passwordPlaceholder' | translate"
                       class="auth-input pr-12"
                       [attr.aria-invalid]="passwordForm.controls.password.invalid && passwordForm.controls.password.touched ? 'true' : null"
                       [attr.aria-describedby]="passwordForm.controls.password.invalid && passwordForm.controls.password.touched ? 'password-error' : null"
@@ -712,7 +712,7 @@
                       class="auth-password-toggle"
                       (click)="showPassword.set(!showPassword())"
                       [attr.aria-pressed]="showPassword()"
-                      aria-label="Hiển thị hoặc ẩn mật khẩu"
+                      [attr.aria-label]="'auth.showPassword' | translate"
                     >
                       @if (showPassword()) {
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -728,13 +728,13 @@
                   </div>
 
                   @if (passwordForm.controls.password.invalid && passwordForm.controls.password.touched) {
-                    <p id="password-error" class="auth-input-note">Vui lòng nhập mật khẩu (tối thiểu 6 ký tự).</p>
+                    <p id="password-error" class="auth-input-note">{{ 'auth.passwordTooShort' | translate }}</p>
                   }
                 </div>
 
                 <div class="auth-inline-row auth-inline-row-end">
                   <a routerLink="/auth/forgot-password" class="auth-link-button">
-                    Quên mật khẩu?
+                    {{ 'auth.forgotPassword' | translate }}
                   </a>
                 </div>
 
@@ -749,9 +749,9 @@
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                     </svg>
-                    Đang đăng nhập
+                    {{ 'common.loading' | translate }}
                   } @else {
-                    Đăng nhập
+                    {{ 'auth.login' | translate }}
                   }
                 </button>
               </form>
@@ -766,9 +766,9 @@
                   <p class="auth-chip-value">{{ currentEmail() }}</p>
                   <p class="auth-chip-copy">
                     @if (currentDisplayName() && currentDisplayName() !== currentEmail()) {
-                      {{ currentDisplayName() }} dùng Google để đăng nhập.
-                    } @else {
-                      Tài khoản này dùng Google để đăng nhập.
+                      {{ currentDisplayName() }}
+                      } @else {
+                        {{ 'auth.continueWithGoogle' | translate }}
                     }
                   </p>
                 </div>
@@ -791,7 +791,7 @@
                 (click)="useDifferentEmail()"
                 class="auth-secondary"
               >
-                Dùng email khác
+                {{ 'common.edit' | translate }}
               </button>
             </div>
           }
@@ -800,18 +800,18 @@
             <div class="auth-section">
               <div class="auth-chip">
                 <div class="auth-chip-content">
-                  <p class="auth-chip-label">Email mới</p>
+                  <p class="auth-chip-label">{{ 'auth.email' | translate }}</p>
                   <p class="auth-chip-value">{{ currentEmail() }}</p>
                 </div>
 
                 <button type="button" (click)="backToIdentifier()" class="auth-link-button">
-                  Đổi
+                  {{ 'common.edit' | translate }}
                 </button>
               </div>
 
               <form [formGroup]="registerPasswordForm" (ngSubmit)="submitRegister()" class="auth-section" novalidate>
                 <div class="auth-field">
-                  <label for="reg-password" class="auth-label">Tạo mật khẩu</label>
+                  <label for="reg-password" class="auth-label">{{ 'auth.newPassword' | translate }}</label>
                   <div class="auth-password-wrap">
                     <input
                       id="reg-password"
@@ -819,7 +819,7 @@
                       formControlName="password"
                       autocomplete="new-password"
                       autofocus
-                      placeholder="Nhập mật khẩu"
+                      [placeholder]="'auth.passwordPlaceholder' | translate"
                       class="auth-input pr-12"
                       [attr.aria-invalid]="registerPasswordForm.controls.password.invalid && registerPasswordForm.controls.password.touched ? 'true' : null"
                       [attr.aria-describedby]="'reg-password-hint'"
@@ -829,7 +829,7 @@
                       class="auth-password-toggle"
                       (click)="showRegisterPassword.set(!showRegisterPassword())"
                       [attr.aria-pressed]="showRegisterPassword()"
-                      aria-label="Hiển thị hoặc ẩn mật khẩu"
+                      [attr.aria-label]="'auth.showPassword' | translate"
                     >
                       @if (showRegisterPassword()) {
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -844,15 +844,15 @@
                     </button>
                   </div>
                   @if (registerPasswordForm.controls.password.invalid && registerPasswordForm.controls.password.touched) {
-                    <p class="auth-input-note">Mật khẩu phải có ít nhất 6 ký tự.</p>
+                    <p class="auth-input-note">{{ 'auth.passwordTooShort' | translate }}</p>
                   } @else {
-                    <p id="reg-password-hint" class="auth-input-hint">Tối thiểu 6 ký tự</p>
+                    <p id="reg-password-hint" class="auth-input-hint">{{ 'auth.passwordTooShort' | translate }}</p>
                   }
                 </div>
 
                 @if (showInviteField()) {
                   <div class="auth-field">
-                    <label for="reg-invite" class="auth-label">Mã mời tổ chức</label>
+                    <label for="reg-invite" class="auth-label">{{ 'auth.orgInviteCode' | translate }}</label>
                     <input
                       id="reg-invite"
                       type="text"
@@ -868,7 +868,7 @@
                         <svg fill="currentColor" viewBox="0 0 20 20" aria-hidden="true" class="h-[18px] w-[18px] shrink-0">
                           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                         </svg>
-                        <span>Sẽ tham gia: <strong>{{ inviteOrgName() }}</strong></span>
+                        <span>{{ 'auth.joinOrganization' | translate }}: <strong>{{ inviteOrgName() }}</strong></span>
                       </div>
                     }
                     @if (inviteCodeError()) {
@@ -885,7 +885,7 @@
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
-                    Có mã mời tổ chức?
+                    {{ 'auth.orgInviteCode' | translate }}?
                   </button>
                 }
 
@@ -900,9 +900,9 @@
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                     </svg>
-                    Đang tạo tài khoản
+                    {{ 'common.loading' | translate }}
                   } @else {
-                    Tạo tài khoản
+                    {{ 'auth.createAccount' | translate }}
                   }
                 </button>
               </form>
@@ -912,17 +912,16 @@
                 (click)="useDifferentEmail()"
                 class="auth-secondary"
               >
-                Dùng email khác
+                {{ 'common.edit' | translate }}
               </button>
             </div>
           }
 
           <div class="auth-footer">
             <p class="auth-footer-legal">
-              Khi tiếp tục, bạn đồng ý với
-              <a routerLink="/terms">Điều khoản sử dụng</a>
-              và
-              <a routerLink="/privacy">Chính sách bảo mật</a>.
+              <a routerLink="/terms">{{ 'footer.termsOfService' | translate }}</a>
+              ·
+              <a routerLink="/privacy">{{ 'footer.privacyPolicy' | translate }}</a>
             </p>
           </div>
         </section>

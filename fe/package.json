@@ -55,6 +55,8 @@
     "@editorjs/table": "^2.4.5",
     "@editorjs/warning": "^1.4.1",
     "@floating-ui/dom": "^1.7.6",
+    "@ngx-translate/core": "^18.0.0",
+    "@ngx-translate/http-loader": "^18.0.0",
     "@stomp/stompjs": "^7.3.0",
     "@tiptap/core": "^3.23.6",
     "@tiptap/extension-bubble-menu": "^3.23.6",

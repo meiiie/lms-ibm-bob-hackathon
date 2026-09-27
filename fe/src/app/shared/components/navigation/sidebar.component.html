@@ -19,7 +19,7 @@
                 class="sidebar-toggle"
                 (click)="toggleCollapse.emit()"
                 [attr.aria-expanded]="!collapsed()"
-                [attr.aria-label]="collapsed() ? 'Mở rộng menu điều hướng' : 'Thu gọn menu điều hướng'">
+                [attr.aria-label]="collapsed() ? ('common.showMore' | translate) : ('common.showLess' | translate)">
             <app-icon [name]="collapsed() ? 'chevron-right' : 'chevron-left'" size="sm"/>
         </button>
     </div>
@@ -28,7 +28,7 @@
          org detail page. Pattern: GitHub org context bar, Linear workspace
          switcher. Ẩn khi sidebar collapsed để tiết kiệm space. -->
     @if (inOrgContext() && !collapsed()) {
-        <div class="sidebar-org-context" role="complementary" aria-label="Đang xem tổ chức">
+        <div class="sidebar-org-context" role="complementary">
             <div class="sidebar-org-context-header">
                 <div class="sidebar-org-avatar"
                      [class.sidebar-org-avatar--platform]="currentOrg()!.type === 'PLATFORM'"
@@ -52,7 +52,7 @@
             @if (orgListBackRoute()) {
                 <a [routerLink]="orgListBackRoute()" class="sidebar-org-back">
                     <app-icon name="chevron-left" size="xs"/>
-                    <span>Danh sách tổ chức</span>
+                    <span>{{ 'orgAdmin.organizations' | translate }}</span>
                 </a>
             }
         </div>
@@ -171,12 +171,18 @@
                     <div class="user-menu-divider"></div>
                     <a [routerLink]="profileRoute()" class="user-menu-item" role="menuitem" (click)="closeUserMenu()">
                         <app-icon name="settings" size="sm"/>
-                        <span>Cài đặt tài khoản</span>
+                        <span>{{ 'profile.settings' | translate }}</span>
                     </a>
+                    <div class="user-menu-divider"></div>
+                    <!-- Language switcher inside sidebar user menu -->
+                    <div class="user-menu-item" style="cursor:default; justify-content:space-between;">
+                        <span style="font-size:.8125rem;">{{ 'lang.switch' | translate }}</span>
+                        <app-language-switcher class="on-light" />
+                    </div>
                     <div class="user-menu-divider"></div>
                     <button class="user-menu-item user-menu-item--danger" role="menuitem" (click)="handleLogout()">
                         <app-icon name="logout" size="sm"/>
-                        <span>Đăng xuất</span>
+                        <span>{{ 'nav.logout' | translate }}</span>
                     </button>
                 </div>
             }

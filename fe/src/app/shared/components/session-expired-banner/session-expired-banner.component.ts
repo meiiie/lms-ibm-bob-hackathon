@@ -1,10 +1,12 @@
 import { Component, ChangeDetectionStrategy, inject, computed } from '@angular/core';
 import { Router } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 import { SessionExpiredService } from '../../../core/services/session-expired.service';
 
 @Component({
   selector: 'app-session-expired-banner',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [TranslatePipe],
   template: `
     @if (showBanner()) {
       <div class="fixed top-0 left-0 right-0 z-[101] bg-amber-500 text-white px-4 py-2 flex items-center justify-between shadow-md"
@@ -16,12 +18,12 @@ import { SessionExpiredService } from '../../../core/services/session-expired.se
                   d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
           </svg>
           <span class="text-sm font-semibold">
-            Phiên đăng nhập hết hạn — Chế độ chỉ đọc — Kết nối mạng để đăng nhập lại
+            {{ 'errors.sessionExpired' | translate }}
           </span>
         </div>
         <button (click)="goToLogin()"
                 class="shrink-0 px-3 py-1 text-xs font-medium bg-white text-amber-700 rounded-lg hover:bg-amber-50 transition-colors">
-          Đăng nhập lại
+          {{ 'auth.login' | translate }}
         </button>
       </div>
     }
