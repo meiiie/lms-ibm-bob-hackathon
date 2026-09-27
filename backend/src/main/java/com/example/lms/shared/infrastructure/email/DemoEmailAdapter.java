@@ -2,13 +2,15 @@ package com.example.lms.shared.infrastructure.email;
 
 import com.example.lms.shared.application.port.EmailServicePort;
 import org.springframework.context.annotation.Profile;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
-/** The shared demo never sends or logs email content, recipient addresses, or reset links. */
+/** Used only while no demo email provider is configured; never logs recipients or reset links. */
 @Component
 @Profile("demo")
+@ConditionalOnProperty(name = "app.email.delivery", havingValue = "disabled")
 public class DemoEmailAdapter implements EmailServicePort {
     @Override public void sendPasswordReset(String to, String name, String link) {}
     @Override public void sendWelcome(String to, String name) {}

@@ -4,6 +4,9 @@
 
 Use [DEMO-CI-CD](DEMO-CI-CD.md) for the new release pipeline, revision marker,
 credentials, rollback and quota checks. All four role accounts are enabled.
+The owner also authorized [full normal role capabilities](DEMO-FULL-ACCESS.md),
+including uploads and persistent account/settings changes. This supersedes the
+initial read/restricted-integration policy recorded below.
 The dated deployment records below remain historical evidence.
 
 
@@ -69,12 +72,13 @@ that Render's 512 MB limit is sufficient, and heap size is not total process RAM
   the owner. Role passwords are distributed privately to teammates. Verify normal
   RBAC and organization boundaries. Other inherited users stay disabled with
   randomized passwords; do not reuse the development administrator account.
-- Keep `CHATGPT_CONNECTION_ENABLED=false`. Do not copy Wiii, payment, mail,
+- External integrations are currently unconfigured. Do not copy Wiii, payment, mail,
   Google OAuth, media-storage, or other production integration secrets. A local
   model runs on the visitor's own device and is not included with hosting.
 - Do not deploy Gotenberg or enable document conversion and video transcoding
   jobs. The original multi-service Compose topology does not fit these limits.
-  Uploaded files on ephemeral storage are not durable demo evidence.
+  Uploads now use a persistent Railway volume at `/app/uploads`; do not detach it
+  or replace it with ephemeral storage during deployment.
 
 ## Deployment sequence
 

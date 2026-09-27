@@ -44,8 +44,9 @@ repository. Do not remove that guard to deploy the demo.
   token is copied into Actions. Keep **Wait for CI** enabled in service settings.
 - Database/JWT/role passwords stay in Railway variables. Private local handoff:
   `.tools/team-demo-accounts.private.md`. Never commit that file or `.tools`.
-- Public demo intentionally keeps ChatGPT, Wiii, payments, mail, uploads and
-  media processing disabled/unprovisioned. See [capability limits](FREE-DEMO-DEPLOYMENT.md).
+- All roles have normal write capabilities; the demo-only API blocklist is removed.
+  Uploads use the persistent Railway volume at `/app/uploads`. External providers
+  remain unconfigured until explicitly provisioned. See [full-access rollout](DEMO-FULL-ACCESS.md).
 
 ## Check the current deployment
 
@@ -74,6 +75,10 @@ behavior; do not clear IndexedDB containing the learner's downloaded work.
   Neon database or force-push shared Git history as a deployment repair.
 - Existing PWA clients can continue using the previous cached version until they
   accept/reload an update; preserve offline drafts and queued progress first.
+- Backend restarts preserve users, passwords, settings and learning progress.
+  Do not delete the `demo.bootstrap.v1` setting: it records completed bootstrap.
+  Keep the upload volume attached. A Railway service with a volume may have brief
+  downtime during replacement; the entrypoint prepares the mount and runs Java as UID 1001.
 - Railway is temporary trial-credit hosting. Inspect its credit and expiry before
   recording or judging; no card or paid upgrade is authorized by this setup.
 

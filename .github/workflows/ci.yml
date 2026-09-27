@@ -176,6 +176,11 @@ jobs:
           curl -fsSI http://localhost:4200/
           curl -fsS http://localhost:4200/actuator/health
 
+      - name: Verify demo image can write a persistent upload volume as its app user
+        run: |
+          docker build -f deploy/demo-backend/Dockerfile -t lms-demo-volume-check .
+          docker run --rm -i --mount type=volume,destination=/app/uploads,volume-nocopy --entrypoint /bin/sh lms-demo-volume-check -s < deploy/demo-backend/check-upload-volume.sh
+
       - name: Print stack diagnostics on failure
         if: failure()
         run: |

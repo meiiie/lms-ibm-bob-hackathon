@@ -12,8 +12,8 @@ synchronize. English/Vietnamese UI and four role portals support the team demo.
 [Release and CI/CD guide](docs/DEMO-CI-CD.md) ·
 [Submission draft](submission/TEMPLATE.md)
 
-Request the private demo credentials from the team owner. Public registration is
-disabled; the local seed passwords in the upstream reference below do not work
+Request the private demo credentials from the team owner, or create a personal
+learner account. The local seed passwords in the upstream reference below do not work
 on this hosted demo. Switch **VI / EN** on the sign-in page, public header or
 authenticated sidebar user menu.
 
@@ -21,10 +21,11 @@ authenticated sidebar user menu.
 | --- | --- |
 | Offline learning | Download first while online; text lessons and progress survive offline reload and sync after reconnect. |
 | English / Vietnamese | UI translation; existing authored lesson content is not automatically translated. |
-| Student, teacher, organization admin, admin | Four synthetic accounts with role and organization restrictions; shared demo data. |
+| Student, teacher, organization admin, admin | Full normal LMS capabilities for each role, including writes. No demo-only API blocklist; normal ownership, organization and role checks apply. |
 | ChatGPT / Wiii | Cloud services need internet and are disabled/unconfigured on this public demo. ChatGPT connection is experimental and is not LMS sign-in. |
 | Ollama / LM Studio | Optional same-device model server; no model is bundled with the PWA. HTTPS/browser local-network access still needs validation on the user's device. |
-| Payments, mail, uploads, video processing | Not provisioned for the free demo. Offline video is not claimed by text acceptance. |
+| File uploads | Enabled, up to 50 MB per file, backed by the demo's persistent Railway volume. |
+| Payments, mail, video processing | Configuration screens are editable. External providers/media workers are not provisioned; removing permission blocks does not make those services operational. |
 
 Topology: browser/PWA → Cloudflare Pages and API proxy → Railway Spring Boot →
 Neon PostgreSQL. CI tests PRs and `main`; the separate demo delivery workflow
@@ -63,7 +64,8 @@ software dependency. A separate synthetic student demo is deployed on Cloudflare
 Pages, Railway trial and Neon Free; real login, offline text learning, reload and
 reconnect sync passed [hosted acceptance](docs/DEMO-VERIFICATION.md). All four role
 accounts are enabled; see [verified roles and private access](docs/DEMO-ACCOUNTS.md).
-Cloud AI, payments, uploads and unprovisioned external integrations remain disabled.
+Accounts, passwords, settings and new users persist across backend restarts. See
+[full-access rollout](docs/DEMO-FULL-ACCESS.md) for verification and provider limits.
 
 ChatGPT requires internet. Downloaded lessons remain independent of cloud AI.
 Local AI requires a running server and a downloaded chat model on the learner's

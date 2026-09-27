@@ -1,5 +1,27 @@
 # Current work state
 
+## 27 September — full demo permissions rollout
+
+Owner explicitly authorized removing demo-only restrictions in all four role portals,
+including write access. Branch `codex/demo-full-access` starts at teammate main
+`e21af718`; the new manifest entries are preserved. The unrelated `backend/.factorypath`
+edit stays unstaged. See [DEMO-FULL-ACCESS](DEMO-FULL-ACCESS.md).
+
+Removed the route/multipart blocklist while retaining normal Spring authorization.
+Bootstrap adopts the existing four identities and records a one-time marker, so
+restart no longer resets accounts/settings or disables newly created users. Provider
+flags are configurable; unprovisioned services are not claimed operational. Uploads
+use Railway volume `5799edf5-6fc4-4f80-a929-dee78ad86050` at `/app/uploads`; default
+file size is 50 MB. The container entrypoint drops to UID 1001 after mount setup.
+
+Baseline reproduced profile-update `demo_restricted` for all four real UI logins.
+116 focused Java tests pass. Local Docker daemon is unavailable; added a real
+entrypoint/volume CI probe. Fresh independent Verify source review found no remaining
+blocker after adding `volume-nocopy` to reproduce a root-owned Railway mount.
+Next: CI, merge and automatic deploy; verify hosted profile/role writes, new account
+and changed-password/file persistence across backend restart, clean only test fixtures.
+Record final delivery in the PR notes linked from DEMO-FULL-ACCESS. This is Codex work.
+
 ## 27 September release integration — PR #6 verification checkpoint
 
 The owner authorized completing PR review, current demo deployment, CI/CD and

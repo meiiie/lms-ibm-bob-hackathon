@@ -16,6 +16,7 @@ import java.util.UUID;
 @Component
 @Profile("demo")
 public class DemoDataInitializer implements ApplicationRunner {
+    private static final String BOOTSTRAP_KEY = "demo.bootstrap.v1";
     public static final String STUDENT_EMAIL = "learner@demo.invalid";
     public static final String TEACHER_EMAIL = "teacher@demo.invalid";
     public static final String ORG_ADMIN_EMAIL = "orgadmin@demo.invalid";
@@ -50,7 +51,22 @@ public class DemoDataInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments arguments) {
-        transaction.executeWithoutResult(status -> prepareData());
+        transaction.executeWithoutResult(status -> {
+            if (Integer.valueOf(1).equals(jdbc.queryForObject(
+                    "SELECT count(*) FROM admin_settings WHERE setting_key = ?", Integer.class, BOOTSTRAP_KEY))) {
+                return;
+            }
+            // Adopt the already provisioned hosted demo without resetting its users or settings.
+            Integer existingAccounts = jdbc.queryForObject("""
+                    SELECT count(*) FROM users WHERE username IN
+                    ('hackathon_demo', 'hackathon_demo_teacher', 'hackathon_demo_orgadmin', 'hackathon_demo_admin')
+                    """, Integer.class);
+            if (!Integer.valueOf(4).equals(existingAccounts)) prepareData();
+            jdbc.update("""
+                    INSERT INTO admin_settings (setting_key, setting_value, updated_at)
+                    VALUES (?, '{"initialized":true}', NOW()) ON CONFLICT (setting_key) DO NOTHING
+                    """, BOOTSTRAP_KEY);
+        });
         // No HTTP request is admitted until the transaction has actually committed.
         readiness.markReady();
     }

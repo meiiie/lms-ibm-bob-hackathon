@@ -9,15 +9,15 @@ COPY backend/src ./src
 RUN mvn package -DskipTests -B -ntp
 
 FROM eclipse-temurin:21-jre-alpine
-RUN addgroup -S lms && adduser -S -G lms -u 1001 lms
+RUN apk add --no-cache su-exec && addgroup -S lms && adduser -S -G lms -u 1001 lms
 WORKDIR /app
 RUN mkdir uploads logs && chown -R lms:lms /app
 COPY --from=build --chown=lms:lms /build/target/backend-lms-postgres-*.jar /app/app.jar
-USER 1001
+COPY --chmod=755 deploy/demo-backend/entrypoint.sh /app/entrypoint.sh
 ENV SPRING_PROFILES_ACTIVE="prod,demo" \
     JAVA_TOOL_OPTIONS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=60.0 -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError" \
     PORT="8080"
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=5 \
     CMD wget -q --spider --tries=1 --timeout=8 "http://127.0.0.1:${PORT}/actuator/health" || exit 1
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["/app/entrypoint.sh"]

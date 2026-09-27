@@ -67,7 +67,7 @@ class DemoSafetyConfigurationTest {
     }
 
     @Test
-    void demoUsesOnlyNoOpEmailEvenWhenCombinedWithProduction() {
+    void unconfiguredDemoUsesNoOpEmail() {
         try (var context = new AnnotationConfigApplicationContext()) {
             context.setEnvironment(validEnvironment());
             context.register(DemoSafetyConfiguration.class, DemoEmailAdapter.class,
@@ -75,6 +75,18 @@ class DemoSafetyConfigurationTest {
             context.refresh();
             assertThat(context.getBeansOfType(EmailServicePort.class).values())
                     .singleElement().isInstanceOf(DemoEmailAdapter.class);
+        }
+    }
+
+    @Test
+    void demoCanUseAnExplicitlyConfiguredResendProvider() {
+        try (var context = new AnnotationConfigApplicationContext()) {
+            context.setEnvironment(validEnvironment().withProperty("app.email.delivery", "resend")
+                    .withProperty("app.resend.api-key", "synthetic-resend-test-key"));
+            context.register(DemoSafetyConfiguration.class, DemoEmailAdapter.class, ResendEmailAdapter.class);
+            context.refresh();
+            assertThat(context.getBeansOfType(EmailServicePort.class).values())
+                    .singleElement().isInstanceOf(ResendEmailAdapter.class);
         }
     }
 
@@ -108,21 +120,21 @@ class DemoSafetyConfigurationTest {
     @ValueSource(strings = {"app.auth.google.enabled", "app.auth.google.redirect-flow-enabled",
             "app.video.ingest.enabled", "app.sepay.enabled", "chatgpt.enabled", "wiii.webhook.enabled",
             "cloudflare.r2.enabled", "cloudflare.stream.enabled", "spring.kafka.enabled"})
-    void refusesAccidentallyEnabledExternalIntegrations(String property) {
+    void allowsExplicitlyConfiguredExternalIntegrations(String property) {
         var environment = validEnvironment().withProperty(property, "true");
-        assertThatThrownBy(() -> DemoSafetyConfiguration.validate(environment)).hasMessageContaining(property);
+        assertThatCode(() -> DemoSafetyConfiguration.validate(environment)).doesNotThrowAnyException();
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"gotenberg.url", "wiii.webhook.secret", "wiii.service-token"})
-    void refusesInheritedConnectionOrWiiiSecrets(String property) {
+    void allowsExplicitProviderConfigurationWithoutDemoPermissionRestrictions(String property) {
         var environment = validEnvironment().withProperty(property, "synthetic-forbidden-value");
-        assertThatThrownBy(() -> DemoSafetyConfiguration.validate(environment)).hasMessageContaining(property)
-                .hasMessageNotContaining("synthetic-forbidden-value");
+        assertThatCode(() -> DemoSafetyConfiguration.validate(environment)).doesNotThrowAnyException();
     }
 
     private MockEnvironment validEnvironment() {
         var environment = new MockEnvironment()
+                .withProperty("app.email.delivery", "disabled")
                 .withProperty("app.demo.database-ack", "isolated-demo-only")
                 .withProperty("app.demo.student-password", "synthetic-student-password-24chars")
                 .withProperty("app.demo.teacher-password", "synthetic-teacher-password-24chars")
