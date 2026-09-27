@@ -12,6 +12,7 @@ import { OfflineStorageTelemetryIngestService } from './core/services/offline-st
 import { AuthService } from './core/services/auth.service';
 import { MessagingService } from './core/services/messaging.service';
 import { WiiiOperatorPreviewDialogComponent } from './features/ai-chat/presentation/components';
+import { UiTranslationBridgeService } from './core/services/ui-translation-bridge.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,9 +43,11 @@ export class App {
   private offlineStorageTelemetryIngest = inject(OfflineStorageTelemetryIngestService);
   private authService = inject(AuthService);
   private messagingService = inject(MessagingService);
+  private uiTranslationBridge = inject(UiTranslationBridgeService);
   protected readonly title = signal('LMS Maritime - Hệ thống Quản lý Học tập Phân tán');
 
   constructor() {
+    this.uiTranslationBridge.initialize();
     this.swUpdate.initialize();
     this.sessionService.evaluateState();
     this.webMcp.initialize();

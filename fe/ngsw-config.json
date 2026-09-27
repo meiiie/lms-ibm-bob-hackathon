@@ -11,6 +11,7 @@
           "/favicon.ico",
           "/index.csr.html",
           "/manifest.webmanifest",
+          "/locales/*.json",
           "/*.css",
           "/main-*.js",
           "/polyfills-*.js"

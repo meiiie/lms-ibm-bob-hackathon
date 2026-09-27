@@ -1,0 +1,82 @@
+# Activate with prod,demo against a NEW, isolated PostgreSQL database only.
+# Bootstrap once, then preserve normal account and administrator changes on restart.
+server:
+  port: ${PORT:8080}
+  tomcat:
+    max-connections: 50
+    accept-count: 25
+
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 3
+      minimum-idle: 0
+  jpa:
+    hibernate:
+      ddl-auto: none
+  flyway:
+    baseline-on-migrate: false
+  servlet:
+    multipart:
+      max-file-size: ${DEMO_MAX_FILE_SIZE:50MB}
+      max-request-size: ${DEMO_MAX_REQUEST_SIZE:52MB}
+  kafka:
+    enabled: ${KAFKA_ENABLED:false}
+
+app:
+  demo:
+    database-ack: ${DEMO_DATABASE_ACK:}
+    student-password: ${DEMO_STUDENT_PASSWORD:}
+    teacher-password: ${DEMO_TEACHER_PASSWORD:}
+    org-admin-password: ${DEMO_ORG_ADMIN_PASSWORD:}
+    admin-password: ${DEMO_ADMIN_PASSWORD:}
+  cors:
+    allowed-origins: ${APP_BASE_URL}
+  storage:
+    local:
+      base-url: ${APP_BASE_URL}/uploads
+  email:
+    delivery: ${DEMO_EMAIL_DELIVERY:disabled}
+  auth:
+    google:
+      enabled: ${GOOGLE_AUTH_ENABLED:false}
+      redirect-flow-enabled: ${GOOGLE_OAUTH_REDIRECT_FLOW_ENABLED:false}
+      web-client-id: ${GOOGLE_WEB_CLIENT_ID:}
+      client-secret: ${GOOGLE_CLIENT_SECRET:}
+  video:
+    ingest:
+      enabled: ${VIDEO_INGEST_ENABLED:false}
+  resend:
+    api-key: ${RESEND_API_KEY:}
+  vnpay:
+    tmn-code: ${VNPAY_TMN_CODE:}
+    hash-secret: ${VNPAY_HASH_SECRET:}
+    pay-url: ${VNPAY_PAY_URL:}
+  sepay:
+    enabled: ${SEPAY_ENABLED:false}
+    bank-code: ${SEPAY_BANK_CODE:}
+    account-number: ${SEPAY_ACCOUNT_NUMBER:}
+    webhook-api-key: ${SEPAY_WEBHOOK_API_KEY:}
+
+chatgpt:
+  enabled: ${CHATGPT_CONNECTION_ENABLED:false}
+wiii:
+  webhook:
+    enabled: ${WIII_WEBHOOK_ENABLED:false}
+    secret: ${WIII_WEBHOOK_SECRET:}
+    url: ${WIII_WEBHOOK_URL:}
+  token-exchange:
+    url: ${WIII_TOKEN_EXCHANGE_URL:}
+  service-token: ${WIII_SERVICE_TOKEN:}
+cloudflare:
+  r2:
+    enabled: ${CLOUDFLARE_R2_ENABLED:false}
+  stream:
+    enabled: ${CLOUDFLARE_STREAM_ENABLED:false}
+gotenberg:
+  url: ${GOTENBERG_URL:}
+
+management:
+  endpoint:
+    health:
+      show-details: never

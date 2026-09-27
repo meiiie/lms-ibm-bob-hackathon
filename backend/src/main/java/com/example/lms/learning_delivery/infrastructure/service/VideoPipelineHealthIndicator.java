@@ -5,6 +5,7 @@ import com.example.lms.shared.infrastructure.service.R2VideoStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 @Component("videoPipeline")
+@Profile("!demo")
 @RequiredArgsConstructor
 public class VideoPipelineHealthIndicator implements HealthIndicator {
 

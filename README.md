@@ -1,5 +1,44 @@
 # Neko Core — IBM Bob hackathon fork
 
+[![CI](https://github.com/meiiie/lms-ibm-bob-hackathon/actions/workflows/ci.yml/badge.svg)](https://github.com/meiiie/lms-ibm-bob-hackathon/actions/workflows/ci.yml)
+[![Demo CD](https://github.com/meiiie/lms-ibm-bob-hackathon/actions/workflows/demo-deploy.yml/badge.svg)](https://github.com/meiiie/lms-ibm-bob-hackathon/actions/workflows/demo-deploy.yml)
+
+**Learn at sea, even when the connection drops.** Our demo applies Bob-assisted
+debugging and verification to an existing maritime LMS PWA. Download a course
+while online, read its text lessons offline, record progress, then reconnect to
+synchronize. English/Vietnamese UI and four role portals support the team demo.
+
+**[Open the demo](https://neko-core-lms-demo.pages.dev/auth/login)** ·
+[Release and CI/CD guide](docs/DEMO-CI-CD.md) ·
+[Submission draft](submission/TEMPLATE.md)
+
+Request the private demo credentials from the team owner, or create a personal
+learner account. The local seed passwords in the upstream reference below do not work
+on this hosted demo. Switch **VI / EN** on the sign-in page, public header or
+authenticated sidebar user menu.
+
+| Capability | Hosted demo boundary |
+| --- | --- |
+| Offline learning | Download first while online; text lessons and progress survive offline reload and sync after reconnect. |
+| English / Vietnamese | UI translation; existing authored lesson content is not automatically translated. |
+| Student, teacher, organization admin, admin | Full normal LMS capabilities for each role, including writes. No demo-only API blocklist; normal ownership, organization and role checks apply. |
+| ChatGPT / Wiii | Cloud services need internet and are disabled/unconfigured on this public demo. ChatGPT connection is experimental and is not LMS sign-in. |
+| Ollama / LM Studio | Optional same-device model server; no model is bundled with the PWA. HTTPS/browser local-network access still needs validation on the user's device. |
+| File uploads | Enabled, up to 50 MB per file, backed by the demo's persistent Railway volume. |
+| Payments, mail, video processing | Configuration screens are editable. External providers/media workers are not provisioned; removing permission blocks does not make those services operational. |
+
+Topology: browser/PWA → Cloudflare Pages and API proxy → Railway Spring Boot →
+Neon PostgreSQL. CI tests PRs and `main`; the separate demo delivery workflow
+publishes the tested frontend artifact, while Railway tracks `main` with Wait for
+CI. [Deployment revisions, retry and rollback](docs/DEMO-CI-CD.md).
+
+For local development, read [BOB-SETUP](docs/BOB-SETUP.md), install dependencies
+from the existing lockfiles, and use the Docker development environment. On
+Windows, run `.\scripts\Use-DevEnv.ps1`, then `npm.cmd ci` in `fe/`; Java 21 and
+Maven are required for `backend/`. Never copy hosted or upstream production secrets
+into local fixtures. The [verification record](docs/WORKSTATE.md) distinguishes
+unit tests, synthetic browser fixtures and genuine hosted checks.
+
 Fork of [Maritime LMS](https://github.com/linhlinhlin/LMS_hohulili), created after
 the owner-authorized [MIT transition](https://github.com/linhlinhlin/LMS_hohulili/pull/541).
 The existing LMS is reused. The hackathon work improves debugging and verification
@@ -12,13 +51,21 @@ treating this repository as a completed submission.
 - **Current scope/status:** [PRD](docs/PRD.md) · [WORKSTATE](docs/WORKSTATE.md)
 - **Provenance/evidence:** [PREEXISTING](docs/PREEXISTING.md) · [Bob sessions](bob_sessions/README.md)
 - **Optional ChatGPT connection:** [Setup and limits](docs/CHATGPT-SETUP.md)
+- **Faiz Khan (Dark)**: Bob Task Verification, Deployment Smoke Tests & Offline Assistant Routing, Session Evidence Logging (`bob_sessions/manifest.csv`)
 - **Local AI and offline boundaries:** [Ollama / LM Studio setup](docs/LOCAL-AI-SETUP.md)
 - **WebMCP decision:** [Research as of 26 September 2026](docs/WEBMCP-RESEARCH-2026-09-26.md)
+- **Hosted LMS demo:** [Open the demo](https://neko-core-lms-demo.pages.dev) · [Deployment, access and limits](docs/FREE-DEMO-DEPLOYMENT.md)
+- **Demo role access:** [Accounts and current rollout status](docs/DEMO-ACCOUNTS.md)
 - **Submission:** [Readiness audit](docs/SUBMISSION-READINESS.md) · [Checklist](docs/SUBMISSION-CHECKLIST.md) · [Draft](submission/TEMPLATE.md)
 
 Build window: **25 September 22:00–27 September 22:00, 2026, Vietnam (UTC+7)**.
 Internal target: 27 September 20:00 UTC+7. Neko Core is the team name, not an LMS
-software dependency. No hackathon demo URL has been deployed by this setup.
+software dependency. A separate synthetic student demo is deployed on Cloudflare
+Pages, Railway trial and Neon Free; real login, offline text learning, reload and
+reconnect sync passed [hosted acceptance](docs/DEMO-VERIFICATION.md). All four role
+accounts are enabled; see [verified roles and private access](docs/DEMO-ACCOUNTS.md).
+Accounts, passwords, settings and new users persist across backend restarts. See
+[full-access rollout](docs/DEMO-FULL-ACCESS.md) for verification and provider limits.
 
 ## Team — Neko Core
 
@@ -43,7 +90,6 @@ new hackathon contribution. Use the local development setup above.
 
 Production-first LMS for maritime training, with adaptive video, offline-first learning, payment, and role-based operations.
 
-[![CI](https://github.com/linhlinhlin/LMS_hohulili/actions/workflows/ci.yml/badge.svg)](https://github.com/linhlinhlin/LMS_hohulili/actions/workflows/ci.yml)
 ![Java 21](https://img.shields.io/badge/Java-21-0056D2)
 ![Angular 20](https://img.shields.io/badge/Angular-20-0F172A)
 ![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-006B75)

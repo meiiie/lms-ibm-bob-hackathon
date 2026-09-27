@@ -1,0 +1,8 @@
+{
+  "name": "neko-core-lms-demo",
+  "pages_build_output_dir": "../../.tools/demo-pages",
+  "compatibility_date": "2026-09-26",
+  "vars": {
+    "BACKEND_ORIGIN": "https://lms-api-production-ff2e.up.railway.app"
+  }
+}

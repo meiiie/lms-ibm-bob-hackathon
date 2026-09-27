@@ -1,9 +1,10 @@
 import { Component, ChangeDetectionStrategy, ViewEncapsulation, signal, computed, HostListener } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-mega-menu',
-  imports: [RouterModule],
+  imports: [RouterModule, TranslatePipe],
   encapsulation: ViewEncapsulation.None,
   template: `
     <div class="relative"
@@ -14,7 +15,7 @@ import { RouterModule } from '@angular/router';
         class="flex min-h-11 items-center gap-1 rounded-lg px-3 text-sm font-medium text-gray-700 transition-colors hover:text-[#0056D2]"
         (click)="toggleMenu()"
         [class.text-[#0056D2]]="isMenuVisible()">
-        <span>Khám phá</span>
+        <span>{{ 'nav.explore' | translate }}</span>
         <svg class="h-4 w-4 transition-transform duration-200"
               [class.rotate-180]="isMenuVisible()"
               fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -34,7 +35,7 @@ import { RouterModule } from '@angular/router';
 
             <!-- Danh mục khóa học -->
             <div>
-              <p class="mb-4 text-xs font-bold uppercase tracking-widest text-gray-400">Danh mục</p>
+              <p class="mb-4 text-xs font-bold uppercase tracking-widest text-gray-400">{{ 'nav.categories' | translate }}</p>
               <ul class="space-y-1">
                 @for (cat of categories; track cat.slug) {
                   <li>
@@ -51,7 +52,7 @@ import { RouterModule } from '@angular/router';
                           @case ('award') { <circle cx="12" cy="8" r="6"/><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/> }
                         }
                       </svg>
-                      {{ cat.name }}
+                      {{ cat.name | translate }}
                     </a>
                   </li>
                 }
@@ -60,7 +61,7 @@ import { RouterModule } from '@angular/router';
 
             <!-- Chứng chỉ chuyên môn -->
             <div>
-              <p class="mb-4 text-xs font-bold uppercase tracking-widest text-gray-400">Chứng chỉ</p>
+              <p class="mb-4 text-xs font-bold uppercase tracking-widest text-gray-400">{{ 'courses.certificate' | translate }}</p>
               <ul class="space-y-1">
                 @for (cert of certificates; track cert) {
                   <li>
@@ -96,7 +97,7 @@ import { RouterModule } from '@angular/router';
               <div class="mt-4 border-t border-white/10 pt-4">
                 <a routerLink="/courses" (click)="hideMenu()"
                    class="text-sm font-medium text-blue-300/70 transition-colors hover:text-white">
-                  Xem tất cả khóa học →
+                  {{ 'nav.searchViewAllCourses' | translate }} →
                 </a>
               </div>
             </div>
@@ -116,12 +117,12 @@ export class MegaMenuComponent {
   menuTop = computed(() => this.isScrolled() ? '64px' : '130px');
 
   readonly categories = [
-    { slug: 'safety', path: '/courses/an-toan-hang-hai', name: 'An toàn hàng hải', icon: 'shield' },
-    { slug: 'navigation', path: '/courses/dieu-khien-tau', name: 'Điều khiển tàu', icon: 'compass' },
-    { slug: 'engineering', path: '/courses/ky-thuat-may-tau', name: 'Kỹ thuật máy tàu', icon: 'cog' },
-    { slug: 'logistics', path: '/courses/logistics-hang-hai', name: 'Logistics hàng hải', icon: 'truck' },
-    { slug: 'law', path: '/courses/luat-hang-hai', name: 'Luật hàng hải', icon: 'scale' },
-    { slug: 'certificates', path: '/courses/stcw', name: 'Chứng chỉ STCW', icon: 'award' },
+    { slug: 'safety', path: '/courses/an-toan-hang-hai', name: 'nav.maritimeSafety', icon: 'shield' },
+    { slug: 'navigation', path: '/courses/dieu-khien-tau', name: 'nav.shipControl', icon: 'compass' },
+    { slug: 'engineering', path: '/courses/ky-thuat-may-tau', name: 'nav.shipEngine', icon: 'cog' },
+    { slug: 'logistics', path: '/courses/logistics-hang-hai', name: 'nav.maritimeLogistics', icon: 'truck' },
+    { slug: 'law', path: '/courses/luat-hang-hai', name: 'nav.maritimeLaw', icon: 'scale' },
+    { slug: 'certificates', path: '/courses/stcw', name: 'STCW', icon: 'award' },
   ];
 
   readonly certificates = [

@@ -1,8 +1,43 @@
 # Submission readiness audit
 
+## Current checkpoint — 27 September 2026 (UTC+7)
+
+The hosted demo and four role accounts are live. PRs #1–#5 are merged; main
+`a60b06ce` includes the team's English UI and evidence additions. Demo release
+hardening/CI deployment is recorded in [DEMO-CI-CD](DEMO-CI-CD.md) and WORKSTATE.
+
+The two expanded Bob summaries were visually checked: meiiie **38.66** Bobcoins
+and Toshiro **39.98**. The manifest now resolves both actual image filenames.
+Faiz's image is still the wrong screen and needs replacement by its author.
+All teammate PNGs are preserved. [Evidence inventory](../bob_sessions/README.md).
+
+The [submission draft](../submission/TEMPLATE.md) contains a proposed title and
+descriptions grounded in the implemented work. The final MP4, PDF slides, cover,
+complete participant evidence and submission-form receipt are still outstanding.
+This release does not claim those assets have been created or submitted.
+
+## Historical audit — superseded where the current checkpoint differs
+
 Recorded 26 September 2026, 08:51 Vietnam (UTC+7). **The repository has real Bob
 evidence, but the submission package is not complete.** This is an artifact audit,
 not a new application test run or an eligibility ruling.
+
+### Hosted demo update — 26 September, 20:35 UTC+7
+
+The separate [student demo](https://neko-core-lms-demo.pages.dev) is now deployed
+on Cloudflare Pages, Railway trial and Neon Free. Genuine public login, course
+download and server-side restrictions passed. Offline text reload/completion,
+persistence across a second reload and real backend sync passed in Chrome. See
+[actual acceptance evidence](DEMO-VERIFICATION.md) and
+[deployment and limitations](FREE-DEMO-DEPLOYMENT.md) for actual revision/results
+and the private learner handoff location. Hosting is Codex continuation work,
+not additional Bob evidence. Video, slides, cover and final Bob summaries remain
+outstanding; publishing the site does not submit the event form.
+
+The owner independently merged Faiz's PR #1 at 18:58 UTC+7 as `ada302bb`.
+Its one PNG is preserved by this deployment work. The earlier image-quality and
+missing-manifest observations below remain observations about that same file;
+a merge alone does not verify it as the required task summary.
 
 ### Later team-evidence check on 26 September
 

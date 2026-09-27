@@ -1,5 +1,178 @@
 # Current work state
 
+## 27 September — full demo permissions rollout
+
+Owner explicitly authorized removing demo-only restrictions in all four role portals,
+including write access. Branch `codex/demo-full-access` starts at teammate main
+`e21af718`; the new manifest entries are preserved. The unrelated `backend/.factorypath`
+edit stays unstaged. See [DEMO-FULL-ACCESS](DEMO-FULL-ACCESS.md).
+
+Removed the route/multipart blocklist while retaining normal Spring authorization.
+Bootstrap adopts the existing four identities and records a one-time marker, so
+restart no longer resets accounts/settings or disables newly created users. Provider
+flags are configurable; unprovisioned services are not claimed operational. Uploads
+use Railway volume `5799edf5-6fc4-4f80-a929-dee78ad86050` at `/app/uploads`; default
+file size is 50 MB. The container entrypoint drops to UID 1001 after mount setup.
+
+Baseline reproduced profile-update `demo_restricted` for all four real UI logins.
+116 focused Java tests pass. Local Docker daemon is unavailable; added a real
+entrypoint/volume CI probe. Fresh independent Verify source review found no remaining
+blocker after adding `volume-nocopy` to reproduce a root-owned Railway mount.
+Next: CI, merge and automatic deploy; verify hosted profile/role writes, new account
+and changed-password/file persistence across backend restart, clean only test fixtures.
+Record final delivery in the PR notes linked from DEMO-FULL-ACCESS. This is Codex work.
+
+## 27 September release integration — PR #6 verification checkpoint
+
+The owner authorized completing PR review, current demo deployment, CI/CD and
+README/handoff updates. Branch `codex/demo-cd` starts from team main `a60b06ce`.
+All PRs #1–#5 were merged and its six CI jobs passed (run 36301580921).
+
+- Deployed that verified frontend artifact to Cloudflare (`a98d260e`). Railway
+  now tracks this fork/main with Wait for CI enabled; deployment
+  `839f6eac-3c45-4c9f-b242-72e990952dc6` is SUCCESS at `a60b06ce`.
+- Added exact-CI-artifact demo CD, source validation, stale-run checks, a public
+  revision marker and health probes. The owner approved a Pages:Edit token for this account, expiring 28 October;
+  GitHub confirmed CLOUDFLARE_API_TOKEN was added. Final automatic delivery is
+  verified through [PR #6](https://github.com/meiiie/lms-ibm-bob-hackathon/pull/6)
+  and its linked CI/CD runs; do not infer delivery from provisioning alone.
+- Source review found missing offline locales, nonreactive login/menu labels,
+  two unresolved sidebar keys and unrecoverable translation-catalog outages.
+  Fixes preserve the team's i18n approach; login now exposes VI/EN directly.
+- All 16 Node deployment/proxy/packaging tests pass. First Angular attempt failed
+  because local node_modules lacked the team's new ngx-translate dependencies;
+  npm ci completed from the existing lockfile. All 106 selected Angular tests and the demo build pass (378 files;
+  largest asset 1,232,303 bytes). Inherited bundle/CommonJS warnings remain.
+  Fixed the inherited bridge spec wiping Jasmine's DOM; final run has no late
+  reporter error. Harness checks and all four harness regressions also pass.
+- Fresh independent Verify review found no CD trust blocker; its remaining
+  legacy-only catalog recovery issue was fixed and covered by a new regression.
+- Visually checked the current Bob images: meiiie 38.66, Toshiro 39.98. Corrected
+  manifest values/actual filenames without editing PNGs. Faiz still needs the
+  actual summary; video/slides/cover and final submission receipt are outstanding.
+- Preserve the unrelated owner edit `backend/.factorypath`, synthetic database,
+  learner progress and all teammate evidence. This work is attributed to Codex.
+
+Preview acceptance at `6957ec90` passed real EN/VI switching, saved English
+with a delayed real locale response, mobile layout and offline reload/switching
+with HTTP cache cleared and all three catalogs cached. The initial runner wrongly
+used async wait_for_function: a minimal `async () => false` probe returned False
+immediately on this installed Playwright version. It now awaits evaluate in a
+bounded Python polling loop, checks every prefetch response and normal SW state.
+No application PWA repair was needed beyond the missing locale prefetch.
+
+Visual inspection then caught the inherited email action labeled only “Email”
+and an untranslated Google-unavailable server message. Restored the explicit
+“Continue with email” action and added the observed message to the English catalog.
+Those final copy changes are covered by the browser runner on the final release.
+
+The first PR #6 revision passed all six CI jobs in run `36303174062`; newer heads
+must pass their own checks. Railway credit read-back on 27 September was about
+$4.861 with 30 trial days reported, no exhausted free allowance. This remains
+credit-funded temporary hosting, not a promise of permanent free capacity.
+
+Delivery record: [PR #6](https://github.com/meiiie/lms-ibm-bob-hackathon/pull/6),
+[CI](https://github.com/meiiie/lms-ibm-bob-hackathon/actions/workflows/ci.yml),
+[Demo CD](https://github.com/meiiie/lms-ibm-bob-hackathon/actions/workflows/demo-deploy.yml).
+The live revision marker gives the deployed frontend commit and run IDs. Final
+hosted role/PWA acceptance is recorded in the PR delivery notes after deployment.
+This checkpoint does not certify later commits or the event submission receipt.
+
+
+## Demo role access — deployed and verified
+
+26 September 2026, **21:35 UTC+7 (Vietnam)**. The owner requested enabling
+teacher, organization-manager and system-admin access. All four roles are now
+live at https://neko-core-lms-demo.pages.dev/auth/login. This supersedes the
+original student-only policy; the older deployment record below is historical.
+
+- Backend source `1ea41ff5`, Railway deployment
+  `b13a57d4-425b-414e-9278-e45cfdded645`: SUCCESS, health UP, startup 17.105 s.
+  Frontend artifact remains `86ceb885`; frontend application code was unchanged.
+- `python scripts/verify-demo-roles.py --output .tools/demo-roles-run4` passed
+  30 checks across four fresh Chrome contexts with real UI login and API data.
+  It verified portals, course lists, title search (Enter submits), approved/pending
+  filters, teacher learner management and role/organization access restrictions.
+  No failing UI API responses or browser runtime errors in the final run.
+- 134 focused backend tests and package passed. Exact test selection and
+  source review/acceptance limits are in `docs/DEMO-ACCOUNTS.md`. Full CI and
+  merge status are tracked by PR #5; do not infer them from local tests alone.
+- Two read-only Neon snapshots confirm four enabled identities, other users
+  disabled, unchanged SAF-101 course/class/teacher ownership and learner
+  enrollment progress. Default inherited admin login still fails. Cloud AI,
+  payments, uploads, email and media processing remain unprovisioned/restricted.
+- First browser acceptance caught an inherited admin native-SQL sort failure
+  (`c.createdAt`). The adapter now maps timestamp properties to PostgreSQL
+  column names only for native queries. Four regressions pass; live filtered
+  admin queries now return HTTP 200. The runner also corrected its assumption
+  that title search matches course codes and explicitly presses Enter, waits
+  for the actual search response and settled dashboard data before screenshots.
+  Failed baselines remain ignored; final public evidence is
+  `docs/evidence/demo-roles-2026-09-26/`.
+- Private English credential handoff: `.tools/team-demo-accounts.private.md`.
+  Four independent passwords are set in Railway and never committed. The teacher
+  keeps the original owner ID. Backend startup restores four demo identities;
+  admin edits affect this shared fixture, so preserve SAF-101 for the recording.
+- Codex continuation, not Bob work. Both Bob PNG Git blobs remain identical.
+  The owner's unrelated `backend/.factorypath` edit remains unstaged.
+
+Next: use PR #5 for final CI/merge status and send the private credential handoff
+to teammates. Remaining video, slides, cover, Bob summaries and submission form
+are separate tasks; this account rollout does not claim they are complete.
+
+## Free demo deployment — hosted acceptance passed
+
+26 September 2026, Vietnam (UTC+7). The owner authorized choosing and deploying
+this isolated demo, publishing and merging its changes. This is Codex continuation
+work, not Bob session evidence. Preserve `backend/.factorypath` and team evidence.
+
+- Live demo: https://neko-core-lms-demo.pages.dev. Cloudflare Pages serves Angular,
+  a fixed-origin Worker proxies the API, Railway runs one backend in Singapore,
+  and a separate Neon Free PostgreSQL 16 project stores synthetic demo data.
+  No card, paid upgrade or production resource was used.
+- The `prod,demo` profile prepares one enabled synthetic student and disables all
+  inherited users before accepting traffic. Privileged actions, account changes,
+  payments, uploads, email, cloud AI and media conversion are restricted. All 131
+  migrations through version 159 succeeded; 72 focused backend tests passed.
+- The public proxy guard smoke passed at 20:30 UTC+7: learner login works;
+  inherited admin login, admin route, registration, raw encoded password route and
+  checkout fail. ChatGPT is disabled, Wiii unconfigured, API responses no-store.
+- Frontend artifact `86ceb885`, CI run `36240432617`: 374 package entries and all
+  service-worker hashes verified. Backend `c9c67946` deployment
+  `84e5413c-3d70-4b5e-9109-b52623182084` succeeded; health UP, startup 15.725 seconds,
+  observed Railway memory 495.8 MB / 1,024 MB. Local Java processes are stopped.
+- Real Chrome acceptance passed all seven stages at 20:35 UTC+7 with no mocked
+  API, login or storage. It cached 259 prefetch assets, downloaded 31 lessons,
+  cleared ordinary HTTP cache, reloaded offline from the service worker with
+  navigator.onLine=false and identical prose, completed a text lesson, reloaded
+  again, and reconnected. The server confirms COMPLETED and pending progress zero.
+  Command: `python scripts/verify-demo-pwa.py --output .tools/demo-pwa-run4` (exit 0).
+  Public evidence and limits: `docs/DEMO-VERIFICATION.md`.
+- Failed runner baselines are retained locally. They exposed a hidden video option
+  in a text-only fixture, premature PWA readiness, and CDP offline-state interference.
+  The final runner waits for actual cache population and detaches its cache-clearing
+  session before network emulation. No application fix was needed for these issues.
+- Railway needed explicit Dockerfile/healthcheck settings and only one region.
+  Its new legacy-config attachment was rejected, so unused `railway.json` was
+  removed. Provider settings are documented in `docs/FREE-DEMO-DEPLOYMENT.md`.
+  Cloudflare production/preview fail_open=false was applied and verified.
+- Railway credit checked around 20:31 UTC+7: 4.99126 USD / 30 trial days. This is
+  temporary credit-funded hosting. Native peak RSS was 552.3 MB, so a strict
+  512 MB fallback remains unverified. No capacity/load test was performed.
+- All six CI jobs passed at `c9c67946` in run `36241307317`; independent source
+  review found no blockers. The owner's PR #1 merge added only an evidence PNG
+  at `ada302bb`; preserve it during integration. PR #4 is the delivery record for
+  final documentation/runner changes and integration; check its current GitHub
+  state for the final merge revision. Mobile viewport checks also passed.
+- Credentials remain in ignored `.tools/demo-access.local.md` and backend secrets.
+  ChatGPT is online-only and disabled on this public demo; local models require
+  the visitor's own runtime. Offline video, physical mobile/PWA installation and
+  first-ever offline access are not proven by this desktop test.
+
+Next: hand off the verified demo URL/private learner access and recheck trial
+credit before recording. Submission still needs final Bob summaries, video,
+slides, cover and form. See PR #4 for delivery/CI status.
+
 ## Current integration — local provider, UX and authorized merge
 
 26 September 2026, Vietnam (UTC+7). The owner subsequently authorized merging

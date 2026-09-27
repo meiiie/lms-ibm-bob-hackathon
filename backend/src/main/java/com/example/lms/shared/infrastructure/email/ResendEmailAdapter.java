@@ -7,6 +7,7 @@ import com.resend.services.emails.model.CreateEmailOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,7 @@ import java.math.BigDecimal;
 @Slf4j
 @Component
 @Profile("prod")
+@ConditionalOnProperty(name = "app.email.delivery", havingValue = "resend", matchIfMissing = true)
 public class ResendEmailAdapter implements EmailServicePort {
 
     private final Resend resend;

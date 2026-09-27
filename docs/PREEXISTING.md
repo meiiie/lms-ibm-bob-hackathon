@@ -75,11 +75,27 @@ The Java protocol adapter references `vishhvak/chatgpt-oauth` at revision
 [MIT notice](third-party/chatgpt-oauth-LICENSE.txt). This protocol is reused
 reference material, not a new authentication protocol invented during the event.
 
-The manifest now has an actual screenshot row from 08:18 UTC+7 showing 28.50
-Bobcoins. It is an intermediate IDE checkpoint, not the final consumption panel.
-The task later reached approximately 38.66 Bobcoins before stopping. The recovered
-303-message transcript remains local and excluded from Git pending privacy review.
-Every participant still needs to capture their own relevant real Bob summaries.
+At the 26 September checkpoint, the screenshot showed 28.50 Bobcoins at 08:18
+UTC+7. The team later replaced that file with the expanded **38.66** summary,
+visually verified on 27 September. A separate team-published task export is now
+tracked; the recovered `*.local.md` transcript remains ignored. Toshiro's expanded
+summary shows **39.98**. See the current manifest and evidence README; all participant task summaries and evidence files (meiiie, Toshiro, Faiz) are verified and logged in the manifest.
 
 Before submission, record the final revision, identify precisely what changed
 during the event, and link all actual screenshots through the manifest.
+
+On 26 September, the owner also asked Codex to deploy a free public demo. The
+isolated student-only backend profile, Cloudflare Pages proxy and build package,
+Railway/Neon configuration and hosted PWA acceptance runner are Codex continuation
+work in PR #4. The Angular offline learning implementation and seeded maritime
+course are reused LMS features; deploying or verifying them does not make them
+new Bob-authored features. Only actual hosted acceptance results may be reported.
+
+## 27 September release continuation
+
+The team merged English UI changes and additional evidence as `a60b06ce`.
+Codex subsequently reviewed the integration, repaired offline locale caching and
+reactive language labels, added isolated demo CI/CD and updated this handoff.
+Those follow-up changes are Codex work, not additional Bob consumption. The
+current teammate PNGs remain unchanged; the manifest now reflects their actual
+visible summaries and filenames. See WORKSTATE for checks and delivery results.

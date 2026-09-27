@@ -2,10 +2,12 @@ import { Component, signal, ChangeDetectionStrategy, ViewEncapsulation, inject, 
 import { isPlatformBrowser } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { MegaMenuComponent } from './mega-menu/mega-menu.component';
 import { AuthService } from '../../../core/services/auth.service';
 import { ApiClient } from '../../../api/client/api-client';
 import { getPortalLandingRoute } from '../../../core/utils/portal-route.util';
+import { LanguageSwitcherComponent } from '../language-switcher/language-switcher.component';
 
 interface SearchResult {
   id: string;
@@ -18,7 +20,7 @@ interface SearchResult {
 
 @Component({
   selector: 'app-public-header',
-  imports: [RouterModule, FormsModule, MegaMenuComponent],
+  imports: [RouterModule, FormsModule, MegaMenuComponent, TranslatePipe, LanguageSwitcherComponent],
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['./public-header.component.scss'],
   templateUrl: './public-header.component.html',
@@ -28,7 +30,7 @@ export class PublicHeaderComponent implements OnInit, OnDestroy {
   private platformId = inject<Object>(PLATFORM_ID);
 
   private router = inject(Router);
-
+  private translate = inject(TranslateService);
   private api = inject(ApiClient);
 
   // Signals
@@ -209,7 +211,7 @@ export class PublicHeaderComponent implements OnInit, OnDestroy {
   }
 
   formatSearchPrice(result: SearchResult): string {
-    if (result.priceType === 'FREE' || !result.price) return 'Miễn phí';
+    if (result.priceType === 'FREE' || !result.price) return this.translate.instant('common.free');
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(result.price);
   }
 

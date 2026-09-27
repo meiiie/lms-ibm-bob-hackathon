@@ -1,0 +1,218 @@
+{
+  "startedAt": "2026-09-26T14:35:02.875046+00:00",
+  "origin": "https://neko-core-lms-demo.pages.dev",
+  "mocks": false,
+  "scope": "Read-only role portals and RBAC using real UI login and separate fresh contexts",
+  "limits": [
+    "Headless desktop Chrome; physical mobile not tested",
+    "Service workers blocked for this online-only role test; offline acceptance separate",
+    "No account-management, course-authoring or financial mutation tested"
+  ],
+  "roles": [
+    {
+      "role": "student",
+      "email": "learner@demo.invalid",
+      "result": "PASS",
+      "checks": [
+        {
+          "check": "real UI login",
+          "result": "PASS",
+          "portal": "/student/courses"
+        },
+        {
+          "check": "real role dashboard",
+          "result": "PASS",
+          "route": "/student/courses"
+        },
+        {
+          "check": "real scoped course data",
+          "result": "PASS",
+          "courseId": "70d479ea-5444-47ca-848d-6edcc20d43d9",
+          "courseTitle": "Huấn Luyện An Toàn Cơ Bản STCW"
+        },
+        {
+          "check": "real course list UI",
+          "result": "PASS",
+          "route": "/student/courses/library"
+        },
+        {
+          "check": "system administration denied",
+          "result": "PASS",
+          "expectedStatus": 403
+        },
+        {
+          "check": "portal API and runtime errors",
+          "result": "PASS"
+        }
+      ],
+      "uiApiFailures": [],
+      "pageErrors": [],
+      "identity": {
+        "id": "d3000000-0000-4000-8000-000000000001",
+        "role": "STUDENT",
+        "organizationId": "a0000000-0000-0000-0000-000000000001"
+      }
+    },
+    {
+      "role": "teacher",
+      "email": "teacher@demo.invalid",
+      "result": "PASS",
+      "checks": [
+        {
+          "check": "real UI login",
+          "result": "PASS",
+          "portal": "/teacher/courses"
+        },
+        {
+          "check": "real role dashboard",
+          "result": "PASS",
+          "route": "/teacher/courses"
+        },
+        {
+          "check": "real scoped course data",
+          "result": "PASS",
+          "courseId": "70d479ea-5444-47ca-848d-6edcc20d43d9",
+          "courseTitle": "Huấn Luyện An Toàn Cơ Bản STCW"
+        },
+        {
+          "check": "real course list UI",
+          "result": "PASS",
+          "route": "/teacher/courses"
+        },
+        {
+          "check": "real enrolled learner visible to course teacher",
+          "result": "PASS"
+        },
+        {
+          "check": "teacher learner-management UI",
+          "result": "PASS"
+        },
+        {
+          "check": "system administration denied",
+          "result": "PASS",
+          "expectedStatus": 403
+        },
+        {
+          "check": "portal API and runtime errors",
+          "result": "PASS"
+        }
+      ],
+      "uiApiFailures": [],
+      "pageErrors": [],
+      "identity": {
+        "id": "afacb382-28ec-4ead-9cc6-1acff8bca317",
+        "role": "TEACHER",
+        "organizationId": "a0000000-0000-0000-0000-000000000001"
+      }
+    },
+    {
+      "role": "org_admin",
+      "email": "orgadmin@demo.invalid",
+      "result": "PASS",
+      "checks": [
+        {
+          "check": "real UI login",
+          "result": "PASS",
+          "portal": "/org-admin/dashboard"
+        },
+        {
+          "check": "real role dashboard",
+          "result": "PASS",
+          "route": "/org-admin/dashboard"
+        },
+        {
+          "check": "real dashboard analytics",
+          "result": "PASS",
+          "totalCourses": 10
+        },
+        {
+          "check": "title search, approved search and pending review filters",
+          "result": "PASS"
+        },
+        {
+          "check": "real scoped course data",
+          "result": "PASS",
+          "courseId": "70d479ea-5444-47ca-848d-6edcc20d43d9",
+          "courseTitle": "Huấn Luyện An Toàn Cơ Bản STCW"
+        },
+        {
+          "check": "real course list UI",
+          "result": "PASS",
+          "route": "/org-admin/courses"
+        },
+        {
+          "check": "organization scope and system-statistics denial",
+          "result": "PASS",
+          "organizations": 1
+        },
+        {
+          "check": "portal API and runtime errors",
+          "result": "PASS"
+        }
+      ],
+      "uiApiFailures": [],
+      "pageErrors": [],
+      "identity": {
+        "id": "d3000000-0000-4000-8000-000000000002",
+        "role": "ORG_ADMIN",
+        "organizationId": "a0000000-0000-0000-0000-000000000001"
+      }
+    },
+    {
+      "role": "admin",
+      "email": "admin@demo.invalid",
+      "result": "PASS",
+      "checks": [
+        {
+          "check": "real UI login",
+          "result": "PASS",
+          "portal": "/admin/dashboard"
+        },
+        {
+          "check": "real role dashboard",
+          "result": "PASS",
+          "route": "/admin/dashboard"
+        },
+        {
+          "check": "real dashboard analytics",
+          "result": "PASS",
+          "totalCourses": 10
+        },
+        {
+          "check": "title search, approved search and pending review filters",
+          "result": "PASS"
+        },
+        {
+          "check": "real scoped course data",
+          "result": "PASS",
+          "courseId": "70d479ea-5444-47ca-848d-6edcc20d43d9",
+          "courseTitle": "Huấn Luyện An Toàn Cơ Bản STCW"
+        },
+        {
+          "check": "real course list UI",
+          "result": "PASS",
+          "route": "/admin/courses"
+        },
+        {
+          "check": "system organization statistics available",
+          "result": "PASS",
+          "organizations": 1
+        },
+        {
+          "check": "portal API and runtime errors",
+          "result": "PASS"
+        }
+      ],
+      "uiApiFailures": [],
+      "pageErrors": [],
+      "identity": {
+        "id": "d3000000-0000-4000-8000-000000000003",
+        "role": "ADMIN",
+        "organizationId": "a0000000-0000-0000-0000-000000000001"
+      }
+    }
+  ],
+  "chromeVersion": "153.0.8010.53",
+  "result": "PASS",
+  "finishedAt": "2026-09-26T14:35:36.832368+00:00"
+}

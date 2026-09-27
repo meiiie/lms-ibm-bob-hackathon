@@ -92,6 +92,15 @@
               "serviceWorker": "ngsw-config.json",
               "outputMode": "server"
             },
+            "demo": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.demo.ts"
+                }
+              ],
+              "outputPath": "dist/lms-demo"
+            },
             "development": {
               "optimization": false,
               "extractLicenses": false,

@@ -1,0 +1,52 @@
+{
+  "success": true,
+  "origin": "https://neko-core-lms-demo.pages.dev",
+  "checkedAtUtc": "2026-09-26T14:32:14.346552+00:00",
+  "requests": {
+    "defaultAdminLogin": {
+      "status": 403,
+      "cacheControl": "private, no-store",
+      "demoRestricted": false
+    },
+    "studentLogin": {
+      "status": 200,
+      "cacheControl": "private, no-store"
+    },
+    "authMe": {
+      "status": 200,
+      "cacheControl": "private, no-store"
+    },
+    "chatgptStatus": {
+      "status": 200,
+      "cacheControl": "private, no-store"
+    },
+    "wiiiHealth": {
+      "status": 200,
+      "cacheControl": "private, no-store"
+    },
+    "adminRoute": {
+      "status": 403,
+      "cacheControl": "private, no-store",
+      "demoRestricted": false
+    },
+    "registration": {
+      "status": 403,
+      "cacheControl": "private, no-store",
+      "demoRestricted": true
+    },
+    "encodedPassword": {
+      "status": 403,
+      "cacheControl": "private, no-store",
+      "demoRestricted": true
+    },
+    "paymentCheckout": {
+      "status": 403,
+      "cacheControl": "private, no-store",
+      "demoRestricted": true
+    }
+  },
+  "studentProgressModified": false,
+  "studentRole": "STUDENT",
+  "chatgptEnabled": false,
+  "wiiiDisabled": true
+}

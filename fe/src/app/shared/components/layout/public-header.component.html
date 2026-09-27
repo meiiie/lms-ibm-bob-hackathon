@@ -14,41 +14,42 @@
           <div class="flex min-h-11 items-center justify-between">
             <!-- User Type Selector -->
             <div class="flex items-center space-x-6">
-              <span class="text-xs font-medium text-slate-300">Đối tượng sử dụng:</span>
-              <div class="user-type-selector flex items-center space-x-4">
-                <button 
-                  (click)="setUserType('personal')"
-                  [class]="getUserTypeClass('personal')"
-                  class="min-h-11 rounded-full px-3 text-xs font-medium transition-all duration-200 hover:bg-white/10">
-                  Cá nhân
-                </button>
-                <button 
-                  (click)="setUserType('business')"
-                  [class]="getUserTypeClass('business')"
-                  class="min-h-11 rounded-full px-3 text-xs font-medium transition-all duration-200 hover:bg-white/10">
-                  Doanh nghiệp
-                </button>
-                <button 
-                  (click)="setUserType('school')"
-                  [class]="getUserTypeClass('school')"
-                  class="min-h-11 rounded-full px-3 text-xs font-medium transition-all duration-200 hover:bg-white/10">
-                  Trường học
-                </button>
-                <button 
-                  (click)="setUserType('government')"
-                  [class]="getUserTypeClass('government')"
-                  class="min-h-11 rounded-full px-3 text-xs font-medium transition-all duration-200 hover:bg-white/10">
-                  Chính phủ
-                </button>
+                <span class="text-xs font-medium text-slate-300">{{ 'nav.userType' | translate }}:</span>
+                <div class="user-type-selector flex items-center space-x-4">
+                  <button
+                    (click)="setUserType('personal')"
+                    [class]="getUserTypeClass('personal')"
+                    class="min-h-11 rounded-full px-3 text-xs font-medium transition-all duration-200 hover:bg-white/10">
+                    {{ 'nav.personal' | translate }}
+                  </button>
+                  <button
+                    (click)="setUserType('business')"
+                    [class]="getUserTypeClass('business')"
+                    class="min-h-11 rounded-full px-3 text-xs font-medium transition-all duration-200 hover:bg-white/10">
+                    {{ 'nav.business' | translate }}
+                  </button>
+                  <button
+                    (click)="setUserType('school')"
+                    [class]="getUserTypeClass('school')"
+                    class="min-h-11 rounded-full px-3 text-xs font-medium transition-all duration-200 hover:bg-white/10">
+                    {{ 'nav.school' | translate }}
+                  </button>
+                  <button
+                    (click)="setUserType('government')"
+                    [class]="getUserTypeClass('government')"
+                    class="min-h-11 rounded-full px-3 text-xs font-medium transition-all duration-200 hover:bg-white/10">
+                    {{ 'nav.government' | translate }}
+                  </button>
+                </div>
               </div>
-            </div>
-
-            <!-- Top Actions -->
-            <div class="flex items-center space-x-4">
-              <a href="/contact" class="inline-flex min-h-11 min-w-11 items-center justify-center text-xs text-slate-300 transition-colors duration-200 hover:text-white">
-                Hỗ trợ
-              </a>
-            </div>
+  
+              <!-- Top Actions -->
+              <div class="flex items-center space-x-4">
+                <a href="/contact" class="inline-flex min-h-11 min-w-11 items-center justify-center text-xs text-slate-300 transition-colors duration-200 hover:text-white">
+                  {{ 'nav.support' | translate }}
+                </a>
+                <app-language-switcher class="on-dark" />
+              </div>
           </div>
         </div>
       </div>
@@ -98,9 +99,9 @@
             <div class="flex-1 px-8 transition-all duration-300" style="min-width: 400px;">
               <div class="relative">
                 <input
-                  type="text"
-                  placeholder="Bạn muốn học gì hôm nay?"
-                  aria-label="Tìm kiếm khóa học"
+                   type="text"
+                   [placeholder]="'nav.searchPlaceholder' | translate"
+                   [attr.aria-label]="'nav.searchLabel' | translate"
                   autocomplete="off"
                   enterkeyhint="search"
                   [ngModel]="searchQuery()"
@@ -110,7 +111,7 @@
                   (keydown)="onSearchKeydown($event)"
                   class="w-full h-12 pl-5 pr-14 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:border-[#0056D2] focus:ring-2 focus:ring-[#0056D2]/20 transition-all duration-200">
                 <button (click)="onSearchSubmit()"
-                        aria-label="Tìm kiếm khóa học"
+                        [attr.aria-label]="'nav.searchLabel' | translate"
                         class="absolute right-0.5 top-1/2 -translate-y-1/2 flex h-11 w-11 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-[#0056D2]/5 hover:text-[#0056D2] focus:outline-none focus:ring-2 focus:ring-[#0056D2]/20">
                   <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -137,15 +138,15 @@
                     }
                     <button (mousedown)="onSearchSubmit()"
                             class="flex w-full items-center justify-center gap-1 border-t border-gray-100 px-4 py-2.5 text-sm font-medium text-[#0056D2] transition-colors hover:bg-[#0056D2]/5">
-                      Xem tất cả kết quả
+                      {{ 'nav.searchViewAll' | translate }}
                       <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </button>
                   </div>
                 }
                 @if (isSearchOpen() && searchQuery().length >= 2 && searchResults().length === 0) {
                   <div class="absolute left-0 right-0 top-full z-50 mt-2 rounded-xl border border-gray-200 bg-white px-4 py-6 text-center shadow-xl">
-                    <p class="text-sm text-gray-500">Không tìm thấy khóa học phù hợp</p>
-                    <button (mousedown)="onSearchSubmit()" class="mt-2 text-sm font-medium text-[#0056D2]">Xem tất cả khóa học →</button>
+                    <p class="text-sm text-gray-500">{{ 'nav.searchNoResults' | translate }}</p>
+                    <button (mousedown)="onSearchSubmit()" class="mt-2 text-sm font-medium text-[#0056D2]">{{ 'nav.searchViewAllCourses' | translate }} →</button>
                   </div>
                 }
               </div>
@@ -193,15 +194,15 @@
                           <svg class="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                           </svg>
-                          Khóa học của tôi
-                        </a>
-                        <a [routerLink]="getDashboardRoute()" 
-                           (click)="closeUserMenu()"
-                           class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-[#0056D2]/5 hover:text-[#004BB5] transition-colors">
-                          <svg class="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                          </svg>
-                          Bảng điều khiển
+                          {{ 'nav.myCourses' | translate }}
+                          </a>
+                          <a [routerLink]="getDashboardRoute()"
+                             (click)="closeUserMenu()"
+                             class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-[#0056D2]/5 hover:text-[#004BB5] transition-colors">
+                            <svg class="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                            </svg>
+                            {{ 'nav.dashboard' | translate }}
                         </a>
                       </div>
                       
@@ -212,7 +213,7 @@
                           <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                           </svg>
-                          Đăng xuất
+                          {{ 'nav.logout' | translate }}
                         </button>
                       </div>
                     </div>
@@ -222,12 +223,13 @@
                 <!-- Guest: Login/Register Buttons -->
                 <a routerLink="/auth/login"
                    class="inline-flex min-h-11 items-center justify-center rounded-md px-4 text-sm font-medium text-gray-700 transition-colors duration-200 hover:text-[#0056D2]">
-                  Đăng nhập
+                  {{ 'nav.login' | translate }}
                 </a>
                 <a routerLink="/auth/login"
                    class="inline-flex min-h-11 items-center justify-center rounded-md bg-[#0056D2] px-6 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#004BB5] hover:shadow-md">
-                  Tham gia miễn phí
+                  {{ 'nav.joinFree' | translate }}
                 </a>
+                <app-language-switcher class="on-light" />
               }
             </div>
           </div>
@@ -246,7 +248,7 @@
               <div class="flex flex-shrink-0 items-center gap-2">
                 @if (isLoggedIn()) {
                   <a [routerLink]="getDashboardRoute()"
-                     aria-label="Mở bảng điều khiển"
+                       [attr.aria-label]="'nav.openDashboard' | translate"
                      class="inline-flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-[#0056D2] text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#004BB5] focus:outline-none focus:ring-2 focus:ring-[#0056D2]/30">
                     @if (userAvatar()) {
                       <img [src]="userAvatar()" [alt]="userName()" class="h-full w-full object-cover">
@@ -257,7 +259,7 @@
                 } @else {
                   <a routerLink="/auth/login"
                      class="inline-flex h-11 min-w-[92px] items-center justify-center rounded-lg border border-[#0056D2]/20 bg-[#0056D2]/5 px-3 text-sm font-semibold text-[#0056D2] transition-colors duration-200 hover:border-[#0056D2]/30 hover:bg-[#0056D2]/10 focus:outline-none focus:ring-2 focus:ring-[#0056D2]/20">
-                    Đăng nhập
+                    {{ 'nav.login' | translate }}
                   </a>
                 }
 
@@ -265,7 +267,7 @@
                 <button
                   type="button"
                   (click)="toggleMobileMenu()"
-                  [attr.aria-label]="isMobileMenuOpen() ? 'Đóng menu' : 'Mở menu'"
+                  [attr.aria-label]="isMobileMenuOpen() ? ('nav.closeMenu' | translate) : ('nav.openMenu' | translate)"
                   [attr.aria-expanded]="isMobileMenuOpen()"
                   aria-controls="mobile-navigation-panel"
                   class="inline-flex h-11 w-11 items-center justify-center rounded-lg text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-[#0056D2] focus:outline-none focus:ring-2 focus:ring-[#0056D2]/20">
@@ -283,8 +285,8 @@
             <!-- Mobile Search Bar -->
             <div class="pb-3">
               <div class="relative">
-                <input type="text" placeholder="Tìm kiếm khóa học..."
-                       aria-label="Tìm kiếm khóa học"
+                <input type="text" [placeholder]="'nav.searchPlaceholderMobile' | translate"
+                        [attr.aria-label]="'nav.searchLabel' | translate"
                        autocomplete="off"
                        enterkeyhint="search"
                        [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)"
@@ -315,9 +317,9 @@
               <!-- Menu Header -->
               <div class="flex items-center justify-between p-4 border-b border-gray-200">
                 <h2 class="text-lg font-semibold text-gray-900">Menu</h2>
-                <button 
+                <button
                   (click)="closeMobileMenu()"
-                  aria-label="Đóng menu"
+                  [attr.aria-label]="'nav.closeMenu' | translate"
                   class="inline-flex h-11 w-11 items-center justify-center rounded-lg text-gray-400 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#0056D2]/20">
                   <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -328,51 +330,51 @@
               <!-- Menu Content -->
               <div class="flex-1 overflow-y-auto">
                 <nav class="px-4 py-6 space-y-1">
-                  <a routerLink="/" 
+                  <a routerLink="/"
                      (click)="closeMobileMenu()"
                      routerLinkActive="bg-[#0056D2]/5 text-[#0056D2]"
                      class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200">
-                    Trang chủ
+                    {{ 'nav.home' | translate }}
                   </a>
                   
                   <!-- Mobile Courses Section -->
                   <div class="py-2">
                     <div class="px-3 py-2 text-sm font-semibold text-gray-500 uppercase tracking-wider">
-                      Khám phá
+                      {{ 'nav.explore' | translate }}
                     </div>
-                    <a routerLink="/courses" 
+                    <a routerLink="/courses"
                        (click)="closeMobileMenu()"
                        class="block px-6 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200">
-                      Tất cả khóa học
+                      {{ 'nav.allCourses' | translate }}
                     </a>
                     <a routerLink="/courses/an-toan-hang-hai"
                        (click)="closeMobileMenu()"
                        class="block px-6 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200">
-                      An toàn hàng hải
+                      {{ 'nav.maritimeSafety' | translate }}
                     </a>
                     <a routerLink="/courses/dieu-khien-tau"
                        (click)="closeMobileMenu()"
                        class="block px-6 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200">
-                      Điều khiển tàu
+                      {{ 'nav.shipControl' | translate }}
                     </a>
                     <a routerLink="/courses/ky-thuat-may-tau"
                        (click)="closeMobileMenu()"
                        class="block px-6 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200">
-                      Kỹ thuật máy tàu
+                      {{ 'nav.shipEngine' | translate }}
                     </a>
                   </div>
 
-                  <a routerLink="/about" 
+                  <a routerLink="/about"
                      (click)="closeMobileMenu()"
                      routerLinkActive="bg-[#0056D2]/5 text-[#0056D2]"
                      class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200">
-                    Giới thiệu
+                    {{ 'nav.about' | translate }}
                   </a>
-                  <a routerLink="/contact" 
+                  <a routerLink="/contact"
                      (click)="closeMobileMenu()"
                      routerLinkActive="bg-[#0056D2]/5 text-[#0056D2]"
                      class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200">
-                    Liên hệ
+                    {{ 'nav.contact' | translate }}
                   </a>
                 </nav>
               </div>
@@ -400,33 +402,36 @@
                        (click)="closeMobileMenu()"
                        class="flex items-center w-full text-left px-4 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50">
                       <svg class="w-4 h-4 mr-3 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                      Khóa học của tôi
+                      {{ 'nav.myCourses' | translate }}
                     </a>
                     <a [routerLink]="getDashboardRoute()"
                        (click)="closeMobileMenu()"
                        class="flex items-center w-full text-left px-4 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50">
                       <svg class="w-4 h-4 mr-3 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                      Bảng điều khiển
+                      {{ 'nav.dashboard' | translate }}
                     </a>
                     <button (click)="logout(); closeMobileMenu()"
                             class="flex items-center w-full text-left px-4 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50">
                       <svg class="w-4 h-4 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                      Đăng xuất
+                      {{ 'nav.logout' | translate }}
                     </button>
                   </div>
                 } @else {
                   <!-- Guest: Login/Register -->
                   <div class="space-y-3">
-                    <a routerLink="/auth/login" 
+                    <a routerLink="/auth/login"
                        (click)="closeMobileMenu()"
                        class="block w-full text-center px-4 py-2 border border-gray-300 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200">
-                      Đăng nhập
+                      {{ 'nav.login' | translate }}
                     </a>
-                    <a routerLink="/auth/login" 
+                    <a routerLink="/auth/login"
                        (click)="closeMobileMenu()"
                        class="block w-full text-center px-4 py-2 bg-[#0056D2] text-white rounded-md text-base font-medium hover:bg-[#004BB5] transition-colors duration-200">
-                      Tham gia miễn phí
+                      {{ 'nav.joinFree' | translate }}
                     </a>
+                    <div class="flex justify-center pt-1">
+                      <app-language-switcher class="on-light" />
+                    </div>
                   </div>
                 }
               </div>
