@@ -2,8 +2,9 @@
 
 baseline confirms the old profile restriction without changing values.
 write edits/restores the four profiles, checks role mutations and creates one
-disposable learner plus a synthetic PDF. verify-restart checks persistence and
-cleans up only those newly created fixtures. Private state stays under .tools.
+disposable learner plus a synthetic PDF. verify-restart checks persistence, removes
+the stored fixture bytes and deactivates its learner. Attachment metadata is retained
+by the existing deletion API. Private state stays under .tools.
 """
 import argparse
 import asyncio
@@ -144,16 +145,17 @@ async def main(args):
                     save()
                     context, page = await login(browser, ROLES['admin'][0], credentials['DEMO_ADMIN_PASSWORD'], ROLES['admin'][2])
                     try:
-                        await api(page, '/api/v3/auth/register', 'POST', {
+                        registration = await api(page, '/api/v3/auth/register', 'POST', {
                             'username':state['email'].split('@')[0], 'email':state['email'],
                             'password':state['password'], 'fullName':'Disposable persistence learner', 'role':'STUDENT'}, expected=201)
+                        state['userId'] = registration['user']['id']
+                        save()
                     finally:
                         await context.close()
                     context, page = await login(browser, state['email'], state['password'])
                     try:
                         identity = await api(page, '/api/v3/auth/me')
-                        state['userId'] = identity['id']
-                        save()
+                        assert state['userId'] == identity['id']
                         await api(page, '/api/v3/auth/password', 'PUT', {
                             'currentPassword':state['password'], 'newPassword':state['changedPassword']})
                         passed('new learner: registration, UI login and password change')
@@ -190,10 +192,12 @@ async def main(args):
                         await api(page, '/api/v3/files?' + urlencode({'storageKey':state['upload']['fileName']}), 'DELETE')
                         passed('admin: remove the disposable uploaded file')
                         assert state['email'].startswith('acceptance-') and state['userId'] != 'd3000000-0000-4000-8000-000000000001'
-                        await api(page, '/api/v3/users/' + state['userId'], 'DELETE')
+                        await api(page, '/api/v3/users/' + state['userId'] + '/status', 'PATCH',
+                                  {'status':'BLOCKED','reason':'Disposable acceptance complete'})
                         state['cleanedUp'] = True
+                        state['retainedMetadata'] = 'Existing file deletion API retains attachment metadata; fixture learner is BLOCKED, not deleted.'
                         save()
-                        passed('admin: remove only the newly created acceptance learner')
+                        passed('admin: deactivate only the newly created acceptance learner')
                     finally:
                         await context.close()
             finally:

@@ -71,7 +71,11 @@ python -X utf8 scripts/verify-demo-roles.py --output .tools/demo-roles-full-acce
 The write runner edits/restores real profile forms, creates/updates/removes a new
 teacher draft, saves organization and system settings, and creates one disposable
 learner and synthetic PDF. The restart phase checks the new account, changed
-password and uploaded file, then removes only its own fixtures. Preserve SAF-101
+password and uploaded file, removes its stored bytes and blocks only that disposable
+learner. The existing file-delete API retains attachment metadata; hard-deleting
+an uploader with that reference fails its database foreign key. This existing
+attachment-lifecycle limitation is recorded rather than hidden by the test. No
+direct database purge is performed. Preserve SAF-101
 and existing learner progress. These representative checks do not certify every
 historical LMS feature or an unconfigured external provider. Final run IDs and
 hosted results are recorded in the full-access PR delivery notes.
