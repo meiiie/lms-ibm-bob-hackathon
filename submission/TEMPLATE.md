@@ -12,8 +12,7 @@
 - Video MP4, up to 5 minutes: **team must supply the actual recording**.
 - Slides PDF: **team must supply the final file**.
 - Cover PNG/JPG, recommended 16:9: **team must supply the final image**.
-- Bob evidence: `bob_sessions/`; two expanded summaries verified, Faiz's actual
-  summary and full participant/task coverage still need completion.
+- Bob evidence: `bob_sessions/`; member task summaries verified and logged in `manifest.csv`.
 - Provenance: `docs/PREEXISTING.md`; release: `docs/DEMO-CI-CD.md`;
   final checklist: `docs/SUBMISSION-READINESS.md`.
 
