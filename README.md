@@ -20,6 +20,12 @@ Build window: **25 September 22:00–27 September 22:00, 2026, Vietnam (UTC+7)**
 Internal target: 27 September 20:00 UTC+7. Neko Core is the team name, not an LMS
 software dependency. No hackathon demo URL has been deployed by this setup.
 
+## Team — Neko Core
+
+| Name | Role | Contributions |
+|---|---|---|
+| **Muhammad Faizan Sajid** | Collaborator · Project Management · Backend Engineer | Project coordination, presentation recording, demo video |
+
 ChatGPT requires internet. Downloaded lessons remain independent of cloud AI.
 Local AI requires a running server and a downloaded chat model on the learner's
 own device; installing the PWA alone does not install an AI model. WebMCP is a
