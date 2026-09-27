@@ -12,6 +12,7 @@ treating this repository as a completed submission.
 - **Current scope/status:** [PRD](docs/PRD.md) · [WORKSTATE](docs/WORKSTATE.md)
 - **Provenance/evidence:** [PREEXISTING](docs/PREEXISTING.md) · [Bob sessions](bob_sessions/README.md)
 - **Optional ChatGPT connection:** [Setup and limits](docs/CHATGPT-SETUP.md)
+- **Faiz Khan (Dark)**: Bob Task Verification, Deployment Smoke Tests & Offline Assistant Routing, Session Evidence Logging (`bob_sessions/manifest.csv`)
 - **Local AI and offline boundaries:** [Ollama / LM Studio setup](docs/LOCAL-AI-SETUP.md)
 - **WebMCP decision:** [Research as of 26 September 2026](docs/WEBMCP-RESEARCH-2026-09-26.md)
 - **Hosted LMS demo:** [Open the demo](https://neko-core-lms-demo.pages.dev) · [Deployment, access and limits](docs/FREE-DEMO-DEPLOYMENT.md)
